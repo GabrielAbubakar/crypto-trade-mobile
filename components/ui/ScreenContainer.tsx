@@ -1,7 +1,7 @@
-import React from "react";
-import { View, ViewProps, StyleSheet, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "@/constants";
+import React from "react";
+import { ScrollView, StyleSheet, View, ViewProps } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface ScreenContainerProps extends ViewProps {
   children: React.ReactNode;
@@ -18,11 +18,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
 }) => {
   const content = (
     <View
-      style={[
-        styles.content,
-        withPadding && styles.padding,
-        style,
-      ]}
+      style={[styles.content, withPadding && styles.padding, style]}
       {...props}
     >
       {children}

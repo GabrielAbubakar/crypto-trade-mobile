@@ -1,3 +1,4 @@
+import { Colors } from "@/constants";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -23,11 +24,12 @@ export default function RootLayout() {
   }
   return (
     <Stack
+      initialRouteName="(onboarding)"
       screenOptions={{
         headerShown: false,
+        contentStyle: { backgroundColor: Colors.secondary },
       }}
     >
-      <Stack.Screen name="index" />
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(onboarding)" />
       <Stack.Screen name="(tabs)" />

@@ -2,10 +2,10 @@ import { BaseText, ScreenContainer } from "@/components";
 import React from "react";
 import { StyleSheet } from "react-native";
 
-export default function HomeScreen() {
+export default function AuthIndexScreen() {
   return (
     <ScreenContainer>
-      <BaseText style={styles.title}>Home</BaseText>
+      <BaseText style={styles.title}>Signin</BaseText>
     </ScreenContainer>
   );
 }

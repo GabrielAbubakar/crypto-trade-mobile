@@ -5,7 +5,7 @@ import {
   StyleSheet,
   TextStyle,
   View,
-  ViewStyle
+  ViewStyle,
 } from "react-native";
 import { BaseText } from "./BaseText";
 import {
@@ -13,7 +13,7 @@ import {
   CustomTouchableOpacityProps,
 } from "./BaseTouchableOpacity";
 
-type ButtonVariant = "primary" | "secondary" | "outline" | "text";
+type ButtonVariant = "primary" | "secondary" | "outline" | "text" | "cancel";
 type ButtonSize = "small" | "medium" | "large";
 
 interface BaseButtonProps extends CustomTouchableOpacityProps {
@@ -29,7 +29,7 @@ interface BaseButtonProps extends CustomTouchableOpacityProps {
 export const BaseButton: React.FC<BaseButtonProps> = ({
   title,
   variant = "primary",
-  size = "medium",
+  size = "large",
   isLoading = false,
   leftIcon,
   rightIcon,
@@ -45,12 +45,15 @@ export const BaseButton: React.FC<BaseButtonProps> = ({
       backgroundColor: theme.primary,
     },
     secondary: {
-      backgroundColor: theme.secondary,
+      backgroundColor: theme.textSecondary,
     },
     outline: {
       backgroundColor: "transparent",
-      borderWidth: 2,
+      borderWidth: 1,
       borderColor: theme.primary,
+    },
+    cancel: {
+      backgroundColor: theme.error,
     },
     text: {
       backgroundColor: "transparent",
@@ -58,9 +61,10 @@ export const BaseButton: React.FC<BaseButtonProps> = ({
   };
 
   const textVariants: Record<ButtonVariant, string> = {
-    primary: theme.white,
-    secondary: theme.textPrimary,
+    primary: theme.secondary,
+    secondary: theme.white,
     outline: theme.primary,
+    cancel: theme.secondary,
     text: theme.primary,
   };
 
@@ -68,17 +72,17 @@ export const BaseButton: React.FC<BaseButtonProps> = ({
     small: {
       paddingVertical: 8,
       paddingHorizontal: 16,
-      borderRadius: 20,
+      borderRadius: 16,
     },
     medium: {
       paddingVertical: 14,
       paddingHorizontal: 24,
-      borderRadius: 28,
+      borderRadius: 16,
     },
     large: {
       paddingVertical: 18,
       paddingHorizontal: 32,
-      borderRadius: 36,
+      borderRadius: 16,
     },
   };
 
@@ -111,12 +115,11 @@ export const BaseButton: React.FC<BaseButtonProps> = ({
         <View style={styles.content}>
           {leftIcon && <View style={styles.iconLeft}>{leftIcon}</View>}
           <BaseText
-            variant="bold"
+            variant="regular"
             size={fontSizes[size]}
             style={[
               {
                 color: textColor,
-                textTransform: "uppercase",
                 letterSpacing: 1,
               },
               textStyle,
