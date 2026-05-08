@@ -24,7 +24,7 @@ export default function RootLayout() {
   }
   return (
     <Stack
-      initialRouteName="(onboarding)"
+      initialRouteName="(auth)"
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: Colors.secondary },

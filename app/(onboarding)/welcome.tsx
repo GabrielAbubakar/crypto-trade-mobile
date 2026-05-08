@@ -54,7 +54,7 @@ export default function WelcomeScreen() {
       />
       {/* <ImageBackground source={Background} style={{ flex: 1 }}> */}
       <FlatList
-        style={{ flexGrow: 0, marginBottom: 30 }}
+        style={{ flexGrow: 0, marginBottom: 30, marginTop: 50 }}
         horizontal
         pagingEnabled
         bounces={false}
