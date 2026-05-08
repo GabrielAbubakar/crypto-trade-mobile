@@ -26,7 +26,7 @@ export const SignInForm: React.FC = () => {
     },
     onSubmit: async ({ value }) => {
       console.log("Login with", value);
-      router.replace("/(tabs)/home");
+      router.replace("/(auth)/otp");
     },
   });
 
@@ -73,15 +73,16 @@ export const SignInForm: React.FC = () => {
                 }
                 containerStyle={styles.authInput}
               />
-              {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-                <BaseText style={styles.errorText}>
-                  {field.state.meta.errors
-                    .map((err: any) =>
-                      typeof err === "string" ? err : err.message,
-                    )
-                    .join(", ")}
-                </BaseText>
-              )}
+              {field.state.meta.isTouched &&
+                field.state.meta.errors.length > 0 && (
+                  <BaseText style={styles.errorText}>
+                    {field.state.meta.errors
+                      .map((err: any) =>
+                        typeof err === "string" ? err : err.message,
+                      )
+                      .join(", ")}
+                  </BaseText>
+                )}
             </View>
           )}
         </form.Field>
@@ -110,15 +111,16 @@ export const SignInForm: React.FC = () => {
                   </TouchableOpacity>
                 }
               />
-              {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-                <BaseText style={styles.errorText}>
-                  {field.state.meta.errors
-                    .map((err: any) =>
-                      typeof err === "string" ? err : err.message,
-                    )
-                    .join(", ")}
-                </BaseText>
-              )}
+              {field.state.meta.isTouched &&
+                field.state.meta.errors.length > 0 && (
+                  <BaseText style={styles.errorText}>
+                    {field.state.meta.errors
+                      .map((err: any) =>
+                        typeof err === "string" ? err : err.message,
+                      )
+                      .join(", ")}
+                  </BaseText>
+                )}
             </View>
           )}
         </form.Field>
