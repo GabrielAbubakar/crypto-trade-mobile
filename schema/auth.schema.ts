@@ -4,29 +4,34 @@ export const signInSchema = z.discriminatedUnion("method", [
   z.object({
     method: z.literal("email"),
     email: z.email("Invalid email address"),
-    mobile: z.string(),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    phone: z.string(),
+    password: z.string().min(4, "Password must be at least 6 letters"),
   }),
   z.object({
-    method: z.literal("mobile"),
-    mobile: z.string().min(10, "Invalid mobile number"),
+    method: z.literal("phone"),
+    phone: z.string().min(10, "Invalid phone number"),
     email: z.string(),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z.string().min(4, "Password must be at least 6 letters"),
   }),
 ]);
 
 export const signUpSchema = z.discriminatedUnion("method", [
   z.object({
     method: z.literal("email"),
+    fullName: z.string().min(6, "Full Name must be at least 6 letters"),
     email: z.email("Invalid email address"),
-    mobile: z.string(),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    phone: z
+      .string()
+      .regex(/^(?:\+?234|0)?[789]\d{9}$/, "Invalid Nigerian phone number"),
+    password: z.string().min(6, "Password must be at least 6 letters"),
   }),
   z.object({
-    method: z.literal("mobile"),
-    mobile: z.string().min(10, "Invalid mobile number"),
+    method: z.literal("phone"),
+    fullName: z.string(),
+    phone: z
+      .string()
+      .regex(/^(?:\+?234|0)?[789]\d{9}$/, "Invalid Nigerian phone number"),
     email: z.string(),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z.string().min(6, "Password must be at least 6 letters"),
   }),
 ]);
-

@@ -1,6 +1,7 @@
 import Fingerprint from "@/assets/icons/auth/Fingerprint.svg";
 import { Colors } from "@/constants";
 import { signInSchema } from "@/schema";
+import { useLoginMutation } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
 import { useForm } from "@tanstack/react-form";
 import { router } from "expo-router";
@@ -13,20 +14,29 @@ import { AuthMethod } from "./types";
 export const SignInForm: React.FC = () => {
   const [method, setMethod] = useState<AuthMethod>("email");
   const [showPassword, setShowPassword] = useState(false);
+  const [signIn, { isLoading, error }] = useLoginMutation();
 
   const form = useForm({
     defaultValues: {
       method: "email" as AuthMethod,
       email: "",
-      mobile: "",
+      phone: "",
       password: "",
     },
     validators: {
       onChange: signInSchema,
     },
-    onSubmit: async ({ value }) => {
-      console.log("Login with", value);
-      router.replace("/(auth)/otp");
+    onSubmit: async ({ value, meta }) => {
+      // console.log("Signing in...");
+      try {
+        await signIn({
+          email: method === "email" ? value.email : value.phone,
+          password: value.password,
+        }).unwrap();
+        router.replace("/(auth)/otp");
+      } catch (error) {
+        console.error("Error signing in:", error);
+      }
     },
   });
 
@@ -46,7 +56,7 @@ export const SignInForm: React.FC = () => {
           </BaseText>
           <TouchableOpacity
             onPress={() => {
-              const newMethod = method === "email" ? "mobile" : "email";
+              const newMethod = method === "email" ? "phone" : "email";
               setMethod(newMethod);
               form.setFieldValue("method", newMethod);
             }}
@@ -59,31 +69,26 @@ export const SignInForm: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        <form.Field name={method === "email" ? "email" : "mobile"}>
+        <form.Field name={method === "email" ? "email" : "phone"}>
           {(field) => (
-            <View>
-              <BaseInput
-                placeholder={
-                  method === "email" ? "Enter your email" : "Enter your mobile"
-                }
-                value={field.state.value}
-                onChangeText={field.handleChange}
-                keyboardType={
-                  method === "email" ? "email-address" : "phone-pad"
-                }
-                containerStyle={styles.authInput}
-              />
-              {field.state.meta.isTouched &&
-                field.state.meta.errors.length > 0 && (
-                  <BaseText style={styles.errorText}>
-                    {field.state.meta.errors
+            <BaseInput
+              placeholder={
+                method === "email" ? "Enter your email" : "Enter your mobile"
+              }
+              value={field.state.value}
+              onChangeText={field.handleChange}
+              keyboardType={method === "email" ? "email-address" : "phone-pad"}
+              containerStyle={styles.authInput}
+              error={
+                field.state.meta.isTouched && field.state.meta.errors.length > 0
+                  ? field.state.meta.errors
                       .map((err: any) =>
                         typeof err === "string" ? err : err.message,
                       )
-                      .join(", ")}
-                  </BaseText>
-                )}
-            </View>
+                      .join(", ")
+                  : undefined
+              }
+            />
           )}
         </form.Field>
       </View>
@@ -92,36 +97,33 @@ export const SignInForm: React.FC = () => {
         <BaseText style={styles.inputLabel}>Password</BaseText>
         <form.Field name="password">
           {(field) => (
-            <View>
-              <BaseInput
-                placeholder="Enter your password"
-                secureTextEntry={!showPassword}
-                value={field.state.value}
-                onChangeText={field.handleChange}
-                containerStyle={styles.authInput}
-                rightIcon={
-                  <TouchableOpacity
-                    onPress={() => setShowPassword(!showPassword)}
-                  >
-                    <Ionicons
-                      name={showPassword ? "eye-off" : "eye"}
-                      size={20}
-                      color={Colors.textSecondary}
-                    />
-                  </TouchableOpacity>
-                }
-              />
-              {field.state.meta.isTouched &&
-                field.state.meta.errors.length > 0 && (
-                  <BaseText style={styles.errorText}>
-                    {field.state.meta.errors
+            <BaseInput
+              placeholder="Enter your password"
+              // secureTextEntry={!showPassword}
+              value={field.state.value}
+              onChangeText={field.handleChange}
+              containerStyle={styles.authInput}
+              rightIcon={
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-off" : "eye"}
+                    size={20}
+                    color={Colors.textSecondary}
+                  />
+                </TouchableOpacity>
+              }
+              error={
+                field.state.meta.isTouched && field.state.meta.errors.length > 0
+                  ? field.state.meta.errors
                       .map((err: any) =>
                         typeof err === "string" ? err : err.message,
                       )
-                      .join(", ")}
-                  </BaseText>
-                )}
-            </View>
+                      .join(", ")
+                  : undefined
+              }
+            />
           )}
         </form.Field>
       </View>
@@ -132,6 +134,7 @@ export const SignInForm: React.FC = () => {
 
       <BaseButton
         title="Sign in"
+        isLoading={isLoading}
         onPress={() => form.handleSubmit()}
         style={styles.submitButton}
       />

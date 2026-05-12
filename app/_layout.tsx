@@ -1,8 +1,10 @@
 import { Colors } from "@/constants";
+import { store } from "@/store";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
+import { Provider } from "react-redux";
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -23,16 +25,19 @@ export default function RootLayout() {
     return null;
   }
   return (
-    <Stack
-      initialRouteName="(auth)"
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: Colors.secondary },
-      }}
-    >
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(onboarding)" />
-      <Stack.Screen name="(tabs)" />
-    </Stack>
+    // Redux Provider
+    <Provider store={store}>
+      <Stack
+        initialRouteName="(auth)"
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: Colors.secondary },
+        }}
+      >
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(onboarding)" />
+        <Stack.Screen name="(tabs)" />
+      </Stack>
+    </Provider>
   );
 }

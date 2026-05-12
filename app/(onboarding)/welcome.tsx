@@ -52,7 +52,7 @@ export default function WelcomeScreen() {
           height: "120%",
         }}
       />
-      {/* <ImageBackground source={Background} style={{ flex: 1 }}> */}
+
       <FlatList
         style={{ flexGrow: 0, marginBottom: 30, marginTop: 50 }}
         horizontal

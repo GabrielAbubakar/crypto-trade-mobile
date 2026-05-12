@@ -1,3 +1,4 @@
+import Background from "@/assets/images/auth-background.png";
 import {
   BaseText,
   OTPStep,
@@ -13,6 +14,7 @@ import { router } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
   Dimensions,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -26,11 +28,11 @@ const { width } = Dimensions.get("window");
 export default function AuthIndexScreen() {
   const [step, setStep] = useState<AuthStep>("auth");
   const [currentTab, setCurrentTab] = useState<AuthTab>("signin");
-  const flatListRef = useRef<ScrollView>(null);
+  const listRef = useRef<ScrollView>(null);
 
   const handleTabChange = (tab: AuthTab) => {
     setCurrentTab(tab);
-    flatListRef.current?.scrollTo({
+    listRef.current?.scrollTo({
       x: tab === "signin" ? 0 : width,
       animated: true,
     });
@@ -101,13 +103,24 @@ export default function AuthIndexScreen() {
 
   return (
     <ScreenContainer withPadding={false} style={styles.container}>
+      <Image
+        source={Background}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "120%",
+        }}
+      />
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
         {renderHeader()}
         <ScrollView
-          ref={flatListRef}
+          ref={listRef}
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
@@ -117,11 +130,14 @@ export default function AuthIndexScreen() {
           removeClippedSubviews={Platform.OS === "android"}
           style={{ flex: 1 }}
         >
+          {/* Screen 1 - Sign In */}
           <View style={{ width }}>
             <SignInForm />
           </View>
+
+          {/* Screen 2 - Sign Up */}
           <View style={{ width }}>
-            <SignUpForm onRegisterSuccess={() => setStep("otp")} />
+            <SignUpForm />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

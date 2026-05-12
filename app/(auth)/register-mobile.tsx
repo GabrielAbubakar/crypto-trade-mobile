@@ -1,9 +1,11 @@
+import Background from "@/assets/images/auth-background.png";
 import { BaseButton, BaseInput, BaseText, ScreenContainer } from "@/components";
 import { Colors } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
@@ -38,6 +40,16 @@ export default function RegisterMobileScreen() {
       withPadding={true}
       style={styles.container}
     >
+      <Image
+        source={Background}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "120%",
+        }}
+      />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}

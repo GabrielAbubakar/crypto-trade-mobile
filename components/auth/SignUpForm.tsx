@@ -1,29 +1,26 @@
 import Fingerprint from "@/assets/icons/auth/Fingerprint.svg";
 import { Colors } from "@/constants";
 import { signUpSchema } from "@/schema";
+import { useRegisterMutation } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
 import { useForm } from "@tanstack/react-form";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { BaseButton, BaseInput, BaseText } from "../ui";
 import { SocialLoginSection } from "./SocialLoginSection";
 import { AuthMethod } from "./types";
 
-interface SignUpFormProps {
-  onRegisterSuccess: () => void;
-}
-
-export const SignUpForm: React.FC<SignUpFormProps> = ({
-  onRegisterSuccess,
-}) => {
-  const [method, setMethod] = useState<AuthMethod>("email");
+export const SignUpForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [register, { isLoading, error }] = useRegisterMutation();
 
   const form = useForm({
     defaultValues: {
       method: "email" as AuthMethod,
+      fullName: "",
       email: "",
-      mobile: "",
+      phone: "",
       password: "",
     },
     validators: {
@@ -31,7 +28,17 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
     },
     onSubmit: async ({ value }) => {
       console.log("Register with", value);
-      onRegisterSuccess();
+      try {
+        await register({
+          email: value.email,
+          fullName: value.fullName,
+          password: value.password,
+          phone: value.phone,
+        }).unwrap();
+        router.replace("/(auth)/otp");
+      } catch (error) {
+        console.error("Error registering:", error);
+      }
     },
   });
 
@@ -44,95 +51,129 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
         Sign up
       </BaseText>
 
+      {/* Full Name */}
       <View style={styles.inputGroup}>
         <View style={styles.methodToggle}>
-          <BaseText style={styles.inputLabel}>
-            {method === "email" ? "Email" : "Mobile Number"}
-          </BaseText>
+          <BaseText style={styles.inputLabel}>Full Name</BaseText>
           <TouchableOpacity
             onPress={() => {
-              const newMethod = method === "email" ? "mobile" : "email";
-              setMethod(newMethod);
-              form.setFieldValue("method", newMethod);
+              router.push("/register-mobile");
             }}
           >
-            <BaseText style={styles.toggleText}>
-              {method === "email"
-                ? "Register with mobile"
-                : "Register with email"}
-            </BaseText>
+            <BaseText style={styles.toggleText}>Register with mobile</BaseText>
           </TouchableOpacity>
         </View>
-
-        <form.Field name={method === "email" ? "email" : "mobile"}>
+        <form.Field name="fullName">
           {(field) => (
-            <View>
-              <BaseInput
-                placeholder={
-                  method === "email"
-                    ? "Please enter email"
-                    : "Enter your mobile"
-                }
-                value={field.state.value}
-                onChangeText={field.handleChange}
-                keyboardType={
-                  method === "email" ? "email-address" : "phone-pad"
-                }
-                containerStyle={styles.authInput}
-              />
-              {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-                <BaseText style={styles.errorText}>
-                  {field.state.meta.errors
-                    .map((err: any) =>
-                      typeof err === "string" ? err : err.message,
-                    )
-                    .join(", ")}
-                </BaseText>
-              )}
-            </View>
+            <BaseInput
+              placeholder="Please enter full name"
+              value={field.state.value}
+              onChangeText={field.handleChange}
+              containerStyle={styles.authInput}
+              error={
+                field.state.meta.isTouched && field.state.meta.errors.length > 0
+                  ? field.state.meta.errors
+                      .map((err: any) =>
+                        typeof err === "string" ? err : err.message,
+                      )
+                      .join(", ")
+                  : undefined
+              }
+            />
           )}
         </form.Field>
       </View>
 
+      {/* Email */}
+      <View style={styles.inputGroup}>
+        <BaseText style={styles.inputLabel}>Email</BaseText>
+
+        <form.Field name="email">
+          {(field) => (
+            <BaseInput
+              placeholder="Please enter email"
+              value={field.state.value}
+              onChangeText={field.handleChange}
+              keyboardType="email-address"
+              containerStyle={styles.authInput}
+              error={
+                field.state.meta.isTouched && field.state.meta.errors.length > 0
+                  ? field.state.meta.errors
+                      .map((err: any) =>
+                        typeof err === "string" ? err : err.message,
+                      )
+                      .join(", ")
+                  : undefined
+              }
+            />
+          )}
+        </form.Field>
+      </View>
+
+      {/* Mobile Number */}
+      <View style={styles.inputGroup}>
+        <BaseText style={styles.inputLabel}>Mobile Number</BaseText>
+        <form.Field name="phone">
+          {(field) => (
+            <BaseInput
+              placeholder="Enter your mobile"
+              value={field.state.value}
+              onChangeText={field.handleChange}
+              keyboardType="phone-pad"
+              containerStyle={styles.authInput}
+              error={
+                field.state.meta.isTouched && field.state.meta.errors.length > 0
+                  ? field.state.meta.errors
+                      .map((err: any) =>
+                        typeof err === "string" ? err : err.message,
+                      )
+                      .join(", ")
+                  : undefined
+              }
+            />
+          )}
+        </form.Field>
+      </View>
+
+      {/* Password */}
       <View style={styles.inputGroup}>
         <BaseText style={styles.inputLabel}>Password</BaseText>
         <form.Field name="password">
           {(field) => (
-            <View>
-              <BaseInput
-                placeholder="Please enter password"
-                secureTextEntry={!showPassword}
-                value={field.state.value}
-                onChangeText={field.handleChange}
-                containerStyle={styles.authInput}
-                rightIcon={
-                  <TouchableOpacity
-                    onPress={() => setShowPassword(!showPassword)}
-                  >
-                    <Ionicons
-                      name={showPassword ? "eye-off" : "eye"}
-                      size={20}
-                      color={Colors.textSecondary}
-                    />
-                  </TouchableOpacity>
-                }
-              />
-              {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-                <BaseText style={styles.errorText}>
-                  {field.state.meta.errors
-                    .map((err: any) =>
-                      typeof err === "string" ? err : err.message,
-                    )
-                    .join(", ")}
-                </BaseText>
-              )}
-            </View>
+            <BaseInput
+              placeholder="Please enter password"
+              secureTextEntry={!showPassword}
+              value={field.state.value}
+              onChangeText={field.handleChange}
+              containerStyle={styles.authInput}
+              rightIcon={
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-off" : "eye"}
+                    size={20}
+                    color={Colors.textSecondary}
+                  />
+                </TouchableOpacity>
+              }
+              error={
+                field.state.meta.isTouched && field.state.meta.errors.length > 0
+                  ? field.state.meta.errors
+                      .map((err: any) =>
+                        typeof err === "string" ? err : err.message,
+                      )
+                      .join(", ")
+                  : undefined
+              }
+            />
           )}
         </form.Field>
       </View>
 
       <BaseButton
         title="Sign up"
+        isLoading={isLoading}
         onPress={() => form.handleSubmit()}
         style={styles.submitButton}
       />

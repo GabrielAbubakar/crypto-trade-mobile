@@ -1,3 +1,4 @@
+import Background from "@/assets/images/auth-background.png";
 import SuccessCreated from "@/assets/images/success-created.svg";
 import { BaseButton, BaseText, ScreenContainer } from "@/components";
 import { Colors } from "@/constants";
@@ -6,6 +7,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
@@ -120,6 +122,16 @@ export default function OTPScreen() {
       withPadding={true}
       style={styles.container}
     >
+      <Image
+        source={Background}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "120%",
+        }}
+      />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
