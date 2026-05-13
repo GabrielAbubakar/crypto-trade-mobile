@@ -1,4 +1,4 @@
-import { IAuthResponse, ILoginRequest, IRegisterRequest } from "@/types";
+import type { IAuthResponse, ILoginRequest, IRegisterRequest } from "@/types";
 import { baseApi } from "./baseApi";
 
 export const authApi = baseApi.injectEndpoints({

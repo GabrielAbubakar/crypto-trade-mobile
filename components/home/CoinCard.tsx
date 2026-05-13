@@ -1,0 +1,106 @@
+import { BaseText, Sparkline } from "@/components";
+import React from "react";
+import { StyleSheet, View } from "react-native";
+
+export interface CoinCardProps {
+  pair: string;
+  price: string;
+  change: string;
+  isPositive: boolean;
+  Icon: React.FC<any>;
+  sparklineData: number[];
+}
+
+export const CoinCard: React.FC<CoinCardProps> = ({
+  pair,
+  price,
+  change,
+  isPositive,
+  Icon,
+  sparklineData,
+}) => {
+  const trendColor = isPositive ? "#5ED5A8" : "#FF4D4D";
+
+  return (
+    <View style={styles.coinCard}>
+      {/* Top Row: Price & Badge Icon */}
+      <View style={styles.coinCardHeader}>
+        <BaseText
+          variant="bold"
+          style={[styles.coinPrice, { color: trendColor }]}
+        >
+          {price}
+        </BaseText>
+        <Icon width={28} height={28} />
+      </View>
+
+      {/* Middle Row: Pair & Trend Percentage */}
+      <View style={styles.coinMetaRow}>
+        <BaseText style={styles.coinPair}>{pair}</BaseText>
+        <BaseText style={[styles.coinChange, { color: trendColor }]}>
+          {change}
+        </BaseText>
+      </View>
+
+      {/* Bottom Row: Dynamic Sparkline */}
+      <View style={styles.sparklineContainer}>
+        <Sparkline
+          data={sparklineData}
+          color={trendColor}
+          width={138}
+          height={35}
+        />
+      </View>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  coinCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 16,
+    width: 180,
+    height: 155,
+    borderWidth: 1,
+    borderColor: "#F2F3F7",
+    // justifyContent: "space-between",
+    gap: 8,
+    boxShadow: [
+      {
+        offsetX: 0,
+        offsetY: 16,
+        blurRadius: 50,
+        color: "rgba(22, 28, 34, 0.08)",
+      },
+    ],
+  },
+  coinCardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  coinPrice: {
+    fontSize: 16,
+  },
+  coinMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  coinPair: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#1B232A",
+  },
+  coinChange: {
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  sparklineContainer: {
+    // alignItems: "center",
+    // justifyContent: "center",
+    height: 35,
+    marginTop: 8,
+  },
+});

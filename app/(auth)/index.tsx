@@ -1,13 +1,11 @@
 import Background from "@/assets/images/auth-background.png";
 import {
   BaseText,
-  OTPStep,
   ScreenContainer,
   SignInForm,
-  SignUpForm,
-  SuccessStep,
+  SignUpForm
 } from "@/components";
-import { AuthStep, AuthTab } from "@/components/auth/types";
+import { AuthTab } from "@/components/auth/types";
 import { Colors } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -26,7 +24,6 @@ import {
 const { width } = Dimensions.get("window");
 
 export default function AuthIndexScreen() {
-  const [step, setStep] = useState<AuthStep>("auth");
   const [currentTab, setCurrentTab] = useState<AuthTab>("signin");
   const listRef = useRef<ScrollView>(null);
 
@@ -87,19 +84,6 @@ export default function AuthIndexScreen() {
       </View>
     </View>
   );
-
-  if (step === "otp") {
-    return (
-      <OTPStep
-        onVerify={() => setStep("success")}
-        onBack={() => setStep("auth")}
-      />
-    );
-  }
-
-  if (step === "success") {
-    return <SuccessStep onFinish={() => router.replace("/(tabs)/home")} />;
-  }
 
   return (
     <ScreenContainer withPadding={false} style={styles.container}>

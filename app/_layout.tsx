@@ -28,7 +28,7 @@ export default function RootLayout() {
     // Redux Provider
     <Provider store={store}>
       <Stack
-        initialRouteName="(auth)"
+        initialRouteName="(tabs)"
         screenOptions={{
           headerShown: false,
           contentStyle: { backgroundColor: Colors.secondary },

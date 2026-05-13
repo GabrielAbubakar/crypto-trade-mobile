@@ -1,6 +1,7 @@
 import { Colors } from "@/constants";
 import React from "react";
-import { ScrollView, StyleSheet, View, ViewProps } from "react-native";
+import type { ViewProps } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 interface ScreenContainerProps extends ViewProps {
