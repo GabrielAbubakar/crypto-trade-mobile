@@ -1,10 +1,23 @@
 // Global Domain Entities (Can be shared/imported from root types)
 export interface IUser {
   id: string;
-  email?: string;
-  mobile?: string;
-  name?: string;
-  isKycVerified: boolean;
+  role: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  twoFactorEnabled: boolean;
+  kycStatus: string;
+  avatarUrl: string | null;
+  watchlist: string[];
+  settings: {
+    language: string;
+    fiatCurrency: string;
+    theme: string;
+    priceAlerts: boolean;
+    pushNotifications: boolean;
+    biometricEnabled: boolean;
+  };
+  createdAt: string;
 }
 
 // Endpoint Payloads

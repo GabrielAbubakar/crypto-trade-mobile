@@ -6,10 +6,11 @@ import MarginIcon from "@/assets/icons/home/margin.svg";
 import MoreIcon from "@/assets/icons/home/more.svg";
 import ReferralIcon from "@/assets/icons/home/referal.svg";
 import SavingsIcon from "@/assets/icons/home/savings.svg";
-import { BaseText, BaseTouchableOpacity } from "@/components";
 import { Colors } from "@/constants";
 import React from "react";
 import { StyleSheet, View } from "react-native";
+import { BaseText } from "../ui/BaseText";
+import { BaseTouchableOpacity } from "../ui/BaseTouchableOpacity";
 
 export const GridMenu: React.FC = () => {
   const menuItems = [
@@ -64,6 +65,7 @@ const styles = StyleSheet.create({
     width: "25%",
     alignItems: "center",
     justifyContent: "center",
+    paddingTop: 10,
     paddingBottom: 20,
   },
   rightBorder: {

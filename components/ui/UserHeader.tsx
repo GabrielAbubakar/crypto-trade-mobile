@@ -32,13 +32,15 @@ const HeaderButton = ({ icon, link }: HeaderButtonProps) => {
 export const UserHeader = ({ userButtons }: UserHeaderProps) => {
   return (
     <View style={styles.container}>
-      <View style={styles.profile}>
-        <Image
-          source={profileImage}
-          style={styles.profile}
-          contentFit="cover"
-        />
-      </View>
+      <Link href="/menu" asChild>
+        <BaseTouchableOpacity style={styles.profile}>
+          <Image
+            source={profileImage}
+            style={styles.profile}
+            contentFit="cover"
+          />
+        </BaseTouchableOpacity>
+      </Link>
 
       <View style={{ flexDirection: "row", gap: 10 }}>
         {userButtons.map((button, index) => (
@@ -54,9 +56,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 20,
+    paddingVertical: 10,
     paddingHorizontal: 20,
     backgroundColor: Colors.secondary,
+    zIndex: 10,
+    boxShadow: [
+      {
+        offsetX: 0,
+        offsetY: -10,
+        blurRadius: 15,
+        spreadDistance: 10,
+        color: "rgba(22, 28, 34, 0.8)",
+      },
+    ],
   },
   profile: {
     width: 36,

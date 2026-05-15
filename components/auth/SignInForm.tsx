@@ -9,7 +9,7 @@ import React, { useState } from "react";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { BaseButton, BaseInput, BaseText } from "../ui";
 import { SocialLoginSection } from "./SocialLoginSection";
-import { AuthMethod } from "./types";
+import type { AuthMethod } from "./types";
 
 export const SignInForm: React.FC = () => {
   const [method, setMethod] = useState<AuthMethod>("email");

@@ -8,11 +8,10 @@ export const baseApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: BASE_URL,
     prepareHeaders: (headers, { getState }) => {
-      // Grab token from local redux state (if present) and append to headers
-      // const token = (getState() as RootState).auth.token;
-      // if (token) {
-      //   headers.set("authorization", `Bearer ${token}`);
-      // }
+      const token = (getState() as any).auth.token;
+      if (token) {
+        headers.set("authorization", `Bearer ${token}`);
+      }
       return headers;
     },
   }),

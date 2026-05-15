@@ -1,4 +1,5 @@
-import { BaseText, Sparkline } from "@/components";
+import { BaseText } from "../ui/BaseText";
+import { Sparkline } from "../ui/Sparkline";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 

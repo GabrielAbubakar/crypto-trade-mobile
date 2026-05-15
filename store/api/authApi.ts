@@ -1,4 +1,5 @@
 import type { IAuthResponse, ILoginRequest, IRegisterRequest } from "@/types";
+import { setCredentials } from "../slices/authSlice";
 import { baseApi } from "./baseApi";
 
 export const authApi = baseApi.injectEndpoints({
@@ -9,6 +10,15 @@ export const authApi = baseApi.injectEndpoints({
         method: "POST",
         body: credentials,
       }),
+      transformResponse: (response: { data: IAuthResponse }) => response.data,
+      async onQueryStarted(_args, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(setCredentials({ user: data.user, token: data.token }));
+        } catch (err) {
+          // Handle error if needed
+        }
+      },
     }),
     register: builder.mutation<IAuthResponse, IRegisterRequest>({
       query: (credentials) => ({
@@ -16,6 +26,15 @@ export const authApi = baseApi.injectEndpoints({
         method: "POST",
         body: credentials,
       }),
+      transformResponse: (response: { data: IAuthResponse }) => response.data,
+      async onQueryStarted(_args, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(setCredentials({ user: data.user, token: data.token }));
+        } catch (err) {
+          // Handle error if needed
+        }
+      },
     }),
     requestOTP: builder.mutation({
       query: () => ({
