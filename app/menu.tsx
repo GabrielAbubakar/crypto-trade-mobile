@@ -3,6 +3,7 @@ import profileImage from "@/assets/images/avatar.jpg";
 import {
   BackHeader,
   BaseButton,
+  BaseTouchableOpacity,
   MenuGridItem,
   ScreenContainer,
 } from "@/components";
@@ -32,7 +33,10 @@ export default function MenuScreen() {
       >
         <BackHeader title="Menu" />
         <View style={styles.profileSection}>
-          <View style={styles.userInfo}>
+          <BaseTouchableOpacity
+            style={styles.userInfo}
+            onPress={() => router.push("/profile")}
+          >
             <Image source={profileImage} style={styles.avatar} />
             <View style={styles.userDetails}>
               <Title style={styles.username}>User 1234</Title>
@@ -43,12 +47,13 @@ export default function MenuScreen() {
                 <CopyIcon width={14} height={14} style={styles.copyIcon} />
               </View>
             </View>
-          </View>
+          </BaseTouchableOpacity>
+
           <BaseButton
-            title="Edit Profile"
+            title="Settings"
             variant="primary"
             size="small"
-            onPress={() => router.push("/edit-profile")}
+            onPress={() => router.push("/settings")}
             style={styles.editButton}
           />
         </View>
@@ -103,12 +108,13 @@ const styles = StyleSheet.create({
   gradientBox: {
     paddingBottom: 14,
     marginBottom: 25,
+    paddingHorizontal: 20,
+    gap: 16,
   },
   profileSection: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
   },
   userInfo: {
     flexDirection: "row",

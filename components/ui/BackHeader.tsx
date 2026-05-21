@@ -22,13 +22,6 @@ export const BackHeader: React.FC<BackHeaderProps> = ({ title }) => {
         <Ionicons name="arrow-back" size={24} color={Colors.textSecondary} />
       </BaseTouchableOpacity>
       <Header style={styles.title}>{title}</Header>
-
-      <Ionicons
-        name="ellipsis-vertical"
-        size={20}
-        color={Colors.textPrimary}
-        style={{ marginLeft: "auto" }}
-      />
     </View>
   );
 };
@@ -37,8 +30,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 24,
+    paddingVertical: 10,
     gap: 12,
   },
   backButton: {

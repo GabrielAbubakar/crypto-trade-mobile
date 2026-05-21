@@ -3,5 +3,9 @@ export * from "./auth";
 export * from "./home";
 export * from "./onboarding";
 export * from "./ui";
+export * from "./markets";
+export * from "./wallets";
+export * from "./activity";
+
 
 

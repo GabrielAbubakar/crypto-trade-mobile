@@ -1,58 +1,65 @@
 import profileImage from "@/assets/images/avatar.jpg";
 import { BackHeader, MenuItem, ScreenContainer } from "@/components";
+import { Title } from "@/components/ui/BaseText";
 import { Colors } from "@/constants";
 import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import { Header, Title } from "@/components/ui/BaseText";
 
 export default function ProfileScreen() {
   const router = useRouter();
 
+  const handleFieldEdit = (
+    field: "username" | "email" | "mobile" | "password",
+  ) => {
+    router.push({
+      pathname: "/edit-profile",
+      params: { focusField: field },
+    });
+  };
+
   return (
-    <ScreenContainer>
+    <ScreenContainer scrollable style={styles.container}>
       <BackHeader title="Profile" />
-      
+
+      {/* Profile Section */}
       <View style={styles.profileSection}>
         <View style={styles.avatarContainer}>
-          <LinearGradient
-            colors={["#5ED5A8", "#1B232A"]}
-            style={styles.gradientBorder}
-          >
-            <View style={styles.imageWrapper}>
-              <Image
-                source={profileImage}
-                style={styles.avatar}
-                contentFit="cover"
-              />
-            </View>
-          </LinearGradient>
+          <View style={styles.imageWrapper}>
+            <Image
+              source={profileImage}
+              style={styles.avatar}
+              contentFit="cover"
+            />
+          </View>
         </View>
-        <Title style={styles.username}>User1234</Title>
+        <Title variant="bold" style={styles.username}>
+          User1234
+        </Title>
       </View>
 
+      {/* Profile Details List */}
       <View style={styles.menuList}>
         <MenuItem
           label="Username"
           value="Username1234"
-          onPress={() => router.push("/edit-profile")}
+          onPress={() => handleFieldEdit("username")}
         />
         <MenuItem
           label="Email"
           value="example@mail.com"
-          onPress={() => router.push("/edit-profile")}
+          onPress={() => handleFieldEdit("email")}
         />
         <MenuItem
           label="Mobile Number"
           value="+1 234 567 8900"
-          onPress={() => router.push("/edit-profile")}
+          onPress={() => handleFieldEdit("mobile")}
         />
         <MenuItem
           label="Password"
-          value="********"
-          onPress={() => router.push("/edit-profile")}
+          value="••••••••"
+          onPress={() => handleFieldEdit("password")}
         />
       </View>
     </ScreenContainer>
@@ -60,6 +67,9 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    backgroundColor: Colors.secondary,
+  },
   profileSection: {
     alignItems: "center",
     paddingVertical: 30,

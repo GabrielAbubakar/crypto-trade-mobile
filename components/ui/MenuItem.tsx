@@ -2,8 +2,8 @@ import { Colors } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import { BaseTouchableOpacity } from "./BaseTouchableOpacity";
 import { Body, Subtitle } from "./BaseText";
+import { BaseTouchableOpacity } from "./BaseTouchableOpacity";
 
 interface MenuItemProps {
   label: string;
@@ -29,7 +29,11 @@ export const MenuItem: React.FC<MenuItemProps> = ({
       <View style={styles.rightSection}>
         {value && <Body style={styles.value}>{value}</Body>}
         {showArrow && (
-          <Ionicons name="chevron-forward" size={18} color={Colors.textSecondary} />
+          <Ionicons
+            name="arrow-forward"
+            size={18}
+            color={Colors.textSecondary}
+          />
         )}
       </View>
     </BaseTouchableOpacity>
@@ -56,12 +60,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   iconContainer: {
-    width: 24,
+    width: 31,
+    height: 28,
+    borderRadius: 16,
+    backgroundColor: "#161C22",
     alignItems: "center",
     justifyContent: "center",
   },
   label: {
-    color: Colors.textPrimary,
+    color: "#C1C7CD",
   },
   value: {
     color: Colors.textSecondary,
