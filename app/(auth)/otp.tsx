@@ -2,6 +2,8 @@ import Background from "@/assets/images/auth-background.png";
 import SuccessCreated from "@/assets/images/success-created.svg";
 import { BaseButton, BaseText, ScreenContainer } from "@/components";
 import { Colors } from "@/constants";
+import { setCredentials, useAppDispatch, useRegisterMutation, useVerifyOTPMutation } from "@/store";
+import { formatPhoneNumber } from "@/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
@@ -17,8 +19,11 @@ import {
 } from "react-native";
 
 export default function OTPScreen() {
-  const { mobile } = useLocalSearchParams<{ mobile: string }>();
-  const [digits, setDigits] = useState(["", "", "", ""]);
+  const dispatch = useAppDispatch()
+  const { identifier, fullName, phone, password } = useLocalSearchParams<{ identifier: string, fullName?: string, phone?: string, password?: string }>();
+  const [verifyOtp, { isLoading: verifyOtpLoading, error: verifyOtpError }] = useVerifyOTPMutation();
+  const [register, { isLoading: registerLoading }] = useRegisterMutation();
+  const [digits, setDigits] = useState(["", "", "", "", "", ""]);
   const [timer, setTimer] = useState(30);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -27,8 +32,10 @@ export default function OTPScreen() {
   const ref2 = useRef<TextInput>(null);
   const ref3 = useRef<TextInput>(null);
   const ref4 = useRef<TextInput>(null);
+  const ref5 = useRef<TextInput>(null);
+  const ref6 = useRef<TextInput>(null);
 
-  const inputRefs = useMemo(() => [ref1, ref2, ref3, ref4], []);
+  const inputRefs = useMemo(() => [ref1, ref2, ref3, ref4, ref5, ref6], []);
 
   // Countdown timer for Resend Link
   useEffect(() => {
@@ -40,13 +47,13 @@ export default function OTPScreen() {
   }, [timer]);
 
   // Auto-focus first input box on mount
-  // useEffect(() => {
-  //   const focusTimeout = setTimeout(() => {
-  //     inputRefs[0].current?.focus();
-  //   }, 150);
+  useEffect(() => {
+    const focusTimeout = setTimeout(() => {
+      inputRefs[0].current?.focus();
+    }, 150);
 
-  //   return () => clearTimeout(focusTimeout);
-  // }, [inputRefs]);
+    return () => clearTimeout(focusTimeout);
+  }, [inputRefs]);
 
   const handleChangeText = (text: string, index: number) => {
     const cleaned = text.replace(/[^0-9]/g, "");
@@ -57,7 +64,7 @@ export default function OTPScreen() {
     if (error) setError("");
 
     // Move to next input if filled
-    if (cleaned && index < 3) {
+    if (cleaned && index < 5) {
       inputRefs[index + 1].current?.focus();
     }
   };
@@ -68,20 +75,43 @@ export default function OTPScreen() {
     }
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     const code = digits.join("");
-    if (code.length < 4) {
-      setError("Please enter the complete 4-digit code");
+    if (code.length < 5) {
+      setError("Please enter the complete 5-digit code");
       return;
     }
     setError("");
-    // Simulate verification and show success view
-    setIsSuccess(true);
+
+    try {
+      await verifyOtp({ email: identifier, code }).unwrap();
+
+      if (!fullName || !phone || !password) {
+        setError("Missing registration details.");
+        return;
+      }
+
+
+      const res = await register({
+        email: identifier,
+        fullName,
+        phone: formatPhoneNumber(phone),
+        password
+      }).unwrap();
+
+      dispatch(setCredentials(res));
+
+
+      setIsSuccess(true);
+    } catch (err: any) {
+      setError(err?.data?.message || "Verification failed");
+      console.error(err);
+    }
   };
 
   const handleResend = () => {
     setTimer(30);
-    setDigits(["", "", "", ""]);
+    setDigits(["", "", "", "", ""]);
     setError("");
     inputRefs[0].current?.focus();
   };
@@ -154,7 +184,7 @@ export default function OTPScreen() {
           <BaseText style={styles.subtitle}>
             Please type the code we sent to{"\n"}
             <BaseText style={styles.mobileText}>
-              {mobile || "+1 234 567 8900"}
+              {identifier || "+1 234 567 8900"}
             </BaseText>
           </BaseText>
 
@@ -196,6 +226,7 @@ export default function OTPScreen() {
         <BaseButton
           title="Continue"
           onPress={handleContinue}
+          isLoading={verifyOtpLoading || registerLoading}
           style={styles.submitButton}
         />
       </KeyboardAvoidingView>
@@ -237,17 +268,15 @@ const styles = StyleSheet.create({
   },
   mobileText: {
     color: Colors.primary,
-    fontWeight: "bold",
   },
   otpInputContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 10,
     marginBottom: 20,
   },
   otpInputBox: {
-    width: 64,
-    height: 64,
+    width: 50,
+    height: 50,
     backgroundColor: "#161C22",
     borderRadius: 15,
     justifyContent: "center",
@@ -280,7 +309,6 @@ const styles = StyleSheet.create({
   resendLinkText: {
     fontSize: 14,
     color: Colors.primary,
-    fontWeight: "bold",
   },
   submitButton: {
     height: 56,

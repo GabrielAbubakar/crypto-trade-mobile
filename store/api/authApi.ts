@@ -1,51 +1,53 @@
-import type { IAuthResponse, ILoginRequest, IRegisterRequest } from "@/types";
+import type { ILoginRequest, ILoginResponse, IRegisterRequest, IRegisterResponse } from "@/types";
 import { setCredentials } from "../slices/authSlice";
 import { baseApi } from "./baseApi";
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    login: builder.mutation<IAuthResponse, ILoginRequest>({
+    login: builder.mutation<ILoginResponse["data"], ILoginRequest>({
       query: (credentials) => ({
         url: "/auth/login",
         method: "POST",
         body: credentials,
       }),
-      transformResponse: (response: { data: IAuthResponse }) => response.data,
+      transformResponse: (response: ILoginResponse) => response.data,
       async onQueryStarted(_args, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          dispatch(setCredentials({ user: data.user, token: data.token }));
+          dispatch(setCredentials({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken }));
         } catch (err) {
           // Handle error if needed
         }
       },
     }),
-    register: builder.mutation<IAuthResponse, IRegisterRequest>({
+    register: builder.mutation<IRegisterResponse["data"], IRegisterRequest>({
       query: (credentials) => ({
         url: "/auth/register",
         method: "POST",
         body: credentials,
       }),
-      transformResponse: (response: { data: IAuthResponse }) => response.data,
+      transformResponse: (response: IRegisterResponse) => response.data,
       async onQueryStarted(_args, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          dispatch(setCredentials({ user: data.user, token: data.token }));
+          dispatch(setCredentials({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken }));
         } catch (err) {
           // Handle error if needed
         }
       },
     }),
     requestOTP: builder.mutation({
-      query: () => ({
+      query: (body: { email: string }) => ({
         url: "/auth/otp/request",
         method: "POST",
+        body,
       }),
     }),
     verifyOTP: builder.mutation({
-      query: () => ({
+      query: (body: { email: string, code: string }) => ({
         url: "/auth/otp/verify",
         method: "POST",
+        body,
       }),
     }),
     kycVerification: builder.mutation({

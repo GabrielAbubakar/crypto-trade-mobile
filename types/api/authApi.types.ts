@@ -9,26 +9,58 @@ export interface IUser {
   kycStatus: string;
   avatarUrl: string | null;
   watchlist: string[];
-  settings: {
-    language: string;
-    fiatCurrency: string;
-    theme: string;
-    priceAlerts: boolean;
-    pushNotifications: boolean;
-    biometricEnabled: boolean;
-  };
+  settings: IUserSettings;
   createdAt: string;
+}
+
+
+export interface ILoginResponse {
+  data: {
+    user: IUser;
+    accessToken: string;
+    token: string;
+    refreshToken: string;
+    tokenType: string;
+    expiresAt: string;
+    expiresInSeconds: number;
+    refreshTokenExpiresAt: string;
+  };
+  meta: {
+    requestId: string;
+  };
+}
+
+
+interface IUserSettings {
+  language: string;
+  fiatCurrency: string;
+  theme: "light" | "dark" | "system";
+  priceAlerts: boolean;
+  pushNotifications: boolean;
+  biometricEnabled: boolean;
 }
 
 // Endpoint Payloads
 export interface ILoginRequest {
-  email?: string;
-  password?: string;
+  loginType: "email" | "phone";
+  identifier: string;
+  password: string;
 }
 
-export interface IAuthResponse {
-  token: string;
-  user: IUser;
+export interface IRegisterResponse {
+  data: {
+    user: IUser;
+    accessToken: string;
+    token: string;
+    refreshToken: string;
+    tokenType: string;
+    expiresAt: string;
+    expiresInSeconds: number;
+    refreshTokenExpiresAt: string;
+  };
+  meta: {
+    requestId: string;
+  };
 }
 
 export interface IRegisterRequest {

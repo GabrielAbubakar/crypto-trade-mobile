@@ -1,7 +1,7 @@
 import Fingerprint from "@/assets/icons/auth/Fingerprint.svg";
 import { Colors } from "@/constants";
 import { signInSchema } from "@/schema";
-import { useLoginMutation } from "@/store";
+import { setCredentials, useAppDispatch, useLoginMutation } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
 import { useForm } from "@tanstack/react-form";
 import { router } from "expo-router";
@@ -12,6 +12,7 @@ import { SocialLoginSection } from "./SocialLoginSection";
 import type { AuthMethod } from "./types";
 
 export const SignInForm: React.FC = () => {
+  const dispatch = useAppDispatch()
   const [method, setMethod] = useState<AuthMethod>("email");
   const [showPassword, setShowPassword] = useState(false);
   const [signIn, { isLoading, error }] = useLoginMutation();
@@ -29,11 +30,26 @@ export const SignInForm: React.FC = () => {
     onSubmit: async ({ value, meta }) => {
       // console.log("Signing in...");
       try {
-        await signIn({
-          email: method === "email" ? value.email : value.phone,
+        const res = await signIn({
+          loginType: method,
+          identifier: method === "email" ? value.email : value.phone,
           password: value.password,
         }).unwrap();
-        router.replace("/(auth)/otp");
+
+        // router.push({
+        //   pathname: "/(auth)/otp",
+        //   params: {
+        //     from: "signin",
+        //     method: method,
+        //     identifier: method === "email" ? value.email : value.phone,
+        //   },
+        // });
+
+        // store tokens in redux state - to be made available in the base API for subsequent API calls.
+        // dispatch actions to store tokens 
+        dispatch(setCredentials(res));
+
+        router.replace("/(tabs)/home");
       } catch (error) {
         console.error("Error signing in:", error);
       }
@@ -82,10 +98,10 @@ export const SignInForm: React.FC = () => {
               error={
                 field.state.meta.isTouched && field.state.meta.errors.length > 0
                   ? field.state.meta.errors
-                      .map((err: any) =>
-                        typeof err === "string" ? err : err.message,
-                      )
-                      .join(", ")
+                    .map((err: any) =>
+                      typeof err === "string" ? err : err.message,
+                    )
+                    .join(", ")
                   : undefined
               }
             />
@@ -117,10 +133,10 @@ export const SignInForm: React.FC = () => {
               error={
                 field.state.meta.isTouched && field.state.meta.errors.length > 0
                   ? field.state.meta.errors
-                      .map((err: any) =>
-                        typeof err === "string" ? err : err.message,
-                      )
-                      .join(", ")
+                    .map((err: any) =>
+                      typeof err === "string" ? err : err.message,
+                    )
+                    .join(", ")
                   : undefined
               }
             />
