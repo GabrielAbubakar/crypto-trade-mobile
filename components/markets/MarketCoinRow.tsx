@@ -1,7 +1,7 @@
+import type { CoinMarketItem } from "@/constants";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { BaseText, Sparkline } from "../ui";
-import type { CoinMarketItem } from "@/constants";
 
 interface MarketCoinRowProps {
   coin: CoinMarketItem;
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 8,
+    paddingVertical: 16,
   },
   leftCol: {
     flexDirection: "row",
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   },
   coinName: {
     color: "#FFFFFF",
-    fontSize: 16,
+    fontSize: 14,
     marginBottom: 2,
   },
   coinTicker: {
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   },
   coinPrice: {
     color: "#FFFFFF",
-    fontSize: 16,
+    fontSize: 14,
     marginBottom: 2,
   },
   coinChange: {

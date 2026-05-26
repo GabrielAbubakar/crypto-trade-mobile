@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import { StyleSheet, View, TouchableOpacity } from "react-native";
-import { ScreenContainer, BaseText, UserHeader, MarketCoinRow } from "@/components";
-import { Colors, MARKET_TABS, initialCoinsData } from "@/constants";
-import SearchIcon from "@/assets/icons/main/search.svg";
-import QrIcon from "@/assets/icons/main/scanner.svg";
 import NotificationIcon from "@/assets/icons/main/notification.svg";
+import QrIcon from "@/assets/icons/main/scanner.svg";
+import SearchIcon from "@/assets/icons/main/search.svg";
 import type { HeaderButtonProps } from "@/components";
+import { BaseText, MarketTabsView, ScreenContainer, UserHeader } from "@/components";
+import { Colors } from "@/constants";
 import { Feather } from "@expo/vector-icons";
+import React from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 const headerButtons: HeaderButtonProps[] = [
   {
@@ -24,43 +24,12 @@ const headerButtons: HeaderButtonProps[] = [
 ];
 
 export default function MarketsScreen() {
-  const [selectedTab, setSelectedTab] = useState<string>("Spot");
-
   return (
     <ScreenContainer withPadding={false} scrollable style={styles.container}>
       {/* Header */}
       <UserHeader userButtons={headerButtons} />
 
-      {/* Tabs Row */}
-      <View style={styles.tabsContainer}>
-        <View style={styles.tabsBackground}>
-          {MARKET_TABS.map((tab) => {
-            const isActive = selectedTab === tab;
-            return (
-              <TouchableOpacity
-                key={tab}
-                activeOpacity={0.8}
-                onPress={() => setSelectedTab(tab)}
-                style={[styles.tabButton, isActive && styles.tabButtonActive]}
-              >
-                <BaseText
-                  variant={isActive ? "bold" : "regular"}
-                  style={[styles.tabText, isActive && styles.tabTextActive]}
-                >
-                  {tab}
-                </BaseText>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </View>
-
-      {/* Coins Market List */}
-      <View style={styles.listContainer}>
-        {initialCoinsData.map((coin) => (
-          <MarketCoinRow key={coin.id} coin={coin} />
-        ))}
-      </View>
+      <MarketTabsView />
 
       {/* Add Favorite Button */}
       <View style={styles.actionContainer}>
@@ -76,38 +45,6 @@ export default function MarketsScreen() {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.secondary,
-  },
-  tabsContainer: {
-    paddingHorizontal: 20,
-    marginTop: 16,
-    marginBottom: 20,
-  },
-  tabsBackground: {
-    flexDirection: "row",
-    backgroundColor: "rgba(255, 255, 255, 0.04)",
-    borderRadius: 14,
-    padding: 4,
-    justifyContent: "space-between",
-  },
-  tabButton: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: "center",
-    borderRadius: 10,
-  },
-  tabButtonActive: {
-    backgroundColor: "#2E3A45",
-  },
-  tabText: {
-    color: "#777777",
-    fontSize: 14,
-  },
-  tabTextActive: {
-    color: "#FFFFFF",
-  },
-  listContainer: {
-    paddingHorizontal: 20,
-    gap: 16,
   },
   actionContainer: {
     paddingHorizontal: 20,

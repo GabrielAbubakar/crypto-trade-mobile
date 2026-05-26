@@ -1,8 +1,8 @@
-import React from "react";
-import { StyleSheet, View, TouchableOpacity } from "react-native";
-import { BaseText } from "../ui";
-import { Feather } from "@expo/vector-icons";
 import type { QuickActionItem } from "@/constants";
+import { Feather } from "@expo/vector-icons";
+import React from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { BaseText } from "../ui";
 
 interface ActivityQuickActionProps {
   action: QuickActionItem;
@@ -12,12 +12,12 @@ export const ActivityQuickAction: React.FC<ActivityQuickActionProps> = ({
   action,
 }) => {
   return (
-    <TouchableOpacity activeOpacity={0.8} style={styles.actionRow}>
+    <TouchableOpacity activeOpacity={0.6} style={styles.actionRow}>
       <View style={styles.actionLeft}>
         <View style={styles.actionIconBg}>
           <action.Icon width={20} height={20} />
         </View>
-        <BaseText variant="bold" style={styles.actionTitle}>
+        <BaseText size="sm" style={styles.actionTitle}>
           {action.title}
         </BaseText>
       </View>
@@ -35,10 +35,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "rgba(255, 255, 255, 0.03)",
-    borderRadius: 16,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 10,
   },
   actionLeft: {
     flexDirection: "row",
@@ -48,13 +46,10 @@ const styles = StyleSheet.create({
   actionIconBg: {
     width: 36,
     height: 36,
-    borderRadius: 18,
-    backgroundColor: "rgba(255, 255, 255, 0.04)",
     alignItems: "center",
     justifyContent: "center",
   },
   actionTitle: {
-    color: "#FFFFFF",
-    fontSize: 15,
+    color: "#C1C7CD",
   },
 });

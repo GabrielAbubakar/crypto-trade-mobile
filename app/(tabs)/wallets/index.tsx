@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { StyleSheet, View, TouchableOpacity } from "react-native";
-import { ScreenContainer, BaseText, WalletAssetRow } from "@/components";
+import { BaseText, ScreenContainer, WalletAssetRow } from "@/components";
 import { Colors, initialAssetsData } from "@/constants";
 import { Feather } from "@expo/vector-icons";
+import React, { useState } from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 export default function WalletsScreen() {
   const [balanceVisible, setBalanceVisible] = useState(true);
@@ -42,19 +42,19 @@ export default function WalletsScreen() {
       {/* Action Buttons (Deposit, Withdraw, Transfer) */}
       <View style={styles.actionsRow}>
         <TouchableOpacity activeOpacity={0.8} style={styles.actionBtnActive}>
-          <BaseText variant="bold" style={styles.actionBtnTextActive}>
+          <BaseText style={styles.actionBtnTextActive}>
             Deposit
           </BaseText>
         </TouchableOpacity>
 
         <TouchableOpacity activeOpacity={0.8} style={styles.actionBtnInactive}>
-          <BaseText variant="bold" style={styles.actionBtnTextInactive}>
+          <BaseText style={styles.actionBtnTextInactive}>
             Withdraw
           </BaseText>
         </TouchableOpacity>
 
         <TouchableOpacity activeOpacity={0.8} style={styles.actionBtnInactive}>
-          <BaseText variant="bold" style={styles.actionBtnTextInactive}>
+          <BaseText style={styles.actionBtnTextInactive}>
             Transfer
           </BaseText>
         </TouchableOpacity>

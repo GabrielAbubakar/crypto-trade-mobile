@@ -10,9 +10,10 @@ import {
   UserHeader,
 } from "@/components";
 import { Colors, INITIAL_NOTIFICATIONS } from "@/constants";
-import { useGetUserNotificationsQuery } from "@/store";
+import { useGetNotificationsQuery } from "@/store";
 import React, { useState } from "react";
 import { FlatList, StyleSheet, View } from "react-native";
+import { showToast } from "@/utils";
 
 const headerButtons = [
   {
@@ -41,19 +42,25 @@ export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState<NotificationItem[]>(
     INITIAL_NOTIFICATIONS,
   );
-  const { data, isLoading } = useGetUserNotificationsQuery("");
+  const { data, isLoading, error } = useGetNotificationsQuery();
+
+  console.log(error)
 
   const handleMarkAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    showToast("success", "All notifications marked as read.");
   };
 
   const handleClearAll = () => {
     setNotifications([]);
+    showToast("info", "All notifications cleared.");
   };
 
   const handleRestoreDefaults = () => {
     setNotifications(INITIAL_NOTIFICATIONS);
+    showToast("success", "Default notifications restored.");
   };
+
 
   return (
     <ScreenContainer withPadding={false} scrollable={false}>

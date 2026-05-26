@@ -30,6 +30,7 @@ const headerButtons: HeaderButtonProps[] = [
 ];
 
 export default function HomeScreen() {
+
   return (
     <ScreenContainer withPadding={false} scrollable>
       <UserHeader userButtons={headerButtons} />

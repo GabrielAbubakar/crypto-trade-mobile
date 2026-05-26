@@ -8,7 +8,7 @@ import {
 } from "@/components";
 import { activitiesData, Colors, quickActions } from "@/constants";
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { FlatList, StyleSheet, View } from "react-native";
 
 // Import Main Header Icons
 import NotificationIcon from "@/assets/icons/main/notification.svg";
@@ -32,7 +32,7 @@ const headerButtons: HeaderButtonProps[] = [
 
 export default function ActivityScreen() {
   return (
-    <ScreenContainer withPadding={false} scrollable style={styles.container}>
+    <ScreenContainer withPadding={false} style={styles.container}>
       {/* Header */}
       <UserHeader userButtons={headerButtons} />
 
@@ -51,11 +51,13 @@ export default function ActivityScreen() {
       </View>
 
       {/* Recent Activity List */}
-      <View style={styles.activitiesContainer}>
-        {activitiesData.map((activity) => (
-          <ActivityItemRow key={activity.id} activity={activity} />
-        ))}
-      </View>
+      <FlatList
+        data={activitiesData}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <ActivityItemRow activity={item} />}
+        contentContainerStyle={styles.activitiesContainer}
+        showsVerticalScrollIndicator={false}
+      />
     </ScreenContainer>
   );
 }
@@ -65,9 +67,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.secondary,
   },
   quickActionsContainer: {
-    paddingHorizontal: 20,
+    marginHorizontal: 20,
     marginTop: 16,
-    gap: 12,
+    gap: 0,
+    borderRadius: 16,
+    backgroundColor: "#161C22"
   },
   sectionHeader: {
     paddingHorizontal: 20,

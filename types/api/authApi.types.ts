@@ -31,7 +31,7 @@ export interface ILoginResponse {
 }
 
 
-interface IUserSettings {
+export interface IUserSettings {
   language: string;
   fiatCurrency: string;
   theme: "light" | "dark" | "system";
