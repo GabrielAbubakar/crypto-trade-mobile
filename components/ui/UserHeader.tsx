@@ -63,9 +63,9 @@ const styles = StyleSheet.create({
     boxShadow: [
       {
         offsetX: 0,
-        offsetY: -10,
+        offsetY: 5,
         blurRadius: 15,
-        spreadDistance: 10,
+        spreadDistance: 1,
         color: "rgba(22, 28, 34, 0.8)",
       },
     ],
