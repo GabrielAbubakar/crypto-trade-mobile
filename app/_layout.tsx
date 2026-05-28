@@ -1,6 +1,8 @@
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { toastConfig } from "@/config";
 import { Colors } from "@/constants";
 import { persistor, store } from "@/store";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -29,22 +31,26 @@ export default function RootLayout() {
   }
   return (
     // Redux Provider with persisted state rehydration
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <Stack
-          initialRouteName="bootstrap"
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: Colors.secondary },
-          }}
-        >
-          <Stack.Screen name="bootstrap" />
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(onboarding)" />
-        </Stack>
-        <Toast config={toastConfig} />
-      </PersistGate>
-    </Provider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <BottomSheetModalProvider>
+            <Stack
+              initialRouteName="bootstrap"
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: Colors.secondary },
+              }}
+            >
+              <Stack.Screen name="bootstrap" />
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(onboarding)" />
+            </Stack>
+            <Toast config={toastConfig} />
+          </BottomSheetModalProvider>
+        </PersistGate>
+      </Provider>
+    </GestureHandlerRootView>
   );
 }

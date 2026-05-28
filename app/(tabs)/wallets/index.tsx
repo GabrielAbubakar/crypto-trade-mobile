@@ -1,29 +1,98 @@
-import { BaseText, ScreenContainer, WalletAssetRow } from "@/components";
-import { Colors, initialAssetsData } from "@/constants";
+import {
+  BaseText,
+  ScreenContainer,
+  Skeleton,
+  WalletTransactionRow,
+  WalletTransactionRowSkeleton,
+} from "@/components";
+import { Colors } from "@/constants";
+import { useGetWalletBalancesQuery, useGetWalletTransactionsQuery } from "@/store";
 import { Feather } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+function EmptyComponent() {
+  return (
+    <View style={styles.emptyContainer}>
+      <BaseText variant="bold" style={styles.emptyTitle}>
+        No transactions yet
+      </BaseText>
+      <BaseText style={styles.emptySubtitle}>
+        Your transaction history will show up here once you make deposits or withdrawals.
+      </BaseText>
+    </View>
+  );
+}
 
 export default function WalletsScreen() {
   const [balanceVisible, setBalanceVisible] = useState(true);
+  const [activeAction, setActiveAction] = useState<
+    "deposit" | "withdraw" | "transfer"
+  >("deposit");
+
+  const {
+    data: walletBalance,
+    isFetching: isFetchingBalances,
+    refetch: refetchBalances,
+  } = useGetWalletBalancesQuery();
+
+  const {
+    data: walletTransactions,
+    isLoading: isLoadingTransactions,
+    isFetching: isFetchingTransactions,
+    refetch: refetchTransactions,
+  } = useGetWalletTransactionsQuery();
 
   const toggleBalance = () => {
     setBalanceVisible((prev) => !prev);
   };
 
+  const handleActionPress = (action: "deposit" | "withdraw" | "transfer") => {
+    setActiveAction(action);
+  };
+
+  function renderFunction({ item }: { item: any }) {
+    return (
+      isLoadingTransactions ? (
+        <WalletTransactionRowSkeleton />
+      ) : (
+        <WalletTransactionRow transaction={item as any} />
+      )
+    )
+  }
+
   return (
-    <ScreenContainer withPadding={false} scrollable style={styles.container}>
+    <ScreenContainer withPadding={false} style={styles.container}>
       {/* Balance Section */}
       <View style={styles.balanceContainer}>
         <View style={styles.balanceHeader}>
           <View>
             <BaseText style={styles.balanceLabel}>Current Balance</BaseText>
-            <BaseText variant="bold" style={styles.balanceAmount}>
-              {balanceVisible ? "40,059.83" : "••••••"}
-            </BaseText>
-            <BaseText style={styles.balanceSubtext}>
-              {balanceVisible ? "$468,554.23" : "$ ••••••••"}
-            </BaseText>
+            {isFetchingBalances ? (
+              <>
+                <Skeleton width={100} height={15} borderRadius={0} style={{ marginBottom: 10 }} />
+                <Skeleton width={70} height={10} borderRadius={0} />
+              </>
+            ) : (
+              <>
+                <BaseText variant="bold" style={styles.balanceAmount}>
+                  {walletBalance?.portfolioValue.toLocaleString('en-US', {
+                    style: "currency",
+                    currency: walletBalance?.portfolioCurrency,
+                    maximumFractionDigits: 0,
+                  })}
+                </BaseText>
+                <BaseText style={styles.balanceSubtext}>
+                  {walletBalance?.portfolioValueUsd.toLocaleString('en-US')}
+                </BaseText>
+              </>
+            )}
           </View>
           <TouchableOpacity
             activeOpacity={0.7}
@@ -41,35 +110,94 @@ export default function WalletsScreen() {
 
       {/* Action Buttons (Deposit, Withdraw, Transfer) */}
       <View style={styles.actionsRow}>
-        <TouchableOpacity activeOpacity={0.8} style={styles.actionBtnActive}>
-          <BaseText style={styles.actionBtnTextActive}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => handleActionPress("deposit")}
+          style={
+            activeAction === "deposit"
+              ? styles.actionBtnActive
+              : styles.actionBtnInactive
+          }
+        >
+          <BaseText
+            style={
+              activeAction === "deposit"
+                ? styles.actionBtnTextActive
+                : styles.actionBtnTextInactive
+            }
+          >
             Deposit
           </BaseText>
         </TouchableOpacity>
 
-        <TouchableOpacity activeOpacity={0.8} style={styles.actionBtnInactive}>
-          <BaseText style={styles.actionBtnTextInactive}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => handleActionPress("withdraw")}
+          style={
+            activeAction === "withdraw"
+              ? styles.actionBtnActive
+              : styles.actionBtnInactive
+          }
+        >
+          <BaseText
+            style={
+              activeAction === "withdraw"
+                ? styles.actionBtnTextActive
+                : styles.actionBtnTextInactive
+            }
+          >
             Withdraw
           </BaseText>
         </TouchableOpacity>
 
-        <TouchableOpacity activeOpacity={0.8} style={styles.actionBtnInactive}>
-          <BaseText style={styles.actionBtnTextInactive}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => handleActionPress("transfer")}
+          style={
+            activeAction === "transfer"
+              ? styles.actionBtnActive
+              : styles.actionBtnInactive
+          }
+        >
+          <BaseText
+            style={
+              activeAction === "transfer"
+                ? styles.actionBtnTextActive
+                : styles.actionBtnTextInactive
+            }
+          >
             Transfer
           </BaseText>
         </TouchableOpacity>
       </View>
 
-      {/* Crypto Assets List */}
-      <View style={styles.assetsContainer}>
-        {initialAssetsData.map((asset) => (
-          <WalletAssetRow
-            key={asset.id}
-            asset={asset}
-            balanceVisible={balanceVisible}
+      <FlatList
+        data={
+          isLoadingTransactions
+            ? Array.from({ length: 5 }).map((_, index) => ({
+              id: `skeleton-${index}`,
+            }))
+            : walletTransactions?.data
+        }
+        keyExtractor={(item) => item.id}
+        renderItem={renderFunction}
+        ListEmptyComponent={EmptyComponent}
+        ItemSeparatorComponent={() => <View style={{ height: 20 }} />}
+        style={styles.list}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.listContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={isFetchingBalances || isFetchingTransactions}
+            onRefresh={() => {
+              refetchBalances();
+              refetchTransactions();
+            }}
+            tintColor={Colors.primary}
+            colors={[Colors.primary]}
           />
-        ))}
-      </View>
+        }
+      />
     </ScreenContainer>
   );
 }
@@ -137,9 +265,29 @@ const styles = StyleSheet.create({
     color: "#777777",
     fontSize: 14,
   },
-  assetsContainer: {
+  list: {
+    flex: 1,
+  },
+  listContent: {
     paddingHorizontal: 20,
-    gap: 20,
     paddingBottom: 140, // Space for floating bottom tab
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  emptyTitle: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  emptySubtitle: {
+    color: "#777777",
+    fontSize: 14,
+    textAlign: "center",
   },
 });

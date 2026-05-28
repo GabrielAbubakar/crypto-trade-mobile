@@ -2,7 +2,12 @@ import NotificationIcon from "@/assets/icons/main/notification.svg";
 import QrIcon from "@/assets/icons/main/scanner.svg";
 import SearchIcon from "@/assets/icons/main/search.svg";
 import type { HeaderButtonProps } from "@/components";
-import { BaseText, MarketTabsView, ScreenContainer, UserHeader } from "@/components";
+import {
+  BaseText,
+  MarketTabsView,
+  ScreenContainer,
+  UserHeader,
+} from "@/components";
 import { Colors } from "@/constants";
 import { Feather } from "@expo/vector-icons";
 import React from "react";

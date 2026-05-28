@@ -15,7 +15,7 @@ import { Colors } from "@/constants";
 import { useGetNotificationsQuery } from "@/store";
 import { showToast } from "@/utils";
 import React from "react";
-import { FlatList, StyleSheet, View } from "react-native";
+import { Dimensions, FlatList, RefreshControl, StyleSheet, View } from "react-native";
 
 const headerButtons = [
   {
@@ -32,43 +32,53 @@ const headerButtons = [
   },
 ] as const;
 
-// interface NotificationItem {
-//   id: string;
-//   title: string;
-//   subtitle: string;
-//   type: "success" | "pending" | "warning";
-//   read: boolean;
-// }
+function EmptyComponent() {
+  return (
+    <View style={styles.emptyContainer}>
+      <View style={styles.illustrationWrapper}>
+        <EmptyIllustration width={180} height={180} />
+      </View>
+      <BaseText
+        variant="bold"
+        size="md"
+        color="#FFFFFF"
+        textAlign="center"
+        style={styles.emptyTitle}
+      >
+        You have no notifications
+      </BaseText>
+      <BaseText
+        size="sm"
+        color="#777777"
+        textAlign="center"
+        style={styles.emptySubtitle}
+      >
+        lorem ipsum lorem ipsum
+      </BaseText>
+    </View>
+  )
+}
 
 export default function NotificationsScreen() {
-  // const [notifications, setNotifications] = useState<NotificationItem[]>(
-  //   INITIAL_NOTIFICATIONS,
-  // );
-  const { data, isLoading, error } = useGetNotificationsQuery();
-
-  // useEffect(() => {
-  //   if (data) {
-  //     console.log("Notifications data:", data);
-  //   }
-
-  //   if (error) {
-  //     console.error("Notifications error:", error);
-  //   }
-  // }, [data, error]);
+  const { data, isLoading, error, refetch, isFetching } = useGetNotificationsQuery();
 
   const handleMarkAllRead = () => {
-    // setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     showToast("success", "All notifications marked as read.");
   };
 
   const handleClearAll = () => {
-    // setNotifications([]);
     showToast("info", "All notifications cleared.");
   };
 
   const handleRestoreDefaults = () => {
-    // setNotifications(INITIAL_NOTIFICATIONS);
     showToast("success", "Default notifications restored.");
+  };
+
+  const renderItem = ({ item, index }: { item: any; index: number }) => {
+    if (isLoading) {
+      return <NotificationItemSkeleton key={index} />;
+    }
+    return <NotificationItem key={item.id} {...item} />;
   };
 
   return (
@@ -111,46 +121,17 @@ export default function NotificationsScreen() {
       </View>
 
       {/* Main Content Area */}
-      {isLoading ? (
-        <FlatList
-          data={Array.from({ length: 5 })}
-          keyExtractor={(_, index) => `skeleton-${index}`}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContainer}
-          renderItem={() => <NotificationItemSkeleton />}
-        />
-      ) : data?.data?.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <View style={styles.illustrationWrapper}>
-            <EmptyIllustration width={180} height={180} />
-          </View>
-          <BaseText
-            variant="bold"
-            size="md"
-            color="#FFFFFF"
-            textAlign="center"
-            style={styles.emptyTitle}
-          >
-            You have no notifications
-          </BaseText>
-          <BaseText
-            size="sm"
-            color="#777777"
-            textAlign="center"
-            style={styles.emptySubtitle}
-          >
-            lorem ipsum lorem ipsum
-          </BaseText>
-        </View>
-      ) : (
-        <FlatList
-          data={data?.data}
-          keyExtractor={(item) => item.id}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContainer}
-          renderItem={({ item }) => <NotificationItem {...item} />}
-        />
-      )}
+      <FlatList
+        data={isLoading ? Array.from({ length: 5 }).map((_, index) => ({ id: index })) : data?.data}
+        ListEmptyComponent={EmptyComponent}
+        keyExtractor={(item) => item.id}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContainer}
+        renderItem={renderItem}
+        refreshControl={
+          <RefreshControl refreshing={isFetching} onRefresh={refetch} />
+        }
+      />
     </ScreenContainer>
   );
 }
@@ -186,6 +167,7 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
+    minHeight: Dimensions.get("window").height * 0.65,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 40,

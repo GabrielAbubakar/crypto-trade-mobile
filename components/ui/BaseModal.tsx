@@ -1,6 +1,7 @@
 import { Colors } from "@/constants";
 import React from "react";
-import { Modal, Pressable, StyleSheet, View, ViewStyle } from "react-native";
+import type { ViewStyle } from "react-native";
+import { Modal, Pressable, StyleSheet, View } from "react-native";
 
 interface BaseModalProps {
   visible: boolean;

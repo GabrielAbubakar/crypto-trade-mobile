@@ -1,9 +1,9 @@
-import { Sparkline } from "@/components";
 import type { IMarketAsset } from "@/types";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { SvgUri } from "react-native-svg";
 import { BaseText } from "../ui/BaseText";
+import { Sparkline } from "../ui/Sparkline";
 
 export const CoinCard: React.FC<IMarketAsset> = ({
   priceUsd,

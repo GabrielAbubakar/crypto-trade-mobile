@@ -1,17 +1,11 @@
-import { Colors, FontSize } from "@/constants";
+import type { FontSize } from "@/constants";
+import { Colors } from "@/constants";
 import React from "react";
-import {
-  ActivityIndicator,
-  StyleSheet,
-  TextStyle,
-  View,
-  ViewStyle,
-} from "react-native";
+import type { TextStyle, ViewStyle } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { BaseText } from "./BaseText";
-import {
-  BaseTouchableOpacity,
-  CustomTouchableOpacityProps,
-} from "./BaseTouchableOpacity";
+import type { CustomTouchableOpacityProps } from "./BaseTouchableOpacity";
+import { BaseTouchableOpacity } from "./BaseTouchableOpacity";
 
 type ButtonVariant = "primary" | "secondary" | "outline" | "text" | "cancel";
 type ButtonSize = "small" | "medium" | "large";

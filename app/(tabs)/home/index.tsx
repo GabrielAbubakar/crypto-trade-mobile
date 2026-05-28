@@ -14,6 +14,7 @@ import {
 import { useGetMarketAssetsQuery, useGetTrendingAssetsQuery } from "@/store";
 import React from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
+import { RefreshControl } from "react-native-gesture-handler";
 
 const headerButtons: HeaderButtonProps[] = [
   {
@@ -31,10 +32,21 @@ const headerButtons: HeaderButtonProps[] = [
 ];
 
 export default function HomeScreen() {
-  const { data: trendingData, isLoading: trendingIsLoading } =
-    useGetTrendingAssetsQuery();
-  const { data: marketData, isLoading: marketIsLoading } =
-    useGetMarketAssetsQuery();
+  const {
+    data: trendingData,
+    isFetching: trendingIsLoading,
+    refetch: refetchTrending,
+  } = useGetTrendingAssetsQuery();
+  const {
+    data: marketData,
+    isFetching: marketIsLoading,
+    refetch: refetchMarket,
+  } = useGetMarketAssetsQuery();
+
+  function handleRefresh() {
+    refetchTrending();
+    refetchMarket();
+  }
 
   // useEffect(() => {
   //   if (trendingData) {
@@ -44,13 +56,22 @@ export default function HomeScreen() {
   // }, [trendingData, marketData]);
 
   return (
-    <ScreenContainer withPadding={false} scrollable>
+    <ScreenContainer withPadding={false}>
       <UserHeader userButtons={headerButtons} />
 
       <GridMenu />
 
       {/* Main light background containing actions and listings */}
-      <View style={styles.lightBackground}>
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={trendingIsLoading || marketIsLoading}
+            onRefresh={handleRefresh}
+          />
+        }
+        contentContainerStyle={{ paddingTop: 24, paddingBottom: 100 }}
+        style={styles.lightBackground}
+      >
         {/* Action Menu (P2P & Card buttons) */}
         <ActionMenu />
 
@@ -67,11 +88,11 @@ export default function HomeScreen() {
           >
             {trendingIsLoading || marketIsLoading
               ? Array.from({ length: 3 }).map((_, index) => (
-                  <CoinCardSkeleton key={`skeleton-${index}`} />
-                ))
+                <CoinCardSkeleton key={`skeleton-${index}`} />
+              ))
               : marketData?.data.map((coin) => (
-                  <CoinCard key={coin.id} {...coin} />
-                ))}
+                <CoinCard key={coin.id} {...coin} />
+              ))}
           </ScrollView>
         </View>
 
@@ -88,14 +109,14 @@ export default function HomeScreen() {
           >
             {trendingIsLoading || marketIsLoading
               ? Array.from({ length: 3 }).map((_, index) => (
-                  <CoinCardSkeleton key={`skeleton-${index}`} />
-                ))
+                <CoinCardSkeleton key={`skeleton-${index}`} />
+              ))
               : trendingData?.data.map((coin) => (
-                  <CoinCard key={coin.id} {...coin} />
-                ))}
+                <CoinCard key={coin.id} {...coin} />
+              ))}
           </ScrollView>
         </View>
-      </View>
+      </ScrollView>
     </ScreenContainer>
   );
 }
@@ -104,8 +125,7 @@ const styles = StyleSheet.create({
   lightBackground: {
     backgroundColor: "#FFFFFF",
     flex: 1,
-    paddingTop: 24,
-    paddingBottom: 150, // Space for the floating bottom tab bar
+    // Space for the floating bottom tab bar
   },
   sectionContainer: {
     marginBottom: 28,

@@ -19,7 +19,7 @@ import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 export default function MenuScreen() {
   const router = useRouter();
@@ -35,7 +35,7 @@ export default function MenuScreen() {
       >
         <BackHeader title="Menu" />
         {isLoading ? (
-          <Body>Loading profile...</Body>
+          <ActivityIndicator size="large" color={Colors.primary} />
         ) : (
           <View style={styles.profileSection}>
             <BaseTouchableOpacity

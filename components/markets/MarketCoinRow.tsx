@@ -1,49 +1,51 @@
-import type { CoinMarketItem } from "@/constants";
+import type { IMarketAsset } from "@/types";
 import React from "react";
 import { StyleSheet, View } from "react-native";
+import { SvgUri } from "react-native-svg";
 import { BaseText, Sparkline } from "../ui";
 
-interface MarketCoinRowProps {
-  coin: CoinMarketItem;
-}
-
-export const MarketCoinRow: React.FC<MarketCoinRowProps> = ({ coin }) => {
-  const trendColor = coin.isPositive ? "#5ED5A8" : "#FF4D4D";
+export const MarketCoinRow: React.FC<IMarketAsset> = ({
+  priceUsd,
+  iconUrl,
+  change24h,
+  sparkline,
+  name,
+  symbol,
+}) => {
+  const trendColor = change24h >= 0 ? "#5ED5A8" : "#FF4D4D";
+  const resolvedUrl = iconUrl?.startsWith("http")
+    ? iconUrl
+    : process.env.EXPO_PUBLIC_API_URL
+      ? `${process.env.EXPO_PUBLIC_API_URL}${iconUrl}`
+      : iconUrl;
 
   return (
     <View style={styles.coinRow}>
       {/* Left Column: Icon & Names */}
       <View style={styles.leftCol}>
         <View style={styles.iconContainer}>
-          <coin.Icon width={32} height={32} />
+          <SvgUri width={"100%"} height={"100%"} uri={resolvedUrl} />
         </View>
         <View style={styles.nameStack}>
           <BaseText variant="bold" style={styles.coinName}>
-            {coin.name}
+            {name}
           </BaseText>
-          <BaseText style={styles.coinTicker}>
-            {coin.ticker}
-          </BaseText>
+          <BaseText style={styles.coinTicker}>{symbol}</BaseText>
         </View>
       </View>
 
       {/* Middle Column: Sparkline chart */}
       <View style={styles.sparkCol}>
-        <Sparkline
-          data={coin.sparklineData}
-          color={trendColor}
-          width={90}
-          height={32}
-        />
+        <Sparkline data={sparkline} color={trendColor} width={90} height={32} />
       </View>
 
       {/* Right Column: Price & Change percentage */}
       <View style={styles.rightCol}>
         <BaseText variant="bold" style={styles.coinPrice}>
-          {coin.price}
+          {priceUsd}
         </BaseText>
         <BaseText style={[styles.coinChange, { color: trendColor }]}>
-          {coin.change}
+          {change24h}%
         </BaseText>
       </View>
     </View>
@@ -55,6 +57,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: 12,
     paddingVertical: 16,
   },
   leftCol: {

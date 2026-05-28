@@ -1,14 +1,30 @@
 import { BaseText } from "@/components/ui";
-import { MARKET_TABS, initialCoinsData } from "@/constants";
+import { MARKET_TABS } from "@/constants";
+import { useGetTrendingAssetsQuery } from "@/store";
 import React, { useRef, useState } from "react";
-import { Dimensions, FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  Dimensions,
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  TouchableOpacity,
+  View
+} from "react-native";
 import { MarketCoinRow } from "./MarketCoinRow";
+import { MarketCoinRowSkeleton } from "./MarketCoinRowSkeleton";
 
 const { width } = Dimensions.get("window");
+
+function EmptyComponent() {
+  return (
+    <BaseText>No data Available</BaseText>
+  )
+}
 
 export const MarketTabsView = () => {
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
+  const { data: trendingData, isLoading, isFetching, refetch } = useGetTrendingAssetsQuery();
 
   const handleTabPress = (index: number) => {
     setSelectedTabIndex(index);
@@ -23,17 +39,26 @@ export const MarketTabsView = () => {
   };
 
   const renderCoinItem = ({ item }: { item: any }) => (
-    <MarketCoinRow coin={item} />
+    isLoading ? <MarketCoinRowSkeleton key={item.id} /> : <MarketCoinRow key={item.id} {...item} />
   );
 
-  const renderPage = ({ item: tab }: { item: string }) => {
+  const renderPage = () => {
     return (
-      <View style={{ width }}>
+      <View style={{ width, position: "relative" }}>
+        {/* {isFetching && <ActivityIndicator style={{}} color={Colors.primary} size="small" />} */}
         <FlatList
-          data={initialCoinsData}
+          data={isLoading ? Array.from({ length: 5 }).map((_, index) => ({ id: index })) : trendingData?.data}
           keyExtractor={(item) => item.id}
-          ItemSeparatorComponent={() => <View style={{ width: "100%", height: 1, backgroundColor: "#ffffff06" }} />}
+          ListEmptyComponent={EmptyComponent}
+          ItemSeparatorComponent={() => (
+            <View
+              style={{ width: "100%", height: 1, backgroundColor: "#ffffff06" }}
+            />
+          )}
           renderItem={renderCoinItem}
+          refreshControl={
+            <RefreshControl refreshing={isFetching} onRefresh={refetch} />
+          }
           contentContainerStyle={styles.listContainer}
           scrollEnabled={false}
         />
@@ -56,7 +81,6 @@ export const MarketTabsView = () => {
                 style={[styles.tabButton, isActive && styles.tabButtonActive]}
               >
                 <BaseText
-
                   style={[styles.tabText, isActive && styles.tabTextActive]}
                 >
                   {tab}

@@ -1,14 +1,8 @@
-import {
-  Colors,
-  FontFamily,
-  FontFamilyKey,
-  FontSize,
-  FontSizeKey,
-  Typography,
-  TypographyPreset,
-} from "@/constants";
+import type { FontFamilyKey, FontSizeKey, TypographyPreset } from "@/constants";
+import { Colors, FontFamily, FontSize, Typography } from "@/constants";
 import React from "react";
-import { StyleSheet, Text, TextProps, useColorScheme } from "react-native";
+import type { TextProps } from "react-native";
+import { StyleSheet, Text, useColorScheme } from "react-native";
 
 export interface BaseTextProps extends TextProps {
   variant?: FontFamilyKey;
