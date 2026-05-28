@@ -6,14 +6,16 @@ import EmptyIllustration from "@/assets/icons/notification/notificationIconRain.
 import {
   BaseText,
   BaseTouchableOpacity,
+  NotificationItem,
+  NotificationItemSkeleton,
   ScreenContainer,
   UserHeader,
 } from "@/components";
-import { Colors, INITIAL_NOTIFICATIONS } from "@/constants";
+import { Colors } from "@/constants";
 import { useGetNotificationsQuery } from "@/store";
-import React, { useState } from "react";
-import { FlatList, StyleSheet, View } from "react-native";
 import { showToast } from "@/utils";
+import React from "react";
+import { FlatList, StyleSheet, View } from "react-native";
 
 const headerButtons = [
   {
@@ -30,37 +32,44 @@ const headerButtons = [
   },
 ] as const;
 
-interface NotificationItem {
-  id: string;
-  title: string;
-  subtitle: string;
-  type: "success" | "pending" | "warning";
-  read: boolean;
-}
+// interface NotificationItem {
+//   id: string;
+//   title: string;
+//   subtitle: string;
+//   type: "success" | "pending" | "warning";
+//   read: boolean;
+// }
 
 export default function NotificationsScreen() {
-  const [notifications, setNotifications] = useState<NotificationItem[]>(
-    INITIAL_NOTIFICATIONS,
-  );
+  // const [notifications, setNotifications] = useState<NotificationItem[]>(
+  //   INITIAL_NOTIFICATIONS,
+  // );
   const { data, isLoading, error } = useGetNotificationsQuery();
 
-  console.log(error)
+  // useEffect(() => {
+  //   if (data) {
+  //     console.log("Notifications data:", data);
+  //   }
+
+  //   if (error) {
+  //     console.error("Notifications error:", error);
+  //   }
+  // }, [data, error]);
 
   const handleMarkAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    // setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     showToast("success", "All notifications marked as read.");
   };
 
   const handleClearAll = () => {
-    setNotifications([]);
+    // setNotifications([]);
     showToast("info", "All notifications cleared.");
   };
 
   const handleRestoreDefaults = () => {
-    setNotifications(INITIAL_NOTIFICATIONS);
+    // setNotifications(INITIAL_NOTIFICATIONS);
     showToast("success", "Default notifications restored.");
   };
-
 
   return (
     <ScreenContainer withPadding={false} scrollable={false}>
@@ -74,7 +83,7 @@ export default function NotificationsScreen() {
         </BaseText>
 
         <View style={styles.subHeaderActions}>
-          {notifications.length > 0 && (
+          {data?.data?.length > 0 && (
             <>
               <BaseTouchableOpacity onPress={handleMarkAllRead}>
                 <BaseText
@@ -92,7 +101,7 @@ export default function NotificationsScreen() {
 
           <BaseTouchableOpacity
             onPress={
-              notifications.length > 0 ? handleClearAll : handleRestoreDefaults
+              data?.data?.length > 0 ? handleClearAll : handleRestoreDefaults
             }
             style={styles.filterButton}
           >
@@ -102,7 +111,15 @@ export default function NotificationsScreen() {
       </View>
 
       {/* Main Content Area */}
-      {notifications.length === 0 ? (
+      {isLoading ? (
+        <FlatList
+          data={Array.from({ length: 5 })}
+          keyExtractor={(_, index) => `skeleton-${index}`}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContainer}
+          renderItem={() => <NotificationItemSkeleton />}
+        />
+      ) : data?.data?.length === 0 ? (
         <View style={styles.emptyContainer}>
           <View style={styles.illustrationWrapper}>
             <EmptyIllustration width={180} height={180} />
@@ -127,41 +144,11 @@ export default function NotificationsScreen() {
         </View>
       ) : (
         <FlatList
-          data={notifications}
+          data={data?.data}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContainer}
-          renderItem={({ item }) => (
-            <View style={styles.notificationRow}>
-              <View style={styles.rowTitleContainer}>
-                <BaseText size="sm" color="#C1C7CD" style={styles.rowTitle}>
-                  {item.title}
-                </BaseText>
-
-                {/* Visual state dots */}
-                {!item.read && (
-                  <View
-                    style={[
-                      styles.indicatorDot,
-                      item.type === "success" && styles.dotSuccess,
-                      item.type === "pending" && styles.dotPending,
-                      item.type === "warning" && styles.dotWarning,
-                    ]}
-                  />
-                )}
-              </View>
-
-              <BaseText
-                size="xs"
-                color="#777777"
-                style={styles.rowSubtitle}
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
-                {item.subtitle}
-              </BaseText>
-            </View>
-          )}
+          renderItem={({ item }) => <NotificationItem {...item} />}
         />
       )}
     </ScreenContainer>

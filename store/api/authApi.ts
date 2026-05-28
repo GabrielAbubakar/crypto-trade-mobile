@@ -1,4 +1,9 @@
-import type { ILoginRequest, ILoginResponse, IRegisterRequest, IRegisterResponse } from "@/types";
+import type {
+  ILoginRequest,
+  ILoginResponse,
+  IRegisterRequest,
+  IRegisterResponse,
+} from "@/types";
 import { setCredentials } from "../slices/authSlice";
 import { baseApi } from "./baseApi";
 
@@ -14,7 +19,13 @@ export const authApi = baseApi.injectEndpoints({
       async onQueryStarted(_args, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          dispatch(setCredentials({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken }));
+          dispatch(
+            setCredentials({
+              user: data.user,
+              accessToken: data.accessToken,
+              refreshToken: data.refreshToken,
+            }),
+          );
         } catch (err) {
           // Handle error if needed
         }
@@ -30,7 +41,13 @@ export const authApi = baseApi.injectEndpoints({
       async onQueryStarted(_args, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          dispatch(setCredentials({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken }));
+          dispatch(
+            setCredentials({
+              user: data.user,
+              accessToken: data.accessToken,
+              refreshToken: data.refreshToken,
+            }),
+          );
         } catch (err) {
           // Handle error if needed
         }
@@ -44,7 +61,7 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
     verifyOTP: builder.mutation({
-      query: (body: { email: string, code: string }) => ({
+      query: (body: { email: string; code: string }) => ({
         url: "/auth/otp/verify",
         method: "POST",
         body,
@@ -53,6 +70,12 @@ export const authApi = baseApi.injectEndpoints({
     kycVerification: builder.mutation({
       query: () => ({
         url: "/auth/kyc",
+        method: "POST",
+      }),
+    }),
+    logOut: builder.mutation({
+      query: () => ({
+        url: "/auth/logout",
         method: "POST",
       }),
     }),
@@ -66,4 +89,5 @@ export const {
   useRequestOTPMutation,
   useVerifyOTPMutation,
   useKycVerificationMutation,
+  useLogOutMutation,
 } = authApi;

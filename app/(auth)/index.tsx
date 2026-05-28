@@ -3,14 +3,15 @@ import {
   BaseText,
   ScreenContainer,
   SignInForm,
-  SignUpForm
+  SignUpForm,
 } from "@/components";
-import { AuthTab } from "@/components/auth/types";
+import type { AuthTab } from "@/components/auth/types";
 import { Colors } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
+  BackHandler,
   Dimensions,
   Image,
   KeyboardAvoidingView,
@@ -44,12 +45,18 @@ export default function AuthIndexScreen() {
     }
   };
 
+  const handleClose = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      // No previous screen to go back to, exit the app
+      BackHandler.exitApp();
+    }
+  };
+
   const renderHeader = () => (
     <View style={styles.header}>
-      <TouchableOpacity
-        onPress={() => router.back()}
-        style={styles.closeButton}
-      >
+      <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
         <Ionicons name="close" size={24} color={Colors.white} />
       </TouchableOpacity>
       <View style={styles.tabWrapper}>

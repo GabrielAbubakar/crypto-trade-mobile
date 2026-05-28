@@ -2,6 +2,7 @@ import profileImage from "@/assets/images/avatar.jpg";
 import { BackHeader, MenuItem, ScreenContainer } from "@/components";
 import { Title } from "@/components/ui/BaseText";
 import { Colors } from "@/constants";
+import { useGetProfileQuery } from "@/store";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -9,6 +10,7 @@ import { StyleSheet, View } from "react-native";
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { data, isLoading } = useGetProfileQuery();
 
   const handleFieldEdit = (
     field: "username" | "email" | "mobile" | "password",
@@ -35,7 +37,7 @@ export default function ProfileScreen() {
           </View>
         </View>
         <Title variant="bold" style={styles.username}>
-          User1234
+          {isLoading ? "Loading..." : data?.fullName}
         </Title>
       </View>
 
@@ -43,17 +45,17 @@ export default function ProfileScreen() {
       <View style={styles.menuList}>
         <MenuItem
           label="Username"
-          value="Username1234"
+          value={isLoading ? "Loading..." : data?.fullName}
           onPress={() => handleFieldEdit("username")}
         />
         <MenuItem
           label="Email"
-          value="example@mail.com"
+          value={isLoading ? "Loading..." : data?.email}
           onPress={() => handleFieldEdit("email")}
         />
         <MenuItem
           label="Mobile Number"
-          value="+1 234 567 8900"
+          value={isLoading ? "Loading..." : data?.phone}
           onPress={() => handleFieldEdit("mobile")}
         />
         <MenuItem

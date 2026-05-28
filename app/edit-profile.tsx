@@ -3,6 +3,8 @@ import { BackHeader, BaseButton, ScreenContainer } from "@/components";
 import { Caption, Subtitle } from "@/components/ui/BaseText";
 import { BaseTouchableOpacity } from "@/components/ui/BaseTouchableOpacity";
 import { Colors } from "@/constants";
+import { useGetProfileQuery, useUpdateProfileMutation } from "@/store";
+import { showToast } from "@/utils";
 import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -11,27 +13,30 @@ import { StyleSheet, TextInput, View } from "react-native";
 
 export default function EditProfileScreen() {
   const router = useRouter();
+  const { data, isLoading } = useGetProfileQuery();
+  const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
   const { focusField } = useLocalSearchParams<{ focusField?: string }>();
 
-  // State values for form fields
-  const [username, setUsername] = useState("Username1234");
-  const [email, setEmail] = useState("example@mail.com");
-  const [password, setPassword] = useState("mypassword123");
-  const [mobile, setMobile] = useState("+1 234 567 8900");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password] = useState("••••••••");
+  const [mobile, setMobile] = useState("");
 
-  // Track password visibility state
-  const [passwordHidden, setPasswordHidden] = useState(true);
-
-  // Track focused states for active styling transitions
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
-  // Refs for each input field
   const usernameInputRef = useRef<TextInput>(null);
   const emailInputRef = useRef<TextInput>(null);
   const passwordInputRef = useRef<TextInput>(null);
   const mobileInputRef = useRef<TextInput>(null);
 
-  // Trigger auto-focus based on search params
+  useEffect(() => {
+    if (!data) return;
+
+    setUsername(data.fullName ?? "");
+    setEmail(data.email ?? "");
+    setMobile(data.phone ?? "");
+  }, [data]);
+
   useEffect(() => {
     if (!focusField) return;
 
@@ -50,11 +55,23 @@ export default function EditProfileScreen() {
     return () => clearTimeout(timer);
   }, [focusField]);
 
+  async function handleSave() {
+    try {
+      await updateProfile({
+        fullName: username,
+      }).unwrap();
+
+      showToast("success", "Profile updated successfully");
+      router.back();
+    } catch {
+      showToast("error", "Unable to update profile. Please try again.");
+    }
+  }
+
   return (
     <ScreenContainer scrollable style={styles.container}>
       <BackHeader title="Edit Profile" />
 
-      {/* Profile Section (Avatar & Camera Badge overlay) */}
       <View style={styles.profileSection}>
         <View style={styles.avatarContainer}>
           <Image
@@ -66,12 +83,12 @@ export default function EditProfileScreen() {
             <Feather name="camera" size={15} color={Colors.white} />
           </BaseTouchableOpacity>
         </View>
-        <Subtitle style={styles.usernameText}>User1234</Subtitle>
+        <Subtitle style={styles.usernameText}>
+          {isLoading ? "Loading..." : username || "User"}
+        </Subtitle>
       </View>
 
-      {/* Underlined Forms List */}
       <View style={styles.form}>
-        {/* Username */}
         <View style={styles.inputGroup}>
           <Caption style={styles.label}>Username</Caption>
           <TextInput
@@ -88,17 +105,17 @@ export default function EditProfileScreen() {
           />
         </View>
 
-        {/* Email */}
         <View style={styles.inputGroup}>
           <Caption style={styles.label}>Email</Caption>
           <TextInput
             ref={emailInputRef}
             style={[
               styles.underlineInput,
-              focusedField === "email" && styles.underlineInputActive,
+              styles.readOnlyInput,
+              focusedField === "email" && styles.readOnlyInput,
             ]}
             value={email}
-            onChangeText={setEmail}
+            editable={false}
             keyboardType="email-address"
             autoCapitalize="none"
             placeholderTextColor={Colors.textSecondary}
@@ -107,54 +124,36 @@ export default function EditProfileScreen() {
           />
         </View>
 
-        {/* Password */}
         <View style={styles.inputGroup}>
           <Caption style={styles.label}>Password</Caption>
-          <View style={styles.passwordWrapper}>
-            <TextInput
-              ref={passwordInputRef}
-              style={[
-                styles.underlineInput,
-                { flex: 1 },
-                focusedField === "password" && styles.underlineInputActive,
-              ]}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={passwordHidden}
-              autoCapitalize="none"
-              placeholderTextColor={Colors.textSecondary}
-              onFocus={() => setFocusedField("password")}
-              onBlur={() => setFocusedField(null)}
-            />
-            <BaseTouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => setPasswordHidden((prev) => !prev)}
-              style={styles.eyeBtn}
-            >
-              <Feather
-                name={passwordHidden ? "eye-off" : "eye"}
-                size={18}
-                color={
-                  focusedField === "password"
-                    ? Colors.primary
-                    : "rgba(255, 255, 255, 0.4)"
-                }
-              />
-            </BaseTouchableOpacity>
-          </View>
+          <TextInput
+            ref={passwordInputRef}
+            style={[
+              styles.underlineInput,
+              styles.readOnlyInput,
+              focusedField === "password" && styles.readOnlyInput,
+            ]}
+            value={password}
+            editable={false}
+            secureTextEntry
+            autoCapitalize="none"
+            placeholderTextColor={Colors.textSecondary}
+            onFocus={() => setFocusedField("password")}
+            onBlur={() => setFocusedField(null)}
+          />
         </View>
 
-        {/* Mobile Number */}
         <View style={styles.inputGroup}>
           <Caption style={styles.label}>Mobile Number</Caption>
           <TextInput
             ref={mobileInputRef}
             style={[
               styles.underlineInput,
-              focusedField === "mobile" && styles.underlineInputActive,
+              styles.readOnlyInput,
+              focusedField === "mobile" && styles.readOnlyInput,
             ]}
             value={mobile}
-            onChangeText={setMobile}
+            editable={false}
             keyboardType="phone-pad"
             placeholderTextColor={Colors.textSecondary}
             onFocus={() => setFocusedField("mobile")}
@@ -163,7 +162,6 @@ export default function EditProfileScreen() {
         </View>
       </View>
 
-      {/* Button Cancel / Save Row */}
       <View style={styles.buttonContainer}>
         <BaseButton
           title="Cancel"
@@ -175,7 +173,8 @@ export default function EditProfileScreen() {
           title="Save Changes"
           variant="primary"
           style={styles.saveBtn}
-          onPress={() => router.back()}
+          isLoading={isUpdating}
+          onPress={handleSave}
         />
       </View>
     </ScreenContainer>
@@ -244,20 +243,16 @@ const styles = StyleSheet.create({
   underlineInputActive: {
     borderBottomColor: Colors.primary,
   },
-  passwordWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  eyeBtn: {
-    position: "absolute",
-    right: 0,
-    padding: 10,
+  readOnlyInput: {
+    opacity: 0.45,
+    color: Colors.textSecondary,
+    borderBottomColor: "rgba(255, 255, 255, 0.1)",
   },
   buttonContainer: {
     flexDirection: "row",
     gap: 15,
     marginTop: 48,
-    marginBottom: 120, // extra spacing so the float bottom tab doesn't cut it off
+    marginBottom: 120,
   },
   cancelBtn: {
     flex: 1,

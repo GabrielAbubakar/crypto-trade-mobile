@@ -1,9 +1,14 @@
-import type { IAssetDetails, IMarketAsset, IMarketPrice } from "@/types";
+import type {
+  IAssetDetails,
+  IMarketAssetsResponse,
+  IMarketPrice,
+  ITrendingResponse,
+} from "@/types";
 import { baseApi } from "./baseApi";
 
 export const marketApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getMarketAssets: builder.query<IMarketAsset[], void>({
+    getMarketAssets: builder.query<IMarketAssetsResponse, void>({
       query: () => ({
         url: "/market/assets",
         method: "GET",
@@ -15,7 +20,7 @@ export const marketApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
-    getTrendingAssets: builder.query<IMarketAsset[], void>({
+    getTrendingAssets: builder.query<ITrendingResponse, void>({
       query: () => ({
         url: "/market/trending",
         method: "GET",

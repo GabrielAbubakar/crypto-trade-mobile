@@ -6,11 +6,12 @@ import {
   ActionMenu,
   BaseText,
   CoinCard,
+  CoinCardSkeleton,
   GridMenu,
   ScreenContainer,
   UserHeader,
 } from "@/components";
-import { recentCoins, topCoins } from "@/constants";
+import { useGetMarketAssetsQuery, useGetTrendingAssetsQuery } from "@/store";
 import React from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
@@ -30,6 +31,17 @@ const headerButtons: HeaderButtonProps[] = [
 ];
 
 export default function HomeScreen() {
+  const { data: trendingData, isLoading: trendingIsLoading } =
+    useGetTrendingAssetsQuery();
+  const { data: marketData, isLoading: marketIsLoading } =
+    useGetMarketAssetsQuery();
+
+  // useEffect(() => {
+  //   if (trendingData) {
+  //     console.log("Trending Assets:", trendingData);
+  //     console.log("Market Assets:", marketData);
+  //   }
+  // }, [trendingData, marketData]);
 
   return (
     <ScreenContainer withPadding={false} scrollable>
@@ -53,9 +65,13 @@ export default function HomeScreen() {
             contentContainerStyle={styles.horizontalScrollContent}
             style={styles.scrollView}
           >
-            {recentCoins.map((coin) => (
-              <CoinCard key={coin.pair} {...coin} />
-            ))}
+            {trendingIsLoading || marketIsLoading
+              ? Array.from({ length: 3 }).map((_, index) => (
+                  <CoinCardSkeleton key={`skeleton-${index}`} />
+                ))
+              : marketData?.data.map((coin) => (
+                  <CoinCard key={coin.id} {...coin} />
+                ))}
           </ScrollView>
         </View>
 
@@ -70,9 +86,13 @@ export default function HomeScreen() {
             contentContainerStyle={styles.horizontalScrollContent}
             style={styles.scrollView}
           >
-            {topCoins.map((coin) => (
-              <CoinCard key={coin.pair} {...coin} />
-            ))}
+            {trendingIsLoading || marketIsLoading
+              ? Array.from({ length: 3 }).map((_, index) => (
+                  <CoinCardSkeleton key={`skeleton-${index}`} />
+                ))
+              : trendingData?.data.map((coin) => (
+                  <CoinCard key={coin.id} {...coin} />
+                ))}
           </ScrollView>
         </View>
       </View>

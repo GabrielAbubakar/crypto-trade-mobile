@@ -1,6 +1,5 @@
 import type {
   ICreatePriceAlertRequest,
-  INotification,
   IPriceAlert,
   IRegisterDeviceRequest,
   IUpdatePriceAlertRequest,
@@ -18,6 +17,7 @@ export const profileApi = baseApi.injectEndpoints({
         url: "/me",
         method: "GET",
       }),
+      transformResponse: (response: { data: IUser }) => response.data,
       providesTags: ["User"],
     }),
     updateProfile: builder.mutation<IUser, IUpdateProfileRequest>({
@@ -42,14 +42,20 @@ export const profileApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["User"],
     }),
-    updateTransactionPin: builder.mutation<{ success: boolean }, { pin: string }>({
+    updateTransactionPin: builder.mutation<
+      { success: boolean },
+      { pin: string }
+    >({
       query: (body) => ({
         url: "/me/pin",
         method: "PATCH",
         body,
       }),
     }),
-    registerDevice: builder.mutation<{ success: boolean }, IRegisterDeviceRequest>({
+    registerDevice: builder.mutation<
+      { success: boolean },
+      IRegisterDeviceRequest
+    >({
       query: (body) => ({
         url: "/me/devices",
         method: "POST",
@@ -89,7 +95,10 @@ export const profileApi = baseApi.injectEndpoints({
         body,
       }),
     }),
-    updatePriceAlert: builder.mutation<IPriceAlert, { alertId: string; body: IUpdatePriceAlertRequest }>({
+    updatePriceAlert: builder.mutation<
+      IPriceAlert,
+      { alertId: string; body: IUpdatePriceAlertRequest }
+    >({
       query: ({ alertId, body }) => ({
         url: `/me/price-alerts/${alertId}`,
         method: "PATCH",
@@ -102,7 +111,7 @@ export const profileApi = baseApi.injectEndpoints({
         method: "DELETE",
       }),
     }),
-    getNotifications: builder.query<INotification[], void>({
+    getNotifications: builder.query<any, void>({
       query: () => ({
         url: "/me/notifications",
         method: "GET",

@@ -13,7 +13,7 @@ import type { AuthMethod } from "./types";
 
 export const SignUpForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [requestOtp, { isLoading, error }] = useRequestOTPMutation();
+  const [requestOtp, { isLoading }] = useRequestOTPMutation();
 
   const form = useForm({
     defaultValues: {
@@ -41,7 +41,7 @@ export const SignUpForm: React.FC = () => {
           },
         });
       } catch (error) {
-        console.error("Error requesting OTP:", error);
+        console.log("Error requesting OTP:", error);
       }
     },
   });
@@ -77,10 +77,10 @@ export const SignUpForm: React.FC = () => {
               error={
                 field.state.meta.isTouched && field.state.meta.errors.length > 0
                   ? field.state.meta.errors
-                    .map((err: any) =>
-                      typeof err === "string" ? err : err.message,
-                    )
-                    .join(", ")
+                      .map((err: any) =>
+                        typeof err === "string" ? err : err.message,
+                      )
+                      .join(", ")
                   : undefined
               }
             />
@@ -103,10 +103,10 @@ export const SignUpForm: React.FC = () => {
               error={
                 field.state.meta.isTouched && field.state.meta.errors.length > 0
                   ? field.state.meta.errors
-                    .map((err: any) =>
-                      typeof err === "string" ? err : err.message,
-                    )
-                    .join(", ")
+                      .map((err: any) =>
+                        typeof err === "string" ? err : err.message,
+                      )
+                      .join(", ")
                   : undefined
               }
             />
@@ -128,10 +128,10 @@ export const SignUpForm: React.FC = () => {
               error={
                 field.state.meta.isTouched && field.state.meta.errors.length > 0
                   ? field.state.meta.errors
-                    .map((err: any) =>
-                      typeof err === "string" ? err : err.message,
-                    )
-                    .join(", ")
+                      .map((err: any) =>
+                        typeof err === "string" ? err : err.message,
+                      )
+                      .join(", ")
                   : undefined
               }
             />
@@ -164,10 +164,10 @@ export const SignUpForm: React.FC = () => {
               error={
                 field.state.meta.isTouched && field.state.meta.errors.length > 0
                   ? field.state.meta.errors
-                    .map((err: any) =>
-                      typeof err === "string" ? err : err.message,
-                    )
-                    .join(", ")
+                      .map((err: any) =>
+                        typeof err === "string" ? err : err.message,
+                      )
+                      .join(", ")
                   : undefined
               }
             />

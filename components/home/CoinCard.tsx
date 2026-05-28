@@ -1,26 +1,22 @@
-import { BaseText } from "../ui/BaseText";
-import { Sparkline } from "../ui/Sparkline";
+import { Sparkline } from "@/components";
+import type { IMarketAsset } from "@/types";
 import React from "react";
 import { StyleSheet, View } from "react-native";
+import { SvgUri } from "react-native-svg";
+import { BaseText } from "../ui/BaseText";
 
-export interface CoinCardProps {
-  pair: string;
-  price: string;
-  change: string;
-  isPositive: boolean;
-  Icon: React.FC<any>;
-  sparklineData: number[];
-}
-
-export const CoinCard: React.FC<CoinCardProps> = ({
-  pair,
-  price,
-  change,
-  isPositive,
-  Icon,
-  sparklineData,
+export const CoinCard: React.FC<IMarketAsset> = ({
+  priceUsd,
+  iconUrl,
+  change24h,
+  sparkline,
 }) => {
-  const trendColor = isPositive ? "#5ED5A8" : "#FF4D4D";
+  const trendColor = change24h >= 0 ? "#5ED5A8" : "#FF4D4D";
+  const resolvedUrl = iconUrl.startsWith("http")
+    ? iconUrl
+    : process.env.EXPO_PUBLIC_API_URL
+      ? `${process.env.EXPO_PUBLIC_API_URL}${iconUrl}`
+      : iconUrl;
 
   return (
     <View style={styles.coinCard}>
@@ -30,23 +26,31 @@ export const CoinCard: React.FC<CoinCardProps> = ({
           variant="bold"
           style={[styles.coinPrice, { color: trendColor }]}
         >
-          {price}
+          {priceUsd.toLocaleString("en-US", {
+            style: "currency",
+            currency: "USD",
+            minimumFractionDigits: 2,
+          })}
         </BaseText>
-        <Icon width={28} height={28} />
+
+        <View style={styles.coinIconContainer}>
+          <SvgUri width={"100%"} height={"100%"} uri={resolvedUrl} />
+        </View>
       </View>
 
       {/* Middle Row: Pair & Trend Percentage */}
       <View style={styles.coinMetaRow}>
-        <BaseText style={styles.coinPair}>{pair}</BaseText>
-        <BaseText style={[styles.coinChange, { color: trendColor }]}>
-          {change}
+        {/* <BaseText style={styles.coinPair}>{pair}</BaseText> */}
+        <BaseText size="xs" style={[styles.coinChange, { color: trendColor }]}>
+          {change24h >= 0 ? "+" : ""}
+          {change24h.toFixed(2)}%
         </BaseText>
       </View>
 
       {/* Bottom Row: Dynamic Sparkline */}
       <View style={styles.sparklineContainer}>
         <Sparkline
-          data={sparklineData}
+          data={sparkline}
           color={trendColor}
           width={138}
           height={35}
@@ -94,14 +98,20 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#1B232A",
   },
-  coinChange: {
-    fontSize: 12,
-    fontWeight: "500",
-  },
+  coinChange: {},
   sparklineContainer: {
     // alignItems: "center",
     // justifyContent: "center",
     height: 35,
     marginTop: 8,
+  },
+  coinIconContainer: {
+    width: 24,
+    height: 24,
+  },
+  coinIcon: {
+    width: 24,
+    height: 24,
+    resizeMode: "contain",
   },
 });

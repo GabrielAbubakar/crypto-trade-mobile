@@ -1,10 +1,21 @@
 import { BaseText } from "@/components";
 import { Colors, tabs } from "@/constants";
-import { Tabs } from "expo-router";
+import { useAppSelector } from "@/store";
+import { Tabs, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
 import { View } from "react-native";
 
 export default function TabsLayout() {
+  const router = useRouter();
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace("/(auth)");
+    }
+  }, [isAuthenticated, router]);
+
   return (
     <>
       <Tabs

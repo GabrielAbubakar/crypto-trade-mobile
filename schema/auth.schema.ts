@@ -5,7 +5,7 @@ export const signInSchema = z.discriminatedUnion("method", [
     method: z.literal("email"),
     email: z.email("Invalid email address"),
     phone: z.string(),
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    password: z.string().min(4, "Password must be at least 8 characters"),
   }),
   z.object({
     method: z.literal("phone"),

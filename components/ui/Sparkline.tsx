@@ -1,8 +1,9 @@
+import type { IMarketSparklinePoint } from "@/types";
 import React from "react";
 import Svg, { Defs, LinearGradient, Path, Stop } from "react-native-svg";
 
 export interface SparklineProps {
-  data: number[];
+  data?: IMarketSparklinePoint[];
   color: string;
   width?: number;
   height?: number;
@@ -16,8 +17,8 @@ export const Sparkline: React.FC<SparklineProps> = ({
 }) => {
   if (!data || data.length < 2) return null;
 
-  const min = Math.min(...data);
-  const max = Math.max(...data);
+  const min = Math.min(...data.map((d) => d.priceUsd));
+  const max = Math.max(...data.map((d) => d.priceUsd));
   const range = max - min === 0 ? 1 : max - min;
 
   const paddingY = 4;
@@ -25,7 +26,7 @@ export const Sparkline: React.FC<SparklineProps> = ({
 
   const points = data.map((val, index) => {
     const x = (index / (data.length - 1)) * width;
-    const y = height - paddingY - ((val - min) / range) * usableHeight;
+    const y = height - paddingY - ((val.priceUsd - min) / range) * usableHeight;
     return { x, y };
   });
 

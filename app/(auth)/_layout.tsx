@@ -1,6 +1,17 @@
-import { Stack } from "expo-router";
+import { useAppSelector } from "@/store";
+import { Stack, useRouter } from "expo-router";
+import { useEffect } from "react";
 
 export default function AuthLayout() {
+  const router = useRouter();
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/(tabs)/home");
+    }
+  }, [isAuthenticated, router]);
+
   return (
     <Stack
       // initialRouteName="register-mobile"

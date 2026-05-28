@@ -2,7 +2,12 @@ import Background from "@/assets/images/auth-background.png";
 import SuccessCreated from "@/assets/images/success-created.svg";
 import { BaseButton, BaseText, ScreenContainer } from "@/components";
 import { Colors } from "@/constants";
-import { setCredentials, useAppDispatch, useRegisterMutation, useVerifyOTPMutation } from "@/store";
+import {
+  setCredentials,
+  useAppDispatch,
+  useRegisterMutation,
+  useVerifyOTPMutation,
+} from "@/store";
 import { formatPhoneNumber } from "@/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -19,9 +24,14 @@ import {
 } from "react-native";
 
 export default function OTPScreen() {
-  const dispatch = useAppDispatch()
-  const { identifier, fullName, phone, password } = useLocalSearchParams<{ identifier: string, fullName?: string, phone?: string, password?: string }>();
-  const [verifyOtp, { isLoading: verifyOtpLoading, error: verifyOtpError }] = useVerifyOTPMutation();
+  const dispatch = useAppDispatch();
+  const { identifier, fullName, phone, password } = useLocalSearchParams<{
+    identifier: string;
+    fullName?: string;
+    phone?: string;
+    password?: string;
+  }>();
+  const [verifyOtp, { isLoading: verifyOtpLoading }] = useVerifyOTPMutation();
   const [register, { isLoading: registerLoading }] = useRegisterMutation();
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
   const [timer, setTimer] = useState(30);
@@ -77,7 +87,7 @@ export default function OTPScreen() {
 
   const handleContinue = async () => {
     const code = digits.join("");
-    if (code.length < 5) {
+    if (code.length < 6) {
       setError("Please enter the complete 5-digit code");
       return;
     }
@@ -86,26 +96,26 @@ export default function OTPScreen() {
     try {
       await verifyOtp({ email: identifier, code }).unwrap();
 
+      console.log("verified otp");
+
       if (!fullName || !phone || !password) {
         setError("Missing registration details.");
         return;
       }
 
-
       const res = await register({
         email: identifier,
         fullName,
         phone: formatPhoneNumber(phone),
-        password
+        password,
       }).unwrap();
 
       dispatch(setCredentials(res));
 
-
       setIsSuccess(true);
     } catch (err: any) {
       setError(err?.data?.message || "Verification failed");
-      console.error(err);
+      console.log(err);
     }
   };
 

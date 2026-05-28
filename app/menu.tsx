@@ -14,6 +14,7 @@ import {
   FINANCE_MENU_ITEMS,
   TRADE_MENU_ITEMS,
 } from "@/constants";
+import { useGetProfileQuery } from "@/store";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -22,6 +23,7 @@ import { StyleSheet, View } from "react-native";
 
 export default function MenuScreen() {
   const router = useRouter();
+  const { data, isLoading } = useGetProfileQuery();
 
   return (
     <ScreenContainer scrollable withPadding={false}>
@@ -32,31 +34,35 @@ export default function MenuScreen() {
         style={styles.gradientBox}
       >
         <BackHeader title="Menu" />
-        <View style={styles.profileSection}>
-          <BaseTouchableOpacity
-            style={styles.userInfo}
-            onPress={() => router.push("/profile")}
-          >
-            <Image source={profileImage} style={styles.avatar} />
-            <View style={styles.userDetails}>
-              <Title style={styles.username}>User 1234</Title>
-              <View style={styles.idContainer}>
-                <Body size="xs" color={Colors.textSecondary}>
-                  ID: 1234567890
-                </Body>
-                <CopyIcon width={14} height={14} style={styles.copyIcon} />
+        {isLoading ? (
+          <Body>Loading profile...</Body>
+        ) : (
+          <View style={styles.profileSection}>
+            <BaseTouchableOpacity
+              style={styles.userInfo}
+              onPress={() => router.push("/profile")}
+            >
+              <Image source={profileImage} style={styles.avatar} />
+              <View style={styles.userDetails}>
+                <Title style={styles.username}>{data?.fullName}</Title>
+                <View style={styles.idContainer}>
+                  <Body size="xs" color={Colors.textSecondary}>
+                    {data?.phone}
+                  </Body>
+                  <CopyIcon width={14} height={14} style={styles.copyIcon} />
+                </View>
               </View>
-            </View>
-          </BaseTouchableOpacity>
+            </BaseTouchableOpacity>
 
-          <BaseButton
-            title="Settings"
-            variant="primary"
-            size="small"
-            onPress={() => router.push("/settings")}
-            style={styles.editButton}
-          />
-        </View>
+            <BaseButton
+              title="Settings"
+              variant="primary"
+              size="small"
+              onPress={() => router.push("/settings")}
+              style={styles.editButton}
+            />
+          </View>
+        )}
       </LinearGradient>
 
       <Section title="Common">
