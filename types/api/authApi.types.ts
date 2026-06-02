@@ -13,7 +13,6 @@ export interface IUser {
   createdAt: string;
 }
 
-
 export interface ILoginResponse {
   data: {
     user: IUser;
@@ -30,12 +29,11 @@ export interface ILoginResponse {
   };
 }
 
-
 export interface IUserSettings {
   language: string;
   fiatCurrency: string;
   theme: "light" | "dark" | "system";
-  priceAlerts: boolean;
+  priceAlerts?: boolean;
   pushNotifications: boolean;
   biometricEnabled: boolean;
 }

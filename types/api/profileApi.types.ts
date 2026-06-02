@@ -1,4 +1,3 @@
-import type { IUserSettings } from "./authApi.types";
 
 export interface IUpdateProfileRequest {
   fullName?: string;

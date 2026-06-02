@@ -1,157 +1,98 @@
-import { showToast } from "@/utils";
+import { showErrorToast, showSuccessToast } from "@/utils";
 import type {
-  BaseQueryApi,
   BaseQueryFn,
   FetchArgs,
   FetchBaseQueryError,
-} from "@reduxjs/toolkit/query";
-import { createApi, fetchBaseQuery, retry } from "@reduxjs/toolkit/query/react";
-import { logout, setCredentials } from "../slices/authSlice";
-import type { RootState } from "../store";
+} from "@reduxjs/toolkit/query/react";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { logout, setCredentials } from "../slices";
 
-// In production, this would point to your actual backend server URL or an environment variable.
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
-const UNAUTHORIZED_MESSAGE =
-  "Your session has expired or you are not authorized. Please sign in again.";
+// 1. Standard base query configuration
+const baseQuery = fetchBaseQuery({
+  baseUrl: process.env.EXPO_PUBLIC_API_URL,
+  prepareHeaders: (headers, { getState }) => {
+    // Pull token from local storage or app state if authenticated
+    const token = (getState() as any).auth.accessToken;
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+    return headers;
+  },
+});
 
-const baseQuery = retry(
-  fetchBaseQuery({
-    baseUrl: BASE_URL,
-    prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as RootState).auth.accessToken;
-      if (token) {
-        headers.set("authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
-);
-
-let refreshPromise: Promise<boolean> | null = null;
-let unauthorizedToastShown = false;
-
-const showUnauthorizedToast = () => {
-  if (!unauthorizedToastShown) {
-    showToast("error", UNAUTHORIZED_MESSAGE);
-    unauthorizedToastShown = true;
-  }
-};
-
-const logoutUser = (api: BaseQueryApi) => {
-  showUnauthorizedToast();
-  api.dispatch(logout());
-};
-
-const handleNetworkError = (error?: FetchBaseQueryError) => {
-  if (error?.status !== "FETCH_ERROR") {
-    return false;
-  }
-
-  showToast(
-    "error",
-    "Network error. Please check your connection and try again.",
-  );
-  return true;
-};
-
-const refreshAuthToken = async (
-  refreshToken: string,
-  currentUser: any,
-  api: BaseQueryApi,
-  extraOptions: any,
-) => {
-  const refreshResult = await baseQuery(
-    {
-      url: "/auth/refresh",
-      method: "POST",
-      body: { refreshToken },
-    },
-    api,
-    extraOptions,
-  );
-
-  if (!refreshResult.data) {
-    return false;
-  }
-
-  const data = refreshResult.data as {
-    accessToken: string;
-    refreshToken?: string;
-    user?: unknown;
-  };
-
-  if (!data.accessToken) {
-    return false;
-  }
-
-  api.dispatch(
-    setCredentials({
-      user: data.user ?? currentUser,
-      accessToken: data.accessToken,
-      refreshToken: data.refreshToken ?? refreshToken,
-    }),
-  );
-
-  unauthorizedToastShown = false;
-  return true;
-};
-
-const baseQueryWithReauth: BaseQueryFn<
+const baseQueryWithReAuth: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-  if (refreshPromise) {
-    await refreshPromise;
-  }
-
+  // Run the initial request
   let result = await baseQuery(args, api, extraOptions);
+  console.log(
+    "Current Access Token:",
+    (api.getState() as any).auth.accessToken,
+  );
+  //   console.log(result);
 
-  if (handleNetworkError(result.error)) {
-    return result;
-  }
+  // Check if the request failed due to an unauthorized token
+  if (result.error && result.error.status === 401) {
+    console.log("❌ 401 Unauthorized Error");
+    // Fetch your stored refresh token
+    const refreshToken = (api.getState() as any).auth.refreshToken;
 
-  if (result.error?.status !== 401) {
-    return result;
-  }
+    if (refreshToken) {
+      try {
+        console.log("🔃 Refreshing token...");
+        // Send request to get a new access token
+        const refreshResult = await baseQuery(
+          {
+            url: "/auth/refresh",
+            method: "POST",
+            body: { refreshToken },
+          },
+          api,
+          extraOptions,
+        );
 
-  const { auth } = api.getState() as RootState;
-  const refreshToken = auth.refreshToken;
+        if (refreshResult.data) {
+          console.log("✅ Token Refresh Successful");
+          showSuccessToast("✅ Token Refresh Successful");
+          const rawPayload = (refreshResult.data as any).data;
+          const newTokens = {
+            user: rawPayload.user || (api.getState() as any).auth.user,
+            accessToken: rawPayload.accessToken || rawPayload.token,
+            refreshToken: rawPayload.refreshToken || refreshToken,
+          };
 
-  if (!refreshToken) {
-    logoutUser(api);
-    return result;
-  }
+          // Update your Redux store state
+          api.dispatch(setCredentials(newTokens));
 
-  try {
-    if (!refreshPromise) {
-      refreshPromise = refreshAuthToken(
-        refreshToken,
-        auth.user as any,
-        api,
-        extraOptions,
-      );
+          // Retry the initial failed request with the new token
+          result = await baseQuery(args, api, extraOptions);
+          //   console.log("Retry result", result);
+        } else {
+          // Refresh token endpoint failed (e.g., refresh token expired)
+          showErrorToast("Token refresh failed");
+          api.dispatch(logout());
+        }
+      } catch (error) {
+        // Refresh token endpoint failed (e.g., refresh token expired)
+        showErrorToast("Token refresh failed");
+        api.dispatch(logout());
+      }
+    } else {
+      // No refresh token available
+      api.dispatch(logout());
     }
-
-    const isRefreshed = await refreshPromise;
-    refreshPromise = null;
-
-    if (!isRefreshed) {
-      logoutUser(api);
-      return result;
-    }
-
-    return await baseQuery(args, api, extraOptions);
-  } catch {
-    refreshPromise = null;
-    logoutUser(api);
-    return result;
   }
+
+  // Handle other errors
+
+  return result;
 };
 
 export const baseApi = createApi({
   reducerPath: "api",
-  baseQuery: baseQueryWithReauth,
+  baseQuery: baseQueryWithReAuth,
+  tagTypes: ["User", "Wallet", "Transaction"],
   endpoints: () => ({}),
-  tagTypes: ["User", "Notifications", "Markets", "Wallet"],
 });

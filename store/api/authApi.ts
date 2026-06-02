@@ -4,7 +4,7 @@ import type {
   IRegisterRequest,
   IRegisterResponse,
 } from "@/types";
-import { setCredentials } from "../slices/authSlice";
+import { logout, setCredentials } from "../slices/authSlice";
 import { baseApi } from "./baseApi";
 
 export const authApi = baseApi.injectEndpoints({
@@ -26,7 +26,7 @@ export const authApi = baseApi.injectEndpoints({
               refreshToken: data.refreshToken,
             }),
           );
-        } catch (err) {
+        } catch {
           // Handle error if needed
         }
       },
@@ -38,20 +38,6 @@ export const authApi = baseApi.injectEndpoints({
         body: credentials,
       }),
       transformResponse: (response: IRegisterResponse) => response.data,
-      async onQueryStarted(_args, { dispatch, queryFulfilled }) {
-        try {
-          const { data } = await queryFulfilled;
-          dispatch(
-            setCredentials({
-              user: data.user,
-              accessToken: data.accessToken,
-              refreshToken: data.refreshToken,
-            }),
-          );
-        } catch (err) {
-          // Handle error if needed
-        }
-      },
     }),
     requestOTP: builder.mutation({
       query: (body: { email: string }) => ({
@@ -60,12 +46,13 @@ export const authApi = baseApi.injectEndpoints({
         body,
       }),
     }),
-    verifyOTP: builder.mutation({
-      query: (body: { email: string; code: string }) => ({
+    verifyOTP: builder.mutation<ILoginResponse["data"], { email: string; code: string }>({
+      query: (body) => ({
         url: "/auth/otp/verify",
         method: "POST",
         body,
       }),
+      transformResponse: (response: ILoginResponse) => response.data,
     }),
     kycVerification: builder.mutation({
       query: () => ({
@@ -73,11 +60,20 @@ export const authApi = baseApi.injectEndpoints({
         method: "POST",
       }),
     }),
-    logOut: builder.mutation({
+    logOut: builder.mutation<void, any>({
       query: () => ({
         url: "/auth/logout",
         method: "POST",
       }),
+      async onQueryStarted(_args, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(logout());
+        } catch (err) {
+          // Even if backend logout fails, log the user out locally
+          dispatch(logout());
+        }
+      },
     }),
   }),
   overrideExisting: true,

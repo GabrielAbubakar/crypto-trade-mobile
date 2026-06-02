@@ -1,4 +1,3 @@
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { toastConfig } from "@/config";
 import { Colors } from "@/constants";
 import { persistor, store } from "@/store";
@@ -7,6 +6,7 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Toast from "react-native-toast-message";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
@@ -36,7 +36,6 @@ export default function RootLayout() {
         <PersistGate loading={null} persistor={persistor}>
           <BottomSheetModalProvider>
             <Stack
-              initialRouteName="bootstrap"
               screenOptions={{
                 headerShown: false,
                 contentStyle: { backgroundColor: Colors.secondary },
@@ -46,6 +45,7 @@ export default function RootLayout() {
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="(auth)" />
               <Stack.Screen name="(onboarding)" />
+              <Stack.Screen name="kyc" />
             </Stack>
             <Toast config={toastConfig} />
           </BottomSheetModalProvider>
