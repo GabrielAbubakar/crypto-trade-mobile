@@ -1,5 +1,6 @@
 import type {
   ICreatePriceAlertRequest,
+  IGetProfileResponse,
   IPriceAlert,
   IRegisterDeviceRequest,
   IUpdatePriceAlertRequest,
@@ -17,7 +18,7 @@ export const profileApi = baseApi.injectEndpoints({
         url: "/me",
         method: "GET",
       }),
-      transformResponse: (response: { data: IUser }) => response.data,
+      transformResponse: (response: IGetProfileResponse) => response.data,
       providesTags: ["User"],
     }),
     updateProfile: builder.mutation<IUser, IUpdateProfileRequest>({
@@ -26,6 +27,7 @@ export const profileApi = baseApi.injectEndpoints({
         method: "PATCH",
         body,
       }),
+      transformResponse: (response: IGetProfileResponse) => response.data,
       invalidatesTags: ["User"],
     }),
     getSettings: builder.query<IUserSettings, void>({

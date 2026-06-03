@@ -4,6 +4,7 @@ import { Title } from "@/components/ui/BaseText";
 import { Colors } from "@/constants";
 import { useGetProfileQuery } from "@/store";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, View } from "react-native";
@@ -16,25 +17,40 @@ export default function ProfileScreen() {
     field: "username" | "email" | "mobile" | "password",
   ) => {
     router.push({
-      pathname: "/edit-profile",
+      pathname: "/profile/edit",
       params: { focusField: field },
     });
   };
 
   return (
-    <ScreenContainer scrollable style={styles.container}>
-      <BackHeader title="Profile" />
+    <ScreenContainer style={styles.container} withPadding={false}>
+      {/* Top Header Background */}
+      <LinearGradient
+        colors={["#1F2B30", "#1A2128"]}
+        start={{ x: 0, y: 1 }}
+        end={{ x: 0, y: 0 }}
+        style={styles.gradientBox}
+      >
+        <BackHeader title="Profile" />
+      </LinearGradient>
 
-      {/* Profile Section */}
+      {/* Overlapping Profile Section */}
       <View style={styles.profileSection}>
         <View style={styles.avatarContainer}>
-          <View style={styles.imageWrapper}>
-            <Image
-              source={profileImage}
-              style={styles.avatar}
-              contentFit="cover"
-            />
-          </View>
+          <LinearGradient
+            colors={["#5ED5A8", "#8B9DFE"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.gradientBorder}
+          >
+            <View style={styles.imageWrapper}>
+              <Image
+                source={profileImage}
+                style={styles.avatar}
+                contentFit="cover"
+              />
+            </View>
+          </LinearGradient>
         </View>
         <Title variant="bold" style={styles.username}>
           {isLoading ? "Loading..." : data?.fullName}
@@ -74,9 +90,8 @@ const styles = StyleSheet.create({
   },
   profileSection: {
     alignItems: "center",
-    paddingVertical: 30,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255, 255, 255, 0.05)",
+    marginTop: -55, // Pulls the avatar up so it overlaps the border halfway
+    marginBottom: 20,
   },
   avatarContainer: {
     marginBottom: 16,
@@ -93,7 +108,7 @@ const styles = StyleSheet.create({
     width: 104,
     height: 104,
     borderRadius: 52,
-    backgroundColor: Colors.secondary,
+    backgroundColor: Colors.white,
     padding: 2,
     overflow: "hidden",
   },
@@ -108,5 +123,11 @@ const styles = StyleSheet.create({
   },
   menuList: {
     marginTop: 10,
+    paddingHorizontal: 24,
+  },
+  gradientBox: {
+    paddingTop: 16,
+    paddingBottom: 100,
+    paddingHorizontal: 24,
   },
 });

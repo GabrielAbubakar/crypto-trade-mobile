@@ -2,13 +2,8 @@ import Background from "@/assets/images/auth-background.png";
 import SuccessCreated from "@/assets/images/success-created.svg";
 import { BaseButton, BaseText, ScreenContainer } from "@/components";
 import { Colors } from "@/constants";
-import {
-  setCredentials,
-  useAppDispatch,
-  useRegisterMutation,
-  useVerifyOTPMutation,
-} from "@/store";
-import { formatPhoneNumber } from "@/utils";
+import { setCredentials, useAppDispatch, useVerifyOTPMutation } from "@/store";
+import { showInfoToast } from "@/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
@@ -25,18 +20,16 @@ import {
 
 export default function OTPScreen() {
   const dispatch = useAppDispatch();
-  const { identifier, fullName, phone, password } = useLocalSearchParams<{
+  const { identifier, code } = useLocalSearchParams<{
     identifier: string;
-    fullName?: string;
-    phone?: string;
-    password?: string;
+    code: string;
   }>();
   const [verifyOtp, { isLoading: verifyOtpLoading }] = useVerifyOTPMutation();
-  const [register, { isLoading: registerLoading }] = useRegisterMutation();
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
   const [timer, setTimer] = useState(30);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [verificationData, setVerificationData] = useState<any>(null);
 
   const ref1 = useRef<TextInput>(null);
   const ref2 = useRef<TextInput>(null);
@@ -46,24 +39,6 @@ export default function OTPScreen() {
   const ref6 = useRef<TextInput>(null);
 
   const inputRefs = useMemo(() => [ref1, ref2, ref3, ref4, ref5, ref6], []);
-
-  // Countdown timer for Resend Link
-  useEffect(() => {
-    if (timer === 0) return;
-    const interval = setInterval(() => {
-      setTimer((prev) => prev - 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [timer]);
-
-  // Auto-focus first input box on mount
-  useEffect(() => {
-    const focusTimeout = setTimeout(() => {
-      inputRefs[0].current?.focus();
-    }, 150);
-
-    return () => clearTimeout(focusTimeout);
-  }, [inputRefs]);
 
   const handleChangeText = (text: string, index: number) => {
     const cleaned = text.replace(/[^0-9]/g, "");
@@ -88,30 +63,14 @@ export default function OTPScreen() {
   const handleContinue = async () => {
     const code = digits.join("");
     if (code.length < 6) {
-      setError("Please enter the complete 5-digit code");
+      setError("Please enter the complete 6-digit code");
       return;
     }
     setError("");
 
     try {
-      await verifyOtp({ email: identifier, code }).unwrap();
-
-      console.log("verified otp");
-
-      if (!fullName || !phone || !password) {
-        setError("Missing registration details.");
-        return;
-      }
-
-      const res = await register({
-        email: identifier,
-        fullName,
-        phone: formatPhoneNumber(phone),
-        password,
-      }).unwrap();
-
-      dispatch(setCredentials(res));
-
+      const res = await verifyOtp({ email: identifier, code }).unwrap();
+      setVerificationData(res);
       setIsSuccess(true);
     } catch (err: any) {
       setError(err?.data?.message || "Verification failed");
@@ -125,6 +84,43 @@ export default function OTPScreen() {
     setError("");
     inputRefs[0].current?.focus();
   };
+
+  const handleGetStarted = () => {
+    if (verificationData) {
+      // Dispatch tokens to state and persist it
+      dispatch(
+        setCredentials({
+          user: verificationData.user,
+          accessToken: verificationData.accessToken,
+          refreshToken: verificationData.refreshToken,
+        }),
+      );
+    }
+    router.replace("/(tabs)/home");
+  };
+
+  // Countdown timer for Resend Link
+  useEffect(() => {
+    if (timer === 0) return;
+    const interval = setInterval(() => {
+      setTimer((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timer]);
+
+  // Auto-focus first input box on mount
+  useEffect(() => {
+    const focusTimeout = setTimeout(() => {
+      inputRefs[0].current?.focus();
+    }, 150);
+
+    return () => clearTimeout(focusTimeout);
+  }, [inputRefs]);
+
+  useEffect(() => {
+    showInfoToast(`OTP code: ${code}`);
+    console.log(code, "codeee");
+  }, [code]);
 
   // SUCCESSFUL REGISTRATION VIEW
   if (isSuccess) {
@@ -147,7 +143,7 @@ export default function OTPScreen() {
           </BaseText>
           <BaseButton
             title="Get Started"
-            onPress={() => router.replace("/(tabs)/home")}
+            onPress={handleGetStarted}
             style={styles.getStartedButton}
           />
         </View>
@@ -236,7 +232,7 @@ export default function OTPScreen() {
         <BaseButton
           title="Continue"
           onPress={handleContinue}
-          isLoading={verifyOtpLoading || registerLoading}
+          isLoading={verifyOtpLoading}
           style={styles.submitButton}
         />
       </KeyboardAvoidingView>

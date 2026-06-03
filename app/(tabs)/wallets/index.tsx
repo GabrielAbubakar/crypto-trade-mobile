@@ -6,7 +6,10 @@ import {
   WalletTransactionRowSkeleton,
 } from "@/components";
 import { Colors } from "@/constants";
-import { useGetWalletBalancesQuery, useGetWalletTransactionsQuery } from "@/store";
+import {
+  useGetWalletBalancesQuery,
+  useGetWalletTransactionsQuery,
+} from "@/store";
 import { Feather } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
@@ -24,7 +27,8 @@ function EmptyComponent() {
         No transactions yet
       </BaseText>
       <BaseText style={styles.emptySubtitle}>
-        Your transaction history will show up here once you make deposits or withdrawals.
+        Your transaction history will show up here once you make deposits or
+        withdrawals.
       </BaseText>
     </View>
   );
@@ -44,7 +48,6 @@ export default function WalletsScreen() {
 
   const {
     data: walletTransactions,
-    isLoading: isLoadingTransactions,
     isFetching: isFetchingTransactions,
     refetch: refetchTransactions,
   } = useGetWalletTransactionsQuery();
@@ -58,13 +61,11 @@ export default function WalletsScreen() {
   };
 
   function renderFunction({ item }: { item: any }) {
-    return (
-      isLoadingTransactions ? (
-        <WalletTransactionRowSkeleton />
-      ) : (
-        <WalletTransactionRow transaction={item as any} />
-      )
-    )
+    return isFetchingTransactions ? (
+      <WalletTransactionRowSkeleton />
+    ) : (
+      <WalletTransactionRow transaction={item as any} />
+    );
   }
 
   return (
@@ -76,20 +77,25 @@ export default function WalletsScreen() {
             <BaseText style={styles.balanceLabel}>Current Balance</BaseText>
             {isFetchingBalances ? (
               <>
-                <Skeleton width={100} height={15} borderRadius={0} style={{ marginBottom: 10 }} />
+                <Skeleton
+                  width={100}
+                  height={15}
+                  borderRadius={0}
+                  style={{ marginBottom: 10 }}
+                />
                 <Skeleton width={70} height={10} borderRadius={0} />
               </>
             ) : (
               <>
                 <BaseText variant="bold" style={styles.balanceAmount}>
-                  {walletBalance?.portfolioValue.toLocaleString('en-US', {
+                  {walletBalance?.portfolioValue.toLocaleString("en-US", {
                     style: "currency",
                     currency: walletBalance?.portfolioCurrency,
                     maximumFractionDigits: 0,
                   })}
                 </BaseText>
                 <BaseText style={styles.balanceSubtext}>
-                  {walletBalance?.portfolioValueUsd.toLocaleString('en-US')}
+                  {walletBalance?.portfolioValueUsd.toLocaleString("en-US")}
                 </BaseText>
               </>
             )}
@@ -173,10 +179,10 @@ export default function WalletsScreen() {
 
       <FlatList
         data={
-          isLoadingTransactions
+          isFetchingTransactions
             ? Array.from({ length: 5 }).map((_, index) => ({
-              id: `skeleton-${index}`,
-            }))
+                id: `skeleton-${index}`,
+              }))
             : walletTransactions?.data
         }
         keyExtractor={(item) => item.id}

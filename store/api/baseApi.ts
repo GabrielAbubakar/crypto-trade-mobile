@@ -27,11 +27,11 @@ const baseQueryWithReAuth: BaseQueryFn<
 > = async (args, api, extraOptions) => {
   // Run the initial request
   let result = await baseQuery(args, api, extraOptions);
-  console.log(
-    "Current Access Token:",
-    (api.getState() as any).auth.accessToken,
-  );
-  //   console.log(result);
+  // console.log(
+  //   "Current Access Token:",
+  //   (api.getState() as any).auth.accessToken,
+  // );
+  // console.log(result);
 
   // Check if the request failed due to an unauthorized token
   if (result.error && result.error.status === 401) {

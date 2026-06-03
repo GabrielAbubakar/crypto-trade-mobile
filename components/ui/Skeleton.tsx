@@ -5,6 +5,7 @@ export interface SkeletonProps {
   width?: number | string;
   height?: number | string;
   borderRadius?: number;
+  backgroundColor?: string;
   style?: any;
 }
 
@@ -16,6 +17,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   width = "100%",
   height = 16,
   borderRadius = 4,
+  backgroundColor = "#777",
   style,
 }) => {
   const shimmerAnim = useRef(new Animated.Value(0)).current;
@@ -45,8 +47,8 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   return (
     <Animated.View
       style={[
-        styles.skeleton,
         {
+          backgroundColor,
           width,
           height,
           borderRadius,

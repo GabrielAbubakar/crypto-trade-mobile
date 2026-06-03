@@ -2,21 +2,34 @@ import Background from "@/assets/icons/home/bg.png";
 import PayIcon from "@/assets/icons/home/credit.svg";
 import LaunchPadIcon from "@/assets/icons/home/rocket.svg";
 import ForwardIcon from "@/assets/icons/main/foward.svg";
-import { BaseText } from "../ui/BaseText";
-import { BaseTouchableOpacity } from "../ui/BaseTouchableOpacity";
 import { Image } from "expo-image";
+import { router } from "expo-router";
 import React from "react";
 import { StyleSheet, View } from "react-native";
+import { BaseText } from "../ui/BaseText";
+import { BaseTouchableOpacity } from "../ui/BaseTouchableOpacity";
 
 export const ActionMenu: React.FC = () => {
+  // const accessToken = useAppSelector((state) => state.auth);
+
+  // console.log(accessToken);
+
   return (
     <View style={styles.actionCardsContainer}>
-      <BaseTouchableOpacity style={styles.actionCard}>
+      <BaseTouchableOpacity
+        onPress={() => router.push("/kyc")}
+        style={styles.actionCard}
+      >
         <View style={styles.actionCardLeft}>
           <View style={[styles.actionIconCircle]}>
             <Image
               source={Background}
-              style={{ position: "absolute", zIndex: -1, width: 48, height: 48 }}
+              style={{
+                position: "absolute",
+                zIndex: -1,
+                width: 48,
+                height: 48,
+              }}
             />
             <LaunchPadIcon
               width={51}
@@ -41,7 +54,12 @@ export const ActionMenu: React.FC = () => {
           <View style={[styles.actionIconCircle]}>
             <Image
               source={Background}
-              style={{ position: "absolute", zIndex: -1, width: 48, height: 48 }}
+              style={{
+                position: "absolute",
+                zIndex: -1,
+                width: 48,
+                height: 48,
+              }}
             />
             <PayIcon width={51} height={51} />
           </View>

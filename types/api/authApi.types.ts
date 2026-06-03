@@ -1,9 +1,12 @@
+import type { IVerification } from "./profileApi.types";
+
 // Global Domain Entities (Can be shared/imported from root types)
 export interface IUser {
   id: string;
   role: string;
   fullName: string;
   email: string;
+  emailVerified: boolean;
   phone: string;
   twoFactorEnabled: boolean;
   kycStatus: string;
@@ -11,6 +14,7 @@ export interface IUser {
   watchlist: string[];
   settings: IUserSettings;
   createdAt: string;
+  verification: IVerification;
 }
 
 export interface ILoginResponse {

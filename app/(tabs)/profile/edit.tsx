@@ -7,6 +7,7 @@ import { useGetProfileQuery, useUpdateProfileMutation } from "@/store";
 import { showToast } from "@/utils";
 import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import { StyleSheet, TextInput, View } from "react-native";
@@ -69,16 +70,34 @@ export default function EditProfileScreen() {
   }
 
   return (
-    <ScreenContainer scrollable style={styles.container}>
-      <BackHeader title="Edit Profile" />
+    <ScreenContainer scrollable style={styles.container} withPadding={false}>
+      {/* Top Header Background */}
+      <LinearGradient
+        colors={["#1F2B30", "#1A2128"]}
+        start={{ x: 0, y: 1 }}
+        end={{ x: 0, y: 0 }}
+        style={styles.gradientBox}
+      >
+        <BackHeader title="Edit Profile" />
+      </LinearGradient>
 
+      {/* Overlapping Profile Section */}
       <View style={styles.profileSection}>
         <View style={styles.avatarContainer}>
-          <Image
-            source={profileImage}
-            style={styles.avatar}
-            contentFit="cover"
-          />
+          <LinearGradient
+            colors={["#5ED5A8", "#8B9DFE"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.gradientBorder}
+          >
+            <View style={styles.imageWrapper}>
+              <Image
+                source={profileImage}
+                style={styles.avatar}
+                contentFit="cover"
+              />
+            </View>
+          </LinearGradient>
           <BaseTouchableOpacity activeOpacity={0.8} style={styles.cameraButton}>
             <Feather name="camera" size={15} color={Colors.white} />
           </BaseTouchableOpacity>
@@ -187,17 +206,30 @@ const styles = StyleSheet.create({
   },
   profileSection: {
     alignItems: "center",
-    paddingVertical: 30,
+    marginTop: -55, // Pulls the avatar up so it overlaps the border halfway
+    marginBottom: 20,
   },
   avatarContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 2,
-    borderColor: Colors.primary,
-    padding: 2,
+    width: 110,
+    height: 110,
     position: "relative",
     marginBottom: 12,
+  },
+  gradientBorder: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    padding: 3,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  imageWrapper: {
+    width: 104,
+    height: 104,
+    borderRadius: 52,
+    backgroundColor: Colors.secondary,
+    padding: 2,
+    overflow: "hidden",
   },
   avatar: {
     width: "100%",
@@ -225,6 +257,7 @@ const styles = StyleSheet.create({
   form: {
     paddingTop: 10,
     gap: 24,
+    paddingHorizontal: 24, // Provide horizontal padding since root container no longer has padding
   },
   inputGroup: {
     gap: 6,
@@ -253,13 +286,19 @@ const styles = StyleSheet.create({
     gap: 15,
     marginTop: 48,
     marginBottom: 120,
+    paddingHorizontal: 24, // Provide horizontal padding since root container no longer has padding
+  },
+  gradientBox: {
+    paddingTop: 16,
+    paddingBottom: 100,
+    paddingHorizontal: 24,
   },
   cancelBtn: {
     flex: 1,
-    height: 52,
+    paddingHorizontal: 0,
   },
   saveBtn: {
     flex: 1,
-    height: 52,
+    paddingHorizontal: 0,
   },
 });

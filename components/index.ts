@@ -6,6 +6,7 @@ export * from "./ui";
 export * from "./markets";
 export * from "./wallets";
 export * from "./activity";
+export * from "./kyc";
 
 
 

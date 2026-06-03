@@ -11,19 +11,44 @@ export const CoinCardSkeleton: React.FC = () => {
     <View style={styles.coinCardSkeleton}>
       {/* Header: Price & Icon */}
       <View style={styles.header}>
-        <Skeleton width={60} height={20} borderRadius={4} />
-        <Skeleton width={28} height={28} borderRadius={4} />
+        <Skeleton
+          width={60}
+          height={20}
+          borderRadius={4}
+          backgroundColor="#e8e8e8"
+        />
+        <Skeleton
+          width={28}
+          height={28}
+          borderRadius={4}
+          backgroundColor="#e8e8e8"
+        />
       </View>
 
       {/* Meta Row: Pair & Change */}
       <View style={styles.metaRow}>
-        <Skeleton width={50} height={14} borderRadius={4} />
-        <Skeleton width={40} height={14} borderRadius={4} />
+        <Skeleton
+          width={50}
+          height={14}
+          borderRadius={4}
+          backgroundColor="#e8e8e8"
+        />
+        <Skeleton
+          width={40}
+          height={14}
+          borderRadius={4}
+          backgroundColor="#e8e8e8"
+        />
       </View>
 
       {/* Sparkline */}
       <View style={styles.sparklineContainer}>
-        <Skeleton width="100%" height={35} borderRadius={4} />
+        <Skeleton
+          width="100%"
+          height={35}
+          borderRadius={4}
+          backgroundColor="#e8e8e8"
+        />
       </View>
     </View>
   );

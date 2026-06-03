@@ -21,13 +21,13 @@ export const tabs = [
     icon: Trades,
   },
   {
-    name: "activity",
-    title: "Activity",
-    icon: Activity,
-  },
-  {
     name: "wallets",
     title: "Wallets",
     icon: Wallets,
+  },
+  {
+    name: "profile",
+    title: "Profile",
+    icon: Activity,
   },
 ];

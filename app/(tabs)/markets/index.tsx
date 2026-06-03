@@ -34,6 +34,15 @@ export default function MarketsScreen() {
       {/* Header */}
       <UserHeader userButtons={headerButtons} />
 
+      <View style={styles.header}>
+        <BaseText size="3xl" variant="bold" style={styles.title}>
+          Markets
+        </BaseText>
+        <BaseText size="md" style={styles.subtitle}>
+          Search assets, view live prices, and open a coin detail screen.
+        </BaseText>
+      </View>
+
       <MarketTabsView />
 
       {/* Add Favorite Button */}
@@ -50,6 +59,17 @@ export default function MarketsScreen() {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.secondary,
+  },
+  header: {
+    paddingHorizontal: 20,
+    marginTop: 20,
+    gap: 10,
+  },
+  title: {
+    color: Colors.white,
+  },
+  subtitle: {
+    color: Colors.textSecondary,
   },
   actionContainer: {
     paddingHorizontal: 20,

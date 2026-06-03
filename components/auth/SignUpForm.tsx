@@ -1,7 +1,8 @@
 import Fingerprint from "@/assets/icons/auth/Fingerprint.svg";
 import { Colors } from "@/constants";
 import { signUpSchema } from "@/schema";
-import { useRequestOTPMutation } from "@/store";
+import { useRegisterMutation, useRequestOTPMutation } from "@/store";
+import { formatPhoneNumber, showToast } from "@/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useForm } from "@tanstack/react-form";
 import { router } from "expo-router";
@@ -13,7 +14,8 @@ import type { AuthMethod } from "./types";
 
 export const SignUpForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [requestOtp, { isLoading }] = useRequestOTPMutation();
+  const [requestOtp, { isLoading: isOtpLoading }] = useRequestOTPMutation();
+  const [register, { isLoading: isRegisterLoading }] = useRegisterMutation();
 
   const form = useForm({
     defaultValues: {
@@ -28,20 +30,26 @@ export const SignUpForm: React.FC = () => {
     },
     onSubmit: async ({ value }) => {
       try {
-        await requestOtp({
+        await register({
+          email: value.email,
+          fullName: value.fullName,
+          phone: formatPhoneNumber(value.phone),
+          password: value.password,
+        }).unwrap();
+
+        const res = await requestOtp({
           email: value.email,
         }).unwrap();
+
         router.push({
           pathname: "/(auth)/otp",
           params: {
             identifier: value.email,
-            fullName: value.fullName,
-            phone: value.phone,
-            password: value.password,
+            code: res.data.demoCode,
           },
         });
       } catch (error) {
-        console.log("Error requesting OTP:", error);
+        showToast("error", (error as any).data.error.message);
       }
     },
   });
@@ -177,7 +185,7 @@ export const SignUpForm: React.FC = () => {
 
       <BaseButton
         title="Sign up"
-        isLoading={isLoading}
+        isLoading={isOtpLoading || isRegisterLoading}
         onPress={() => form.handleSubmit()}
         style={styles.submitButton}
       />

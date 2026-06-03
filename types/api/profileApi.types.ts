@@ -1,3 +1,29 @@
+import type { IUser } from "./authApi.types";
+
+export interface IVerificationLimits {
+  depositPerTransactionUsd: number;
+  tradePerTransactionUsd: number;
+  withdrawalPerTransactionUsd: number;
+  dailyWithdrawalUsd: number;
+}
+
+export interface IVerification {
+  status: string;
+  tier: string;
+  level: number;
+  label: string;
+  limits: IVerificationLimits;
+  canTrade: boolean;
+  canWithdraw: boolean;
+  canUseSandboxDeposits: boolean;
+}
+
+export interface IGetProfileResponse {
+  data: IUser;
+  meta: {
+    requestId: string;
+  };
+}
 
 export interface IUpdateProfileRequest {
   fullName?: string;

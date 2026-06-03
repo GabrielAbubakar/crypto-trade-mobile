@@ -3,15 +3,20 @@ import QrIcon from "@/assets/icons/main/scanner.svg";
 import SearchIcon from "@/assets/icons/main/search.svg";
 import type { HeaderButtonProps } from "@/components";
 import {
-  ActionMenu,
   BaseText,
+  BaseTouchableOpacity,
   CoinCard,
   CoinCardSkeleton,
-  GridMenu,
   ScreenContainer,
   UserHeader,
 } from "@/components";
-import { useGetMarketAssetsQuery, useGetTrendingAssetsQuery } from "@/store";
+import {
+  useGetMarketAssetsQuery,
+  useGetProfileQuery,
+  useGetTrendingAssetsQuery,
+  useGetWalletBalancesQuery,
+} from "@/store";
+import { router } from "expo-router";
 import React from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { RefreshControl } from "react-native-gesture-handler";
@@ -42,6 +47,10 @@ export default function HomeScreen() {
     isFetching: marketIsLoading,
     refetch: refetchMarket,
   } = useGetMarketAssetsQuery();
+  const { data: user } = useGetProfileQuery();
+  const { data: walletData } = useGetWalletBalancesQuery();
+
+  console.log(walletData);
 
   function handleRefresh() {
     refetchTrending();
@@ -59,8 +68,6 @@ export default function HomeScreen() {
     <ScreenContainer withPadding={false}>
       <UserHeader userButtons={headerButtons} />
 
-      <GridMenu />
-
       {/* Main light background containing actions and listings */}
       <ScrollView
         refreshControl={
@@ -69,37 +76,76 @@ export default function HomeScreen() {
             onRefresh={handleRefresh}
           />
         }
-        contentContainerStyle={{ paddingTop: 24, paddingBottom: 100 }}
+        contentContainerStyle={styles.lightBackgroundContent}
         style={styles.lightBackground}
       >
-        {/* Action Menu (P2P & Card buttons) */}
-        <ActionMenu />
+        <View style={styles.main}>
+          <View style={styles.headerContainer}>
+            <BaseText variant="bold" size="3xl">
+              Hello, {user?.fullName}
+            </BaseText>
 
-        {/* Recent Coins Section */}
-        <View style={styles.sectionContainer}>
-          <BaseText variant="bold" style={styles.sectionTitle}>
-            Recent Coin
-          </BaseText>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.horizontalScrollContent}
-            style={styles.scrollView}
-          >
-            {trendingIsLoading || marketIsLoading
-              ? Array.from({ length: 3 }).map((_, index) => (
-                <CoinCardSkeleton key={`skeleton-${index}`} />
-              ))
-              : marketData?.data.map((coin) => (
-                <CoinCard key={coin.id} {...coin} />
-              ))}
-          </ScrollView>
+            {!user?.verification?.canTrade && (
+              <BaseText color="#8594A6">
+                Your portfolio is growing. Complete verification to unlock
+                trading and withdrawals.
+              </BaseText>
+            )}
+          </View>
+
+          {/* Intro Card with balance */}
+          <View style={styles.introCard}>
+            <BaseText size="xs" variant="medium" style={styles.introBadge}>
+              {walletData?.verification.label} level
+            </BaseText>
+            <BaseText size="3xl" variant="bold">
+              {walletData?.portfolioValue.toLocaleString("en-US", {
+                style: "currency",
+                currency: walletData?.portfolioCurrency,
+              })}
+            </BaseText>
+            <BaseText size="sm" color="#8594A6" style={styles.portfolioLabel}>
+              Portfolio Balance
+            </BaseText>
+          </View>
+
+          {/* Begin 2FA */}
+          {!user?.verification?.canTrade && (
+            <View style={styles.verify}>
+              <View style={styles.warningCircle}>
+                <BaseText variant="bold" size="xxl" color="#E5A93C">
+                  !
+                </BaseText>
+              </View>
+              <View style={styles.verifyTextContainer}>
+                <BaseText variant="bold" size="lg" color="#FFFFFF">
+                  Verify to trade
+                </BaseText>
+                <BaseText
+                  size="sm"
+                  color="#8594A6"
+                  style={styles.verifySubtitle}
+                >
+                  Trading and withdrawals are locked until your identity is
+                  approved.
+                </BaseText>
+              </View>
+              <BaseTouchableOpacity
+                onPress={() => router.push("/kyc")}
+                style={styles.startButton}
+              >
+                <BaseText variant="bold" size="md" color="#5ED5A8">
+                  Start
+                </BaseText>
+              </BaseTouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* Top Coins Section */}
         <View style={styles.sectionContainer}>
-          <BaseText variant="bold" style={styles.sectionTitle}>
-            Top Coins
+          <BaseText variant="bold" size="lg" style={styles.sectionTitle}>
+            Trending Assets
           </BaseText>
           <ScrollView
             horizontal
@@ -109,11 +155,11 @@ export default function HomeScreen() {
           >
             {trendingIsLoading || marketIsLoading
               ? Array.from({ length: 3 }).map((_, index) => (
-                <CoinCardSkeleton key={`skeleton-${index}`} />
-              ))
+                  <CoinCardSkeleton key={`skeleton-${index}`} />
+                ))
               : trendingData?.data.map((coin) => (
-                <CoinCard key={coin.id} {...coin} />
-              ))}
+                  <CoinCard key={coin.id} {...coin} />
+                ))}
           </ScrollView>
         </View>
       </ScrollView>
@@ -123,16 +169,16 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   lightBackground: {
-    backgroundColor: "#FFFFFF",
     flex: 1,
-    // Space for the floating bottom tab bar
+  },
+  lightBackgroundContent: {
+    paddingTop: 24,
+    paddingBottom: 100,
   },
   sectionContainer: {
     marginBottom: 28,
   },
   sectionTitle: {
-    fontSize: 18,
-    color: "#1B232A",
     marginBottom: 16,
     marginLeft: 20,
   },
@@ -143,6 +189,61 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 20,
     paddingTop: 8,
-    // paddingBottom: 24,  // Extra bottom padding so the large card shadow doesn't get cut off
+  },
+  main: {
+    marginHorizontal: 20,
+  },
+  headerContainer: {
+    marginBottom: 26,
+  },
+  introCard: {
+    backgroundColor: "#083D2B",
+    padding: 22,
+    paddingVertical: 32,
+    borderRadius: 20,
+    marginBottom: 30,
+  },
+  introBadge: {
+    backgroundColor: "#1B1F27",
+    alignSelf: "flex-start",
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    marginBottom: 10,
+  },
+  portfolioLabel: {
+    marginTop: 10,
+  },
+  verify: {
+    backgroundColor: "#141820",
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 16,
+  },
+  warningCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(229, 169, 60, 0.15)",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    justifyContent: "center",
+  },
+  verifyTextContainer: {
+    flex: 1,
+    flexShrink: 1,
+    gap: 4,
+  },
+  verifySubtitle: {
+    lineHeight: 18,
+    flexShrink: 1,
+  },
+  startButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 4,
   },
 });

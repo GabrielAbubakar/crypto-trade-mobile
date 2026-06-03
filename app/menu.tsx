@@ -3,7 +3,6 @@ import profileImage from "@/assets/images/avatar.jpg";
 import {
   BackHeader,
   BaseButton,
-  BaseTouchableOpacity,
   MenuGridItem,
   ScreenContainer,
 } from "@/components";
@@ -38,10 +37,7 @@ export default function MenuScreen() {
           <ActivityIndicator size="large" color={Colors.primary} />
         ) : (
           <View style={styles.profileSection}>
-            <BaseTouchableOpacity
-              style={styles.userInfo}
-              onPress={() => router.push("/profile")}
-            >
+            <View style={styles.userInfo}>
               <Image source={profileImage} style={styles.avatar} />
               <View style={styles.userDetails}>
                 <Title style={styles.username}>{data?.fullName}</Title>
@@ -52,7 +48,7 @@ export default function MenuScreen() {
                   <CopyIcon width={14} height={14} style={styles.copyIcon} />
                 </View>
               </View>
-            </BaseTouchableOpacity>
+            </View>
 
             <BaseButton
               title="Settings"
