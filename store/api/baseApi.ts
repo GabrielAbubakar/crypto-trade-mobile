@@ -6,6 +6,9 @@ import type {
 } from "@reduxjs/toolkit/query/react";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { logout, setCredentials } from "../slices";
+import { Mutex } from "async-mutex";
+
+const mutex = new Mutex();
 
 // 1. Standard base query configuration
 const baseQuery = fetchBaseQuery({
@@ -25,6 +28,9 @@ const baseQueryWithReAuth: BaseQueryFn<
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
+  // wait until the mutex is available without locking it
+  await mutex.waitForUnlock();
+  
   // Run the initial request
   let result = await baseQuery(args, api, extraOptions);
   // console.log(
@@ -36,52 +42,64 @@ const baseQueryWithReAuth: BaseQueryFn<
   // Check if the request failed due to an unauthorized token
   if (result.error && result.error.status === 401) {
     console.log("❌ 401 Unauthorized Error");
-    // Fetch your stored refresh token
-    const refreshToken = (api.getState() as any).auth.refreshToken;
-
-    if (refreshToken) {
+    
+    // checking whether the mutex is locked
+    if (!mutex.isLocked()) {
+      const release = await mutex.acquire();
       try {
-        console.log("🔃 Refreshing token...");
-        // Send request to get a new access token
-        const refreshResult = await baseQuery(
-          {
-            url: "/auth/refresh",
-            method: "POST",
-            body: { refreshToken },
-          },
-          api,
-          extraOptions,
-        );
+        // Fetch your stored refresh token
+        const refreshToken = (api.getState() as any).auth.refreshToken;
 
-        if (refreshResult.data) {
-          console.log("✅ Token Refresh Successful");
-          showSuccessToast("✅ Token Refresh Successful");
-          const rawPayload = (refreshResult.data as any).data;
-          const newTokens = {
-            user: rawPayload.user || (api.getState() as any).auth.user,
-            accessToken: rawPayload.accessToken || rawPayload.token,
-            refreshToken: rawPayload.refreshToken || refreshToken,
-          };
+        if (refreshToken) {
+          console.log("🔃 Refreshing token...");
+          // Send request to get a new access token
+          const refreshResult = await baseQuery(
+            {
+              url: "/auth/refresh",
+              method: "POST",
+              body: { refreshToken },
+            },
+            api,
+            extraOptions,
+          );
 
-          // Update your Redux store state
-          api.dispatch(setCredentials(newTokens));
+          if (refreshResult.data) {
+            console.log("✅ Token Refresh Successful");
+            showSuccessToast("✅ Token Refresh Successful");
+            const rawPayload = (refreshResult.data as any).data;
+            const newTokens = {
+              user: rawPayload.user || (api.getState() as any).auth.user,
+              accessToken: rawPayload.accessToken || rawPayload.token,
+              refreshToken: rawPayload.refreshToken || refreshToken,
+            };
 
-          // Retry the initial failed request with the new token
-          result = await baseQuery(args, api, extraOptions);
-          //   console.log("Retry result", result);
+            // Update your Redux store state
+            api.dispatch(setCredentials(newTokens));
+
+            // Retry the initial failed request with the new token
+            result = await baseQuery(args, api, extraOptions);
+            //   console.log("Retry result", result);
+          } else {
+            // Refresh token endpoint failed (e.g., refresh token expired)
+            showErrorToast("Token refresh failed");
+            api.dispatch(logout());
+          }
         } else {
-          // Refresh token endpoint failed (e.g., refresh token expired)
-          showErrorToast("Token refresh failed");
+          // No refresh token available
           api.dispatch(logout());
         }
       } catch (error) {
         // Refresh token endpoint failed (e.g., refresh token expired)
         showErrorToast("Token refresh failed");
         api.dispatch(logout());
+      } finally {
+        // release must be called once the mutex should be released again.
+        release();
       }
     } else {
-      // No refresh token available
-      api.dispatch(logout());
+      // wait until the mutex is available without locking it
+      await mutex.waitForUnlock();
+      result = await baseQuery(args, api, extraOptions);
     }
   }
 
