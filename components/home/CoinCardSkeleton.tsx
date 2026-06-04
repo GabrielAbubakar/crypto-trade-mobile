@@ -9,82 +9,34 @@ import { Skeleton } from "../ui/Skeleton";
 export const CoinCardSkeleton: React.FC = () => {
   return (
     <View style={styles.coinCardSkeleton}>
-      {/* Header: Price & Icon */}
-      <View style={styles.header}>
-        <Skeleton
-          width={60}
-          height={20}
-          borderRadius={4}
-          backgroundColor="#e8e8e8"
-        />
-        <Skeleton
-          width={28}
-          height={28}
-          borderRadius={4}
-          backgroundColor="#e8e8e8"
-        />
-      </View>
+      {/* Symbol */}
+      <Skeleton
+        width={40}
+        height={20}
+        borderRadius={4}
+        backgroundColor="rgba(255, 255, 255, 0.1)"
+      />
 
-      {/* Meta Row: Pair & Change */}
-      <View style={styles.metaRow}>
-        <Skeleton
-          width={50}
-          height={14}
-          borderRadius={4}
-          backgroundColor="#e8e8e8"
-        />
-        <Skeleton
-          width={40}
-          height={14}
-          borderRadius={4}
-          backgroundColor="#e8e8e8"
-        />
-      </View>
-
-      {/* Sparkline */}
-      <View style={styles.sparklineContainer}>
-        <Skeleton
-          width="100%"
-          height={35}
-          borderRadius={4}
-          backgroundColor="#e8e8e8"
-        />
-      </View>
+      {/* Change */}
+      <Skeleton
+        width={50}
+        height={20}
+        borderRadius={4}
+        backgroundColor="rgba(255, 255, 255, 0.1)"
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   coinCardSkeleton: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    padding: 16,
-    width: 180,
-    height: 155,
-    borderWidth: 1,
-    borderColor: "#F2F3F7",
-    gap: 8,
-    boxShadow: [
-      {
-        offsetX: 0,
-        offsetY: 16,
-        blurRadius: 50,
-        color: "rgba(22, 28, 34, 0.08)",
-      },
-    ],
-  },
-  header: {
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-  },
-  metaRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 8,
-  },
-  sparklineContainer: {
-    height: 35,
-    marginTop: 8,
+    width: "100%",
   },
 });

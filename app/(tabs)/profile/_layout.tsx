@@ -1,10 +1,14 @@
 import { Stack } from "expo-router";
 
-export default function MarketsLayout() {
+export default function ProfileLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="edit" />
+      <Stack.Screen name="security" />
+      <Stack.Screen name="price-alerts" />
+      <Stack.Screen name="notifications" />
+      <Stack.Screen name="watchlist" />
     </Stack>
   );
 }

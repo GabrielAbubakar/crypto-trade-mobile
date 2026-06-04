@@ -89,6 +89,7 @@ export const profileApi = baseApi.injectEndpoints({
         url: "/me/price-alerts",
         method: "GET",
       }),
+      transformResponse: (response: { data: IPriceAlert[] }) => response.data,
     }),
     createPriceAlert: builder.mutation<IPriceAlert, ICreatePriceAlertRequest>({
       query: (body) => ({

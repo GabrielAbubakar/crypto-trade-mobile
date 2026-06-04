@@ -4,6 +4,7 @@ export * from "./BaseInput";
 export * from "./BaseModal";
 export * from "./BaseText";
 export * from "./BaseTouchableOpacity";
+export * from "./ProfileOptionCard";
 export * from "./ConfirmationModal";
 export * from "./MenuGridItem";
 export * from "./MenuItem";

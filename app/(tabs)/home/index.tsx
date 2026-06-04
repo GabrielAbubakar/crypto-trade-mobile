@@ -11,7 +11,6 @@ import {
   UserHeader,
 } from "@/components";
 import {
-  useGetMarketAssetsQuery,
   useGetProfileQuery,
   useGetTrendingAssetsQuery,
   useGetWalletBalancesQuery,
@@ -42,19 +41,13 @@ export default function HomeScreen() {
     isFetching: trendingIsLoading,
     refetch: refetchTrending,
   } = useGetTrendingAssetsQuery();
-  const {
-    data: marketData,
-    isFetching: marketIsLoading,
-    refetch: refetchMarket,
-  } = useGetMarketAssetsQuery();
   const { data: user } = useGetProfileQuery();
   const { data: walletData } = useGetWalletBalancesQuery();
 
-  console.log(walletData);
+  // console.log(walletData);
 
   function handleRefresh() {
     refetchTrending();
-    refetchMarket();
   }
 
   // useEffect(() => {
@@ -72,7 +65,7 @@ export default function HomeScreen() {
       <ScrollView
         refreshControl={
           <RefreshControl
-            refreshing={trendingIsLoading || marketIsLoading}
+            refreshing={trendingIsLoading}
             onRefresh={handleRefresh}
           />
         }
@@ -148,12 +141,11 @@ export default function HomeScreen() {
             Trending Assets
           </BaseText>
           <ScrollView
-            horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.horizontalScrollContent}
             style={styles.scrollView}
           >
-            {trendingIsLoading || marketIsLoading
+            {trendingIsLoading
               ? Array.from({ length: 3 }).map((_, index) => (
                   <CoinCardSkeleton key={`skeleton-${index}`} />
                 ))
