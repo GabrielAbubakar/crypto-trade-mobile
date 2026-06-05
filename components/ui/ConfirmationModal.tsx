@@ -15,6 +15,9 @@ interface ConfirmationModalProps {
   message?: string;
   confirmLabel?: string;
   cancelLabel?: string;
+  showIcon?: boolean;
+  iconName?: any;
+  iconColor?: string;
 }
 
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -26,11 +29,16 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   message = "Are you sure you want to logout?",
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
+  showIcon = true,
+  iconName = "log-out-outline",
+  iconColor = Colors.error,
 }) => (
   <BaseModal visible={visible} onClose={onCancel}>
-    <View style={styles.iconWrapper}>
-      <Ionicons name="log-out-outline" size={36} color={Colors.error} />
-    </View>
+    {showIcon && (
+      <View style={styles.iconWrapper}>
+        <Ionicons name={iconName} size={36} color={iconColor} />
+      </View>
+    )}
     <BaseText variant="bold" size="lg" style={styles.title}>
       {title}
     </BaseText>

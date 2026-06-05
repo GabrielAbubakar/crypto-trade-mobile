@@ -17,7 +17,13 @@ type KYCStatus = "starter" | "pending" | "approved" | "rejected";
 export default function KYCIndex() {
   const router = useRouter();
   const { data: profileData } = useGetProfileQuery();
-  const [status, setStatus] = useState(profileData?.verification.tier);
+  const [status, setStatus] = useState<KYCStatus>("starter");
+
+  React.useEffect(() => {
+    if (profileData?.verification.tier) {
+      setStatus(profileData.verification.tier as KYCStatus);
+    }
+  }, [profileData]);
 
   console.log(profileData?.verification);
 
@@ -196,7 +202,7 @@ export default function KYCIndex() {
     }
   };
 
-  const getHeaderTitle = () => {
+  const getHeaderTitle = (): string => {
     switch (status) {
       case "starter":
         return "Verify to unlock limits";
@@ -206,6 +212,8 @@ export default function KYCIndex() {
         return "Verification approved";
       case "rejected":
         return "Review needs attention";
+      default:
+        return "Verify identity";
     }
   };
 

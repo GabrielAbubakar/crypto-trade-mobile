@@ -14,6 +14,7 @@ interface ProfileOptionCardProps {
   value?: string;
   valueColor?: string;
   onPress?: () => void;
+  onLongPress?: () => void;
 }
 
 export const ProfileOptionCard: React.FC<ProfileOptionCardProps> = ({
@@ -25,9 +26,14 @@ export const ProfileOptionCard: React.FC<ProfileOptionCardProps> = ({
   value,
   valueColor = Colors.textSecondary,
   onPress,
+  onLongPress,
 }) => {
   return (
-    <BaseTouchableOpacity onPress={onPress} style={styles.container}>
+    <BaseTouchableOpacity 
+      onPress={onPress} 
+      onLongPress={onLongPress} 
+      style={styles.container}
+    >
       <View style={styles.leftSection}>
         {icon ? (
           <View

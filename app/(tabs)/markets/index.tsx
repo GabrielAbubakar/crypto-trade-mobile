@@ -1,39 +1,80 @@
-import NotificationIcon from "@/assets/icons/main/notification.svg";
-import QrIcon from "@/assets/icons/main/scanner.svg";
-import SearchIcon from "@/assets/icons/main/search.svg";
-import type { HeaderButtonProps } from "@/components";
 import {
+  BaseInput,
   BaseText,
-  MarketTabsView,
+  BaseTouchableOpacity,
   ScreenContainer,
-  UserHeader,
 } from "@/components";
-import { Colors } from "@/constants";
+import { MarketCoinRow } from "@/components/markets/MarketCoinRow";
+import { MarketCoinRowSkeleton } from "@/components/markets/MarketCoinRowSkeleton";
+import { Colors, MARKET_TABS } from "@/constants";
+import { useGetMarketAssetsQuery } from "@/store";
+import type { IGetMarketAssetsRequest } from "@/types";
 import { Feather } from "@expo/vector-icons";
-import React from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
 
-const headerButtons: HeaderButtonProps[] = [
-  {
-    link: "/home/search",
-    icon: SearchIcon,
-  },
-  {
-    link: "/home/qr-scan",
-    icon: QrIcon,
-  },
-  {
-    link: "/home/notifications",
-    icon: NotificationIcon,
-  },
-];
+function EmptyComponent({ searchQuery }: { searchQuery?: string }) {
+  return (
+    <View style={styles.emptyContainer}>
+      <View style={styles.emptyIconWrapper}>
+        <Feather name="search" size={32} color="#777777" />
+      </View>
+      <BaseText size="lg" variant="bold" style={styles.emptyTitle}>
+        No assets found
+      </BaseText>
+      <BaseText style={styles.emptySubtitle}>
+        {searchQuery
+          ? `We couldn't find any results for "${searchQuery}".`
+          : "There are currently no assets available."}
+      </BaseText>
+    </View>
+  );
+}
 
 export default function MarketsScreen() {
-  return (
-    <ScreenContainer withPadding={false} scrollable style={styles.container}>
-      {/* Header */}
-      <UserHeader userButtons={headerButtons} />
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [queryParams, setQueryParams] = useState<IGetMarketAssetsRequest>({
+    include: "sparkline",
+  });
 
+  const {
+    data: trendingData,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useGetMarketAssetsQuery(queryParams, { pollingInterval: 5000 });
+
+  useEffect(() => {
+    setQueryParams((prev) => ({
+      ...prev,
+      q: searchQuery || undefined,
+    }));
+  }, [searchQuery]);
+
+  const handleTabPress = (tabName: string) => {
+    if (tabName === "Gainers") {
+      router.push("/markets/trending");
+    } else if (tabName === "Watchlist") {
+      router.push("/markets/watchlist");
+    }
+  };
+
+  const renderCoinItem = ({ item }: { item: any }) =>
+    isLoading ? (
+      <MarketCoinRowSkeleton key={item.id} />
+    ) : (
+      <BaseTouchableOpacity
+        key={item.id}
+        onPress={() => router.push(`/markets/${item.symbol}` as any)}
+      >
+        <MarketCoinRow {...item} />
+      </BaseTouchableOpacity>
+    );
+
+  return (
+    <ScreenContainer withPadding={false} style={styles.container}>
       <View style={styles.header}>
         <BaseText size="3xl" variant="bold" style={styles.title}>
           Markets
@@ -41,16 +82,61 @@ export default function MarketsScreen() {
         <BaseText size="md" style={styles.subtitle}>
           Search assets, view live prices, and open a coin detail screen.
         </BaseText>
+
+        <BaseInput
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          containerStyle={{ backgroundColor: "#141820" }}
+          placeholder="Search coin or symbol"
+        />
       </View>
 
-      <MarketTabsView />
+      {/* Tabs Row */}
+      <View style={styles.tabsContainer}>
+        <View style={styles.tabsBackground}>
+          {MARKET_TABS.map((tab) => {
+            const isActive = tab === "All";
+            return (
+              <TouchableOpacity
+                key={tab}
+                activeOpacity={0.8}
+                onPress={() => handleTabPress(tab)}
+                style={[styles.tabButton, isActive && styles.tabButtonActive]}
+              >
+                <BaseText
+                  style={[styles.tabText, isActive && styles.tabTextActive]}
+                >
+                  {tab}
+                </BaseText>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
 
-      {/* Add Favorite Button */}
-      <View style={styles.actionContainer}>
-        <TouchableOpacity activeOpacity={0.8} style={styles.favoriteButton}>
-          <Feather name="plus" size={16} color={Colors.textSecondary} />
-          <BaseText style={styles.favoriteButtonText}>Add Favorite</BaseText>
-        </TouchableOpacity>
+      {/* List content */}
+      <View style={{ position: "relative", flex: 1 }}>
+        <FlatList
+          data={
+            isLoading
+              ? Array.from({ length: 5 }).map((_, index) => ({ id: index }))
+              : trendingData?.data
+          }
+          keyExtractor={(item) => item.id}
+          ListEmptyComponent={<EmptyComponent searchQuery={searchQuery} />}
+          ItemSeparatorComponent={() => (
+            <View
+              style={{
+                width: "100%",
+                height: 6,
+                backgroundColor: "transparent",
+              }}
+            />
+          )}
+          renderItem={renderCoinItem}
+          contentContainerStyle={styles.listContainer}
+          showsVerticalScrollIndicator={false}
+        />
       </View>
     </ScreenContainer>
   );
@@ -59,6 +145,7 @@ export default function MarketsScreen() {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.secondary,
+    flex: 1,
   },
   header: {
     paddingHorizontal: 20,
@@ -71,26 +158,60 @@ const styles = StyleSheet.create({
   subtitle: {
     color: Colors.textSecondary,
   },
-  actionContainer: {
+  tabsContainer: {
     paddingHorizontal: 20,
-    marginTop: 24,
-    marginBottom: 140, // extra spacing so the float bottom tab doesn't cut it off
+    marginTop: 16,
+    marginBottom: 20,
   },
-  favoriteButton: {
+  tabsBackground: {
     flexDirection: "row",
-    height: 56,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.15)",
-    borderStyle: "dashed",
-    borderRadius: 16,
+    backgroundColor: "#161C22",
+    borderRadius: 14,
+    padding: 4,
+    justifyContent: "space-between",
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: "center",
+    borderRadius: 10,
+  },
+  tabButtonActive: {
+    backgroundColor: "#1B232A",
+  },
+  tabText: {
+    color: "#777777",
+    fontSize: 14,
+  },
+  tabTextActive: {
+    color: "#C1C7CD",
+  },
+  listContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 30, // ensure content isn't hidden behind the bottom tab bar
+  },
+  emptyContainer: {
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
-    backgroundColor: "transparent",
+    paddingVertical: 60,
+    paddingHorizontal: 20,
   },
-  favoriteButtonText: {
+  emptyIconWrapper: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: "#161C22",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    color: Colors.white,
+    marginBottom: 8,
+  },
+  emptySubtitle: {
     color: "#777777",
-    fontSize: 15,
-    fontWeight: "600",
+    textAlign: "center",
+    lineHeight: 20,
   },
 });

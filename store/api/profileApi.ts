@@ -1,6 +1,8 @@
 import type {
   ICreatePriceAlertRequest,
   IGetProfileResponse,
+  IMarketAsset,
+  INotification,
   IPriceAlert,
   IRegisterDeviceRequest,
   IUpdatePriceAlertRequest,
@@ -64,11 +66,13 @@ export const profileApi = baseApi.injectEndpoints({
         body,
       }),
     }),
-    getWatchlist: builder.query<string[], void>({
-      query: () => ({
+    getWatchlist: builder.query<IMarketAsset[], { include?: string } | void>({
+      query: (params) => ({
         url: "/me/watchlist",
         method: "GET",
+        params: params || undefined,
       }),
+      transformResponse: (response: { data: IMarketAsset[] }) => response.data,
     }),
     addToWatchlist: builder.mutation<{ success: boolean }, string>({
       query: (symbol) => ({
@@ -90,6 +94,7 @@ export const profileApi = baseApi.injectEndpoints({
         method: "GET",
       }),
       transformResponse: (response: { data: IPriceAlert[] }) => response.data,
+      providesTags: ["PriceAlert"],
     }),
     createPriceAlert: builder.mutation<IPriceAlert, ICreatePriceAlertRequest>({
       query: (body) => ({
@@ -97,6 +102,7 @@ export const profileApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
+      invalidatesTags: ["PriceAlert"],
     }),
     updatePriceAlert: builder.mutation<
       IPriceAlert,
@@ -107,30 +113,35 @@ export const profileApi = baseApi.injectEndpoints({
         method: "PATCH",
         body,
       }),
+      invalidatesTags: ["PriceAlert"],
     }),
     deletePriceAlert: builder.mutation<{ success: boolean }, string>({
       query: (alertId) => ({
         url: `/me/price-alerts/${alertId}`,
         method: "DELETE",
       }),
+      invalidatesTags: ["PriceAlert"],
     }),
-    getNotifications: builder.query<any, void>({
+    getNotifications: builder.query<{ data: INotification[] }, void>({
       query: () => ({
         url: "/me/notifications",
         method: "GET",
       }),
+      providesTags: ["Notification"],
     }),
     markNotificationAsRead: builder.mutation<{ success: boolean }, string>({
       query: (notificationId) => ({
         url: `/me/notifications/${notificationId}/read`,
         method: "PATCH",
       }),
+      invalidatesTags: ["Notification"],
     }),
     markAllNotificationsAsRead: builder.mutation<{ success: boolean }, void>({
       query: () => ({
         url: "/me/notifications/read-all",
         method: "PATCH",
       }),
+      invalidatesTags: ["Notification"],
     }),
   }),
   overrideExisting: true,

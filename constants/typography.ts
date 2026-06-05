@@ -16,6 +16,7 @@ export const FontSize = {
   lg: 18,
   xl: 20,
   xxl: 24,
+  "2xl": 24,
   "3xl": 28,
   xxxl: 32,
   xxxxl: 44,

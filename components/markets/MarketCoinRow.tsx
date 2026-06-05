@@ -2,7 +2,7 @@ import type { IMarketAsset } from "@/types";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { SvgUri } from "react-native-svg";
-import { BaseText, Sparkline } from "../ui";
+import { BaseText, ItemBgContainer, Sparkline } from "../ui";
 
 export const MarketCoinRow: React.FC<IMarketAsset> = ({
   priceUsd,
@@ -20,35 +20,45 @@ export const MarketCoinRow: React.FC<IMarketAsset> = ({
       : iconUrl;
 
   return (
-    <View style={styles.coinRow}>
-      {/* Left Column: Icon & Names */}
-      <View style={styles.leftCol}>
-        <View style={styles.iconContainer}>
-          <SvgUri width={"100%"} height={"100%"} uri={resolvedUrl} />
+    <ItemBgContainer>
+      <View style={styles.coinRow}>
+        {/* Left Column: Icon & Names */}
+        <View style={styles.leftCol}>
+          <View style={styles.iconContainer}>
+            <SvgUri width={"100%"} height={"100%"} uri={resolvedUrl} />
+          </View>
+          <View style={styles.nameStack}>
+            <BaseText variant="bold" style={styles.coinName}>
+              {name}
+            </BaseText>
+            <BaseText style={styles.coinTicker}>{symbol}</BaseText>
+          </View>
         </View>
-        <View style={styles.nameStack}>
-          <BaseText variant="bold" style={styles.coinName}>
-            {name}
+
+        {/* Middle Column: Sparkline chart */}
+        <View style={styles.sparkCol}>
+          <Sparkline
+            data={sparkline}
+            color={trendColor}
+            width={90}
+            height={32}
+          />
+        </View>
+
+        {/* Right Column: Price & Change percentage */}
+        <View style={styles.rightCol}>
+          <BaseText variant="bold" style={styles.coinPrice}>
+            {priceUsd.toLocaleString("en-US", {
+              currency: "USD",
+              style: "currency",
+            })}
           </BaseText>
-          <BaseText style={styles.coinTicker}>{symbol}</BaseText>
+          <BaseText style={[styles.coinChange, { color: trendColor }]}>
+            {change24h}%
+          </BaseText>
         </View>
       </View>
-
-      {/* Middle Column: Sparkline chart */}
-      <View style={styles.sparkCol}>
-        <Sparkline data={sparkline} color={trendColor} width={90} height={32} />
-      </View>
-
-      {/* Right Column: Price & Change percentage */}
-      <View style={styles.rightCol}>
-        <BaseText variant="bold" style={styles.coinPrice}>
-          {priceUsd}
-        </BaseText>
-        <BaseText style={[styles.coinChange, { color: trendColor }]}>
-          {change24h}%
-        </BaseText>
-      </View>
-    </View>
+    </ItemBgContainer>
   );
 };
 
@@ -57,8 +67,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 12,
-    paddingVertical: 16,
+    gap: 48,
   },
   leftCol: {
     flexDirection: "row",

@@ -3,65 +3,45 @@ import {
   BaseButton,
   ProfileOptionCard,
   ScreenContainer,
+  Skeleton,
 } from "@/components";
 import { BaseText } from "@/components/ui/BaseText";
 import { Colors } from "@/constants";
-import { showSuccessToast } from "@/utils";
+import {
+  useGetNotificationsQuery,
+  useMarkAllNotificationsAsReadMutation,
+  useMarkNotificationAsReadMutation,
+} from "@/store";
+import { showErrorToast, showSuccessToast } from "@/utils";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
-interface NotificationItem {
-  id: string;
-  title: string;
-  message: string;
-  isRead: boolean;
-  type: "kyc" | "wallet" | "alert";
-  time: string;
-}
-
 export default function NotificationsScreen() {
-  const initialNotifications: NotificationItem[] = [
-    {
-      id: "1",
-      title: "KYC approved",
-      message: "You can now trade and withdraw.",
-      isRead: false,
-      type: "kyc",
-      time: "Now",
-    },
-    {
-      id: "2",
-      title: "USDT deposit completed",
-      message: "250 USDT added to wallet.",
-      isRead: false,
-      type: "wallet",
-      time: "Now",
-    },
-    {
-      id: "3",
-      title: "BTC price alert",
-      message: "BTC crossed your target.",
-      isRead: true,
-      type: "alert",
-      time: "Read",
-    },
-  ];
+  const { data: notificationsData, isLoading } = useGetNotificationsQuery();
+  const notifications = notificationsData?.data ?? [];
+  const [markNotificationAsRead] = useMarkNotificationAsReadMutation();
+  const [markAllNotificationsAsRead, { isLoading: isMarkingAll }] =
+    useMarkAllNotificationsAsReadMutation();
 
-  const [notifications, setNotifications] =
-    useState<NotificationItem[]>(initialNotifications);
-
-  const handleMarkAllRead = () => {
-    setNotifications(
-      notifications.map((n) => ({ ...n, isRead: true, time: "Read" })),
-    );
-    showSuccessToast("All notifications marked as read");
+  const handleMarkAllRead = async () => {
+    try {
+      await markAllNotificationsAsRead().unwrap();
+      showSuccessToast("All notifications marked as read");
+    } catch (err) {
+      showErrorToast("Failed to mark all notifications as read");
+    }
   };
 
-  const handleClearAll = () => {
-    setNotifications([]);
-    showSuccessToast("Notifications cleared!");
+  const handleNotificationPress = async (id: string) => {
+    try {
+      await markNotificationAsRead(id).unwrap();
+    } catch (err) {
+      showErrorToast("Failed to mark notification as read");
+    }
   };
+
+  console.log(notificationsData);
 
   const getIcon = (type: "kyc" | "wallet" | "alert", isRead: boolean) => {
     const color = isRead ? "#8594A6" : "#5ED5A8";
@@ -75,6 +55,125 @@ export default function NotificationsScreen() {
     }
   };
 
+  const formatNotificationTime = (createdAtStr: string, isRead: boolean) => {
+    if (!isRead) return "Now";
+    try {
+      const date = new Date(createdAtStr);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins < 1) return "Now";
+      if (diffMins < 60) return `${diffMins}m ago`;
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours}h ago`;
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+    } catch (e) {
+      return "Read";
+    }
+  };
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <View style={{ flex: 1 }}>
+          <View style={styles.actionsRow}>
+            <Skeleton width="100%" height={48} borderRadius={16} />
+          </View>
+          <ScrollView
+            contentContainerStyle={styles.scrollList}
+            scrollEnabled={false}
+          >
+            {Array.from({ length: 4 }).map((_, index) => (
+              <View key={`skeleton-${index}`} style={styles.skeletonCard}>
+                <View style={styles.skeletonLeft}>
+                  <Skeleton width={40} height={40} borderRadius={20} />
+                  <View style={styles.skeletonText}>
+                    <Skeleton
+                      width={120}
+                      height={14}
+                      borderRadius={4}
+                      style={{ marginBottom: 8 }}
+                    />
+                    <Skeleton width={180} height={12} borderRadius={4} />
+                  </View>
+                </View>
+                <Skeleton width={48} height={24} borderRadius={12} />
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      );
+    }
+
+    if (notifications.length > 0) {
+      return (
+        <View style={{ flex: 1 }}>
+          <View style={styles.actionsRow}>
+            <BaseButton
+              title="Mark all as read"
+              variant="secondary"
+              onPress={handleMarkAllRead}
+              isLoading={isMarkingAll}
+              disabled={isMarkingAll}
+              style={styles.markReadBtn}
+            />
+          </View>
+
+          <ScrollView contentContainerStyle={styles.scrollList}>
+            {notifications.map((notif) => {
+              const type =
+                (notif.type as "kyc" | "wallet" | "alert") || "alert";
+              return (
+                <ProfileOptionCard
+                  key={notif.id}
+                  title={notif.title}
+                  description={notif.body}
+                  icon={getIcon(type, notif.isRead)}
+                  iconBgColor={notif.isRead ? "#1A2130" : "#23362F"}
+                  rightElement={
+                    <View
+                      style={notif.isRead ? styles.badgeRead : styles.badgeNow}
+                    >
+                      <BaseText
+                        variant="bold"
+                        size="xs"
+                        color={notif.isRead ? "#8594A6" : "#5ED5A8"}
+                      >
+                        {formatNotificationTime(notif.createdAt, notif.isRead)}
+                      </BaseText>
+                    </View>
+                  }
+                  onPress={() => handleNotificationPress(notif.id)}
+                />
+              );
+            })}
+          </ScrollView>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.emptyContainer}>
+        <Ionicons
+          name="sparkles-outline"
+          size={60}
+          color="#5ED5A8"
+          style={styles.emptyIcon}
+        />
+        <BaseText variant="bold" color="#FFFFFF" style={styles.emptyTitle}>
+          All caught up
+        </BaseText>
+        <BaseText size="sm" color="#8594A6" style={styles.emptyText}>
+          When the list is empty, show this calm state instead of a blank
+          screen.
+        </BaseText>
+      </View>
+    );
+  };
+
   return (
     <ScreenContainer style={styles.container} withPadding={true}>
       <BackHeader title="Notifications" />
@@ -83,66 +182,7 @@ export default function NotificationsScreen() {
         Security, KYC, transaction, and alert messages.
       </BaseText>
 
-      {notifications.length > 0 ? (
-        <View style={{ flex: 1 }}>
-          <View style={styles.actionsRow}>
-            <BaseButton
-              title="Mark all as read"
-              variant="secondary"
-              onPress={handleMarkAllRead}
-              style={styles.markReadBtn}
-            />
-            <BaseButton
-              title="Clear all"
-              variant="secondary"
-              onPress={handleClearAll}
-              style={styles.clearBtn}
-            />
-          </View>
-
-          <ScrollView contentContainerStyle={styles.scrollList}>
-            {notifications.map((notif) => (
-              <ProfileOptionCard
-                key={notif.id}
-                title={notif.title}
-                description={notif.message}
-                icon={getIcon(notif.type, notif.isRead)}
-                iconBgColor={notif.isRead ? "#1A2130" : "#23362F"}
-                rightElement={
-                  <View
-                    style={notif.isRead ? styles.badgeRead : styles.badgeNow}
-                  >
-                    <BaseText
-                      variant="bold"
-                      size="xs"
-                      color={notif.isRead ? "#8594A6" : "#5ED5A8"}
-                    >
-                      {notif.time}
-                    </BaseText>
-                  </View>
-                }
-              />
-            ))}
-          </ScrollView>
-        </View>
-      ) : (
-        /* Empty State */
-        <View style={styles.emptyContainer}>
-          <Ionicons
-            name="sparkles-outline"
-            size={60}
-            color="#5ED5A8"
-            style={styles.emptyIcon}
-          />
-          <BaseText variant="bold" color="#FFFFFF" style={styles.emptyTitle}>
-            All caught up
-          </BaseText>
-          <BaseText size="sm" color="#8594A6" style={styles.emptyText}>
-            When the list is empty, show this calm state instead of a blank
-            screen.
-          </BaseText>
-        </View>
-      )}
+      {renderContent()}
     </ScreenContainer>
   );
 }
@@ -158,14 +198,10 @@ const styles = StyleSheet.create({
   },
   actionsRow: {
     flexDirection: "row",
-    gap: 12,
     marginBottom: 24,
   },
   markReadBtn: {
-    flex: 1.5,
-  },
-  clearBtn: {
-    flex: 1,
+    width: "100%",
   },
   scrollList: {
     paddingBottom: 40,
@@ -199,5 +235,23 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: "center",
     lineHeight: 22,
+  },
+  skeletonCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#141820",
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 12,
+  },
+  skeletonLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    flex: 1,
+  },
+  skeletonText: {
+    flex: 1,
   },
 });

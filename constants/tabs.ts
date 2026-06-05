@@ -14,6 +14,7 @@ export const tabs = [
     name: "markets",
     title: "Markets",
     icon: Markets,
+    // href: "/markets",
   },
   {
     name: "trades",

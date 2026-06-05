@@ -1,3 +1,5 @@
+import type { IVerificationLimits } from "./profileApi.types";
+
 export interface IWalletDepositAddress {
   assetSymbol: string;
   network: string;
@@ -19,12 +21,6 @@ export interface IWallet {
   balances: IWalletBalance[];
 }
 
-export interface IVerificationLimits {
-  depositPerTransactionUsd: number;
-  tradePerTransactionUsd: number;
-  withdrawalPerTransactionUsd: number;
-  dailyWithdrawalUsd: number;
-}
 
 export interface IWalletVerification {
   status: string;

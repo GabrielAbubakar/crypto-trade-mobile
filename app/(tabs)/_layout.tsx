@@ -28,7 +28,7 @@ export default function TabsLayout() {
             backgroundColor: Colors.background,
             borderRadius: 20,
             height: 80,
-            marginBottom: 40,
+            marginBottom: 25,
             marginHorizontal: 20,
             position: "absolute",
             right: 0,
@@ -52,6 +52,7 @@ export default function TabsLayout() {
             name={tab.name}
             options={{
               title: tab.title,
+              href: (tab as any).href,
               tabBarIcon: ({ color, focused }) => {
                 const Icon = tab.icon;
                 return (

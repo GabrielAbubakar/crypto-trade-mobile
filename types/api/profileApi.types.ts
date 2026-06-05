@@ -48,29 +48,37 @@ export interface IRegisterDeviceRequest {
 
 export interface IPriceAlert {
   id: string;
-  symbol: string;
-  targetPrice: string | number;
-  condition: "above" | "below" | string;
+  userId: string;
+  assetSymbol: string;
+  direction: "above" | "below" | string;
+  targetPriceUsd: number;
   isActive: boolean;
+  triggeredAt: string | null;
   createdAt: string;
+  asset?: {
+    symbol: string;
+    name: string;
+  };
 }
 
 export interface ICreatePriceAlertRequest {
-  symbol: string;
-  targetPrice: string | number;
-  condition: "above" | "below" | string;
+  assetSymbol: string;
+  targetPriceUsd: number;
+  direction: "above" | "below" | string;
 }
 
 export interface IUpdatePriceAlertRequest {
-  targetPrice?: string | number;
-  condition?: "above" | "below" | string;
+  targetPriceUsd?: number;
+  direction?: "above" | "below" | string;
   isActive?: boolean;
 }
 
 export interface INotification {
   id: string;
+  userId: string;
   title: string;
-  message: string;
-  read: boolean;
+  body: string;
+  type: "kyc" | "wallet" | "alert" | string;
+  isRead: boolean;
   createdAt: string;
 }

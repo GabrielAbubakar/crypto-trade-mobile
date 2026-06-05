@@ -5,9 +5,11 @@ import { BaseText } from "../ui/BaseText";
 interface NotificationItemProps {
   id: string;
   title: string;
-  subtitle: string;
-  type: "success" | "pending" | "warning";
-  read: boolean;
+  subtitle?: string;
+  body?: string;
+  type?: "success" | "pending" | "warning" | "kyc" | "wallet" | "alert" | string;
+  read?: boolean;
+  isRead?: boolean;
 }
 
 /**
@@ -18,9 +20,21 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
   id,
   title,
   subtitle,
-  type,
+  body,
+  type = "success",
   read,
+  isRead,
 }) => {
+  const displaySubtitle = body ?? subtitle ?? "";
+  const displayRead = isRead ?? read ?? false;
+
+  const resolvedType =
+    type === "kyc" || type === "wallet" || type === "success"
+      ? "success"
+      : type === "pending"
+        ? "pending"
+        : "warning";
+
   return (
     <View style={styles.notificationRow}>
       <View style={styles.rowTitleContainer}>
@@ -29,13 +43,13 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
         </BaseText>
 
         {/* Visual state dots */}
-        {!read && (
+        {!displayRead && (
           <View
             style={[
               styles.indicatorDot,
-              type === "success" && styles.dotSuccess,
-              type === "pending" && styles.dotPending,
-              type === "warning" && styles.dotWarning,
+              resolvedType === "success" && styles.dotSuccess,
+              resolvedType === "pending" && styles.dotPending,
+              resolvedType === "warning" && styles.dotWarning,
             ]}
           />
         )}
@@ -48,7 +62,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
         numberOfLines={1}
         ellipsizeMode="tail"
       >
-        {subtitle}
+        {displaySubtitle}
       </BaseText>
     </View>
   );

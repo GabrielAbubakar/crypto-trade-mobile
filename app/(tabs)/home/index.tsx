@@ -40,7 +40,7 @@ export default function HomeScreen() {
     data: trendingData,
     isFetching: trendingIsLoading,
     refetch: refetchTrending,
-  } = useGetTrendingAssetsQuery();
+  } = useGetTrendingAssetsQuery(undefined);
   const { data: user } = useGetProfileQuery();
   const { data: walletData } = useGetWalletBalancesQuery();
 

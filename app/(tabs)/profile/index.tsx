@@ -35,7 +35,7 @@ export default function ProfileScreen() {
 
   const activeAlertsCount = alerts?.filter((a) => a.isActive).length ?? 0;
   const unreadNotificationsCount =
-    notificationsData?.data?.filter((n: any) => !n.read).length ?? 0;
+    notificationsData?.data?.filter((n: any) => !n.isRead).length ?? 0;
 
   return (
     <ScreenContainer style={styles.container} scrollable withPadding={false}>

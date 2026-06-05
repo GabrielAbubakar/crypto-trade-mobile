@@ -93,7 +93,7 @@ export default function NotificationsScreen() {
         </BaseText>
 
         <View style={styles.subHeaderActions}>
-          {data?.data?.length > 0 && (
+          {(data?.data?.length ?? 0) > 0 && (
             <>
               <BaseTouchableOpacity onPress={handleMarkAllRead}>
                 <BaseText
@@ -111,7 +111,7 @@ export default function NotificationsScreen() {
 
           <BaseTouchableOpacity
             onPress={
-              data?.data?.length > 0 ? handleClearAll : handleRestoreDefaults
+              (data?.data?.length ?? 0) > 0 ? handleClearAll : handleRestoreDefaults
             }
             style={styles.filterButton}
           >

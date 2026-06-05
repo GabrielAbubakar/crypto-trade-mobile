@@ -1,3 +1,13 @@
+export interface IGetMarketAssetsRequest {
+  q?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+  sort?: "symbol" | "priceUsd" | "change24h" | "minBuyUsd";
+  order?: "asc" | "desc";
+  include?: "sparkline" | string;
+}
+
 export interface IMarketSparklinePoint {
   time: string;
   priceUsd: number;
@@ -67,18 +77,87 @@ export interface ITrendingResponse {
   meta: ITrendingMeta;
 }
 
+export interface IAssetStats {
+  marketCapUsd: number;
+  volume24hUsd: number;
+  circulatingSupply: number;
+  maxSupply: number | null;
+  allTimeHighUsd: number;
+  high24hUsd: number;
+  low24hUsd: number;
+  volumeToMarketCapRatio: number;
+  about: string;
+  websiteUrl: string;
+  explorerUrl: string;
+}
+
+export interface IAssetChartPoint {
+  time: string;
+  priceUsd: number;
+}
+
 export interface IAssetDetails {
   id: string;
-  name: string;
   symbol: string;
-  description?: string;
-  price: string | number;
-  change: string | number;
-  sparklineData?: number[];
+  name: string;
+  network: string;
+  priceUsd: number;
+  change24h: number;
+  isActive: boolean;
+  minBuyUsd: number;
+  minSellUsd: number;
+  iconUrl: string;
+  stats: IAssetStats;
+  chart: IAssetChartPoint[];
+}
+
+export interface IAssetDetailsResponse {
+  data: IAssetDetails;
+  meta: {
+    requestId: string;
+  };
 }
 
 export interface IMarketPrice {
   symbol: string;
   price: string | number;
   change?: string | number;
+}
+
+export interface IOrderBookEntry {
+  priceUsd: number;
+  amount: number;
+  total: number;
+}
+
+export interface IOrderBookData {
+  midPriceUsd: number;
+  spreadUsd: number;
+  bids: IOrderBookEntry[];
+  asks: IOrderBookEntry[];
+}
+
+export interface IOrderBookResponse {
+  data: IOrderBookData;
+  meta: {
+    symbol: string;
+    levels: number;
+  };
+}
+
+export interface ITradeData {
+  id: string;
+  side: "buy" | "sell";
+  priceUsd: number;
+  amount: number;
+  totalUsd: number;
+  createdAt: string;
+}
+
+export interface ITradesResponse {
+  data: ITradeData[];
+  meta: {
+    count: number;
+    symbol: string;
+  };
 }
