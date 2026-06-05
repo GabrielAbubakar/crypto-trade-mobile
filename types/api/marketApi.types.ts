@@ -161,3 +161,22 @@ export interface ITradesResponse {
     symbol: string;
   };
 }
+
+export interface ICandleData {
+  time: string;
+  openUsd: number;
+  highUsd: number;
+  lowUsd: number;
+  closeUsd: number;
+  volume: number;
+}
+
+export interface IAssetCandlesResponse {
+  data: ICandleData[];
+  meta: {
+    count: number;
+    symbol: string;
+    interval: string;
+  };
+}
+

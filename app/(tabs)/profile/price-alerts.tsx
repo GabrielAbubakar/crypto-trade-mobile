@@ -53,7 +53,7 @@ export default function PriceAlertsScreen() {
       case "on":
         return (
           <View style={styles.badgeOn}>
-            <BaseText variant="bold" size="xs" color="#5ED5A8">
+            <BaseText variant="bold" size="xs" color={Colors.primary}>
               On
             </BaseText>
           </View>
@@ -69,7 +69,7 @@ export default function PriceAlertsScreen() {
       case "read":
         return (
           <View style={styles.badgeRead}>
-            <BaseText variant="bold" size="xs" color="#8594A6">
+            <BaseText variant="bold" size="xs" color={Colors.textSecondary}>
               Read
             </BaseText>
           </View>
@@ -92,7 +92,7 @@ export default function PriceAlertsScreen() {
     <ScreenContainer style={styles.container} withPadding={true}>
       <BackHeader title="Price alerts" />
 
-      <BaseText color="#8594A6" style={styles.subtitle}>
+      <BaseText color={Colors.textSecondary} style={styles.subtitle}>
         Create, edit, pause, or delete market alerts.
       </BaseText>
 
@@ -102,9 +102,9 @@ export default function PriceAlertsScreen() {
             <Ionicons
               name="notifications-off-outline"
               size={48}
-              color="#8594A6"
+              color={Colors.textSecondary}
             />
-            <BaseText color="#8594A6" style={styles.emptyText}>
+            <BaseText color={Colors.textSecondary} style={styles.emptyText}>
               No price alerts set. Create alerts from the asset details screen.
             </BaseText>
           </View>
@@ -132,10 +132,10 @@ export default function PriceAlertsScreen() {
                   <Ionicons
                     name="trending-up-outline"
                     size={20}
-                    color={status === "off" ? "#8594A6" : "#5ED5A8"}
+                    color={status === "off" ? Colors.textSecondary : Colors.primary}
                   />
                 }
-                iconBgColor={status === "off" ? "#1A2130" : "#23362F"}
+                iconBgColor={status === "off" ? Colors.iconBgInactive : Colors.iconBgActive}
                 rightElement={getStatusBadge(status)}
                 onLongPress={() => handleAlertPress(alert)}
               />

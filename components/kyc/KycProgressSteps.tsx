@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
   lineBg: {
     position: "absolute",
     height: 2,
-    backgroundColor: "#29333D",
+    backgroundColor: Colors.graySteps,
     top: 15,
     left: 45,
     right: 45,
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
   },
   circleInactive: {
-    backgroundColor: "#1A1F27",
+    backgroundColor: Colors.grayStepsAlt,
   },
   circleCurrent: {
     borderWidth: 2,

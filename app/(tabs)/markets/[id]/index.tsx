@@ -1,10 +1,12 @@
 import { BaseText, ScreenContainer } from "@/components";
 import { Colors } from "@/constants";
-import { useGetAssetDetailsQuery } from "@/store";
+import { useGetAssetDetailsQuery, useGetAssetCandlesQuery } from "@/store";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
+import { CandlestickChart } from "react-native-wagmi-charts";
 import {
   ActivityIndicator,
+  Dimensions,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -13,12 +15,29 @@ import { SvgUri } from "react-native-svg";
 
 import { formatCompact } from "@/utils";
 
+const { width: screenWidth } = Dimensions.get("window");
+
+
+const INTERVALS = [
+  { label: "1m", value: "1m" as const },
+  { label: "5m", value: "5m" as const },
+  { label: "15m", value: "15m" as const },
+  { label: "1H", value: "1h" as const },
+  { label: "1D", value: "1d" as const },
+];
+
 export default function CoinDetailsScreen() {
   const router = useRouter();
 
   // 1. Get the dynamic parameter from the URL using useLocalSearchParams
   // Since the folder is named [id], the parameter is accessed as `id`
   const { id } = useLocalSearchParams<{ id: string }>();
+
+  // Interval state matching values in API: 1m, 5m, 15m, 1h, 1d
+  const [activeInterval, setActiveInterval] = React.useState<"1m" | "5m" | "15m" | "1h" | "1d">("1h");
+
+  // Track exact container width to prevent chart overflow
+  const [chartWidth, setChartWidth] = React.useState(screenWidth - 72);
 
   // 2. Pass the dynamic id to your query to fetch the specific coin's data
   const {
@@ -29,6 +48,36 @@ export default function CoinDetailsScreen() {
     skip: !id,
     pollingInterval: 15000,
   });
+
+  // Fetch actual candles dynamically based on the selected interval
+  const {
+    data: candlesResponse,
+    isLoading: isCandlesLoading,
+    refetch: refetchCandles,
+  } = useGetAssetCandlesQuery(
+    { symbol: id || "", interval: activeInterval, limit: 50 },
+    {
+      skip: !id,
+      pollingInterval: 15000,
+    }
+  );
+
+  const handleRefresh = React.useCallback(async () => {
+    refetch();
+    refetchCandles();
+  }, [refetch, refetchCandles]);
+
+  const candlestickData = React.useMemo(() => {
+    if (!candlesResponse?.data) return [];
+    return candlesResponse.data.map((point) => ({
+      timestamp: new Date(point.time).getTime(),
+      open: point.openUsd,
+      high: point.highUsd,
+      low: point.lowUsd,
+      close: point.closeUsd,
+    }));
+  }, [candlesResponse?.data]);
+
 
   if (isLoading || !coin) {
     return (
@@ -58,7 +107,7 @@ export default function CoinDetailsScreen() {
       scrollable
       withPadding={false}
       style={styles.container}
-      onRefresh={refetch}
+      onRefresh={handleRefresh}
     >
       {/* Header */}
       <View style={styles.header}>
@@ -104,7 +153,7 @@ export default function CoinDetailsScreen() {
                 {coin.symbol} / USD
               </BaseText>
               <BaseText size="xs" style={{ color: Colors.textSecondary }}>
-                1 week • simulated candles
+                {INTERVALS.find((i) => i.value === activeInterval)?.label} interval
               </BaseText>
             </View>
             <View style={{ alignItems: "flex-end" }}>
@@ -124,25 +173,50 @@ export default function CoinDetailsScreen() {
               </BaseText>
             </View>
           </View>
-          <View style={styles.mockChart} />
+          {isCandlesLoading && candlestickData.length === 0 ? (
+            <View style={[styles.chartWrapper, { justifyContent: "center", alignItems: "center" }]}>
+              <ActivityIndicator color={Colors.primary} size="small" />
+            </View>
+          ) : candlestickData.length > 0 ? (
+            <View 
+              style={styles.chartWrapper}
+              onLayout={(e) => setChartWidth(e.nativeEvent.layout.width)}
+            >
+              <CandlestickChart.Provider data={candlestickData}>
+                <CandlestickChart height={120} width={chartWidth}>
+                  <CandlestickChart.Candles
+                    positiveColor="#5ED6A5"
+                    negativeColor={Colors.error}
+                  />
+                  <CandlestickChart.Crosshair />
+                </CandlestickChart>
+              </CandlestickChart.Provider>
+            </View>
+          ) : (
+            <View style={styles.mockChart} />
+          )}
           <View style={styles.timeTabs}>
-            {["1H", "1D", "1W", "1M", "1Y"].map((t, i) => (
-              <TouchableOpacity
-                key={t}
-                activeOpacity={0.8}
-                style={[styles.timeTab, i === 2 && styles.timeTabActive]}
-              >
-                <BaseText
-                  size="xs"
-                  style={[
-                    styles.timeTabText,
-                    i === 2 && styles.timeTabTextActive,
-                  ]}
+            {INTERVALS.map((t) => {
+              const isActive = activeInterval === t.value;
+              return (
+                <TouchableOpacity
+                  key={t.value}
+                  activeOpacity={0.8}
+                  style={[styles.timeTab, isActive && styles.timeTabActive]}
+                  onPress={() => setActiveInterval(t.value)}
                 >
-                  {t}
-                </BaseText>
-              </TouchableOpacity>
-            ))}
+                  <BaseText
+                    size="xs"
+                    style={[
+                      styles.timeTabText,
+                      isActive && styles.timeTabTextActive,
+                    ]}
+                  >
+                    {t.label}
+                  </BaseText>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
@@ -264,7 +338,7 @@ const styles = StyleSheet.create({
     fontSize: 36,
   },
   chartContainer: {
-    backgroundColor: "#161C22",
+    backgroundColor: Colors.cardBgAlt,
     borderRadius: 20,
     padding: 16,
     borderWidth: 1,
@@ -281,6 +355,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderBottomWidth: 1,
     borderColor: "rgba(255,255,255,0.05)",
+  },
+  chartWrapper: {
+    height: 120,
+    marginBottom: 16,
   },
   timeTabs: {
     flexDirection: "row",

@@ -41,10 +41,8 @@ export default function NotificationsScreen() {
     }
   };
 
-  console.log(notificationsData);
-
   const getIcon = (type: "kyc" | "wallet" | "alert", isRead: boolean) => {
-    const color = isRead ? "#8594A6" : "#5ED5A8";
+    const color = isRead ? Colors.textSecondary : Colors.primary;
     switch (type) {
       case "kyc":
         return <Ionicons name="card-outline" size={20} color={color} />;
@@ -56,7 +54,7 @@ export default function NotificationsScreen() {
   };
 
   const formatNotificationTime = (createdAtStr: string, isRead: boolean) => {
-    if (!isRead) return "Now";
+    if (!isRead) return "Unread";
     try {
       const date = new Date(createdAtStr);
       const now = new Date();
@@ -132,7 +130,7 @@ export default function NotificationsScreen() {
                   title={notif.title}
                   description={notif.body}
                   icon={getIcon(type, notif.isRead)}
-                  iconBgColor={notif.isRead ? "#1A2130" : "#23362F"}
+                  iconBgColor={notif.isRead ? Colors.iconBgInactive : Colors.iconBgActive}
                   rightElement={
                     <View
                       style={notif.isRead ? styles.badgeRead : styles.badgeNow}
@@ -140,7 +138,7 @@ export default function NotificationsScreen() {
                       <BaseText
                         variant="bold"
                         size="xs"
-                        color={notif.isRead ? "#8594A6" : "#5ED5A8"}
+                        color={notif.isRead ? Colors.textSecondary : Colors.primary}
                       >
                         {formatNotificationTime(notif.createdAt, notif.isRead)}
                       </BaseText>
@@ -160,13 +158,13 @@ export default function NotificationsScreen() {
         <Ionicons
           name="sparkles-outline"
           size={60}
-          color="#5ED5A8"
+          color={Colors.primary}
           style={styles.emptyIcon}
         />
-        <BaseText variant="bold" color="#FFFFFF" style={styles.emptyTitle}>
+        <BaseText variant="bold" color={Colors.white} style={styles.emptyTitle}>
           All caught up
         </BaseText>
-        <BaseText size="sm" color="#8594A6" style={styles.emptyText}>
+        <BaseText size="sm" color={Colors.textSecondary} style={styles.emptyText}>
           When the list is empty, show this calm state instead of a blank
           screen.
         </BaseText>
@@ -178,7 +176,7 @@ export default function NotificationsScreen() {
     <ScreenContainer style={styles.container} withPadding={true}>
       <BackHeader title="Notifications" />
 
-      <BaseText color="#8594A6" style={styles.subtitle}>
+      <BaseText color={Colors.textSecondary} style={styles.subtitle}>
         Security, KYC, transaction, and alert messages.
       </BaseText>
 
@@ -240,7 +238,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#141820",
+    backgroundColor: Colors.cardBg,
     borderRadius: 20,
     padding: 16,
     marginBottom: 12,

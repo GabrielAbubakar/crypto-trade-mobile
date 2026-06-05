@@ -3,6 +3,7 @@ import {
   BaseText,
   BaseTouchableOpacity,
   ScreenContainer,
+  ScreenHeader,
 } from "@/components";
 import { MarketCoinRow } from "@/components/markets/MarketCoinRow";
 import { MarketCoinRowSkeleton } from "@/components/markets/MarketCoinRowSkeleton";
@@ -23,10 +24,10 @@ function EmptyComponent({ searchQuery }: { searchQuery?: string }) {
       <BaseText size="lg" variant="bold" style={styles.emptyTitle}>
         No assets found
       </BaseText>
-      <BaseText style={styles.emptySubtitle}>
+      <BaseText size="sm" style={styles.emptySubtitle}>
         {searchQuery
-          ? `We couldn't find any results for "${searchQuery}".`
-          : "There are currently no assets available."}
+          ? `We couldn't find any results for "${searchQuery}". Try searching for another asset.`
+          : "There are no assets available at the moment."}
       </BaseText>
     </View>
   );
@@ -34,6 +35,7 @@ function EmptyComponent({ searchQuery }: { searchQuery?: string }) {
 
 export default function MarketsScreen() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<(typeof MARKET_TABS)[number]>("Watchlist");
   const [searchQuery, setSearchQuery] = useState("");
   const [queryParams, setQueryParams] = useState<IGetMarketAssetsRequest>({
     include: "sparkline",
@@ -76,12 +78,11 @@ export default function MarketsScreen() {
   return (
     <ScreenContainer withPadding={false} style={styles.container}>
       <View style={styles.header}>
-        <BaseText size="3xl" variant="bold" style={styles.title}>
-          Markets
-        </BaseText>
-        <BaseText size="md" style={styles.subtitle}>
-          Search assets, view live prices, and open a coin detail screen.
-        </BaseText>
+        <ScreenHeader
+          title="Markets"
+          subtitle="Search assets, view live prices, and open a coin detail screen."
+          style={{ marginTop: 0, marginBottom: 0 }}
+        />
 
         <BaseInput
           value={searchQuery}

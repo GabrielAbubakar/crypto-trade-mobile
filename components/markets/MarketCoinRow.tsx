@@ -48,7 +48,7 @@ export const MarketCoinRow: React.FC<IMarketAsset> = ({
         {/* Right Column: Price & Change percentage */}
         <View style={styles.rightCol}>
           <BaseText variant="bold" style={styles.coinPrice}>
-            {priceUsd.toLocaleString("en-US", {
+            {priceUsd?.toLocaleString("en-US", {
               currency: "USD",
               style: "currency",
             })}

@@ -21,7 +21,7 @@ export const ProfileOptionCard: React.FC<ProfileOptionCardProps> = ({
   title,
   description,
   icon,
-  iconBgColor = "#23362F", // default dark green background
+  iconBgColor = Colors.iconBgActive, // default dark green background
   rightElement,
   value,
   valueColor = Colors.textSecondary,
@@ -43,11 +43,11 @@ export const ProfileOptionCard: React.FC<ProfileOptionCardProps> = ({
           </View>
         ) : null}
         <View style={styles.textContainer}>
-          <BaseText variant="bold" size="md" color="#FFFFFF">
+          <BaseText variant="bold" size="md" color={Colors.white}>
             {title}
           </BaseText>
           {description ? (
-            <BaseText size="xs" color="#8594A6" style={styles.description}>
+            <BaseText size="xs" color={Colors.textSecondary} style={styles.description}>
               {description}
             </BaseText>
           ) : null}
@@ -60,7 +60,7 @@ export const ProfileOptionCard: React.FC<ProfileOptionCardProps> = ({
           </BaseText>
         ) : null}
         {rightElement || (
-          <Ionicons name="chevron-forward" size={18} color="#8594A6" />
+          <Ionicons name="chevron-forward" size={18} color={Colors.textSecondary} />
         )}
       </View>
     </BaseTouchableOpacity>
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#141820",
+    backgroundColor: Colors.cardBg,
     borderRadius: 20,
     padding: 16,
     marginBottom: 12,

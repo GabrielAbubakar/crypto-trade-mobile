@@ -7,6 +7,7 @@ import type {
   IAssetDetailsResponse,
   IOrderBookResponse,
   ITradesResponse,
+  IAssetCandlesResponse,
 } from "@/types";
 import { baseApi } from "./baseApi";
 
@@ -55,6 +56,16 @@ export const marketApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+    getAssetCandles: builder.query<
+      IAssetCandlesResponse,
+      { symbol: string; interval: "1m" | "5m" | "15m" | "1h" | "1d"; limit?: number }
+    >({
+      query: ({ symbol, interval, limit }) => ({
+        url: `/market/assets/${symbol}/candles`,
+        method: "GET",
+        params: { interval, limit },
+      }),
+    }),
   }),
   overrideExisting: true,
 });
@@ -66,4 +77,5 @@ export const {
   useGetMarketPricesQuery,
   useGetOrderBookQuery,
   useGetTradesQuery,
+  useGetAssetCandlesQuery,
 } = marketApi;

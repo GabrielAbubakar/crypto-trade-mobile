@@ -63,12 +63,12 @@ const styles = StyleSheet.create({
     width: 31,
     height: 28,
     borderRadius: 16,
-    backgroundColor: "#161C22",
+    backgroundColor: Colors.cardBgAlt,
     alignItems: "center",
     justifyContent: "center",
   },
   label: {
-    color: "#C1C7CD",
+    color: Colors.textLightGray,
   },
   value: {
     color: Colors.textSecondary,

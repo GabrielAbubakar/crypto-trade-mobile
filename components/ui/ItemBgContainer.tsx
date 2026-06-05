@@ -1,3 +1,4 @@
+import { Colors } from "@/constants";
 import { StyleSheet, View } from "react-native";
 
 export const ItemBgContainer = ({
@@ -18,7 +19,7 @@ export const ItemBgContainer = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#141820",
+    backgroundColor: Colors.cardBg,
     borderRadius: 16,
   },
 });

@@ -1,45 +1,21 @@
-import DollarCircle from "@/assets/icons/trade/dollarCircle.svg";
-import Candle from "@/assets/icons/trade/market.svg";
-import Star from "@/assets/icons/trade/star.svg";
-import type { HeaderButtonProps } from "@/components";
-import { BaseText, ScreenContainer } from "@/components";
+import { ScreenContainer, ScreenHeader } from "@/components";
 import { Colors } from "@/constants";
 import React from "react";
 import { StyleSheet } from "react-native";
 
-const headerOptions: HeaderButtonProps[] = [
-  {
-    link: "/",
-    icon: Candle,
-  },
-  {
-    link: "/home",
-    icon: Star,
-  },
-  {
-    link: "/home",
-    icon: DollarCircle,
-  },
-];
-
 export default function TradesScreen() {
   return (
-    <ScreenContainer withPadding={false}>
-      <BaseText variant="bold" size="3xl" style={styles.title}>
-        Trades
-      </BaseText>
+    <ScreenContainer withPadding={true}>
+      <ScreenHeader
+        title="Trades"
+        subtitle="Buy, sell, or swap with quotes that expire before execution."
+        style={{ marginTop: 20 }}
+      />
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "white",
-    marginTop: 20,
-  },
-
   tabsContainer: {
     paddingHorizontal: 20,
     marginTop: 16,

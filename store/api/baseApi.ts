@@ -5,8 +5,8 @@ import type {
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { logout, setCredentials } from "../slices";
 import { Mutex } from "async-mutex";
+import { logout, setCredentials } from "../slices";
 
 const mutex = new Mutex();
 
@@ -30,19 +30,20 @@ const baseQueryWithReAuth: BaseQueryFn<
 > = async (args, api, extraOptions) => {
   // wait until the mutex is available without locking it
   await mutex.waitForUnlock();
-  
+
   // Run the initial request
   let result = await baseQuery(args, api, extraOptions);
-  // console.log(
-  //   "Current Access Token:",
-  //   (api.getState() as any).auth.accessToken,
-  // );
-  // console.log(result);
+  if (result.error) {
+    console.warn("⚠️ API Query Error:", {
+      url: typeof args === "string" ? args : args.url,
+      error: result.error,
+    });
+  }
 
   // Check if the request failed due to an unauthorized token
   if (result.error && result.error.status === 401) {
     console.log("❌ 401 Unauthorized Error");
-    
+
     // checking whether the mutex is locked
     if (!mutex.isLocked()) {
       const release = await mutex.acquire();

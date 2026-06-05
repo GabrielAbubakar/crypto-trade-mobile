@@ -1,4 +1,4 @@
-import { BaseText, BaseTouchableOpacity, ScreenContainer } from "@/components";
+import { BaseText, BaseTouchableOpacity, ScreenContainer, ScreenHeader } from "@/components";
 import { MarketCoinRow } from "@/components/markets/MarketCoinRow";
 import { MarketCoinRowSkeleton } from "@/components/markets/MarketCoinRowSkeleton";
 import { Colors } from "@/constants";
@@ -23,8 +23,6 @@ export default function WatchlistScreen() {
     refetch,
   } = useGetWatchlistQuery({ include: "sparkline" });
 
-  console.log(marketData);
-
   const renderCoinItem = ({ item }: { item: any }) =>
     isLoading ? (
       <MarketCoinRowSkeleton key={item.id} />
@@ -40,10 +38,10 @@ export default function WatchlistScreen() {
   const renderFooter = () => (
     <View style={styles.addMoreContainer}>
       <BaseText size="lg" variant="bold" style={styles.addMoreTitle}>
-        Add more assets
+        Want to watch more?
       </BaseText>
       <BaseText style={styles.addMoreDesc}>
-        Use the market list to add coins to your watchlist.
+        Tap the explore button to search and follow assets you like.
       </BaseText>
       <TouchableOpacity
         activeOpacity={0.8}
@@ -59,14 +57,12 @@ export default function WatchlistScreen() {
 
   return (
     <ScreenContainer withPadding={false} style={styles.container}>
-      <View style={styles.header}>
-        <BaseText size="3xl" variant="bold" style={styles.title}>
-          Watchlist
-        </BaseText>
-        <BaseText size="md" style={styles.subtitle}>
-          Assets you follow with row sparklines.
-        </BaseText>
-      </View>
+      <ScreenHeader
+        title="Watchlist"
+        subtitle="Assets you follow with row sparklines."
+        withPadding={true}
+        style={{ marginBottom: 30 }}
+      />
 
       {/* List content */}
       <View style={{ position: "relative", flex: 1 }}>
