@@ -1,4 +1,9 @@
-import { BaseText, BaseTouchableOpacity, ScreenContainer, ScreenHeader } from "@/components";
+import {
+  BackHeader,
+  BaseText,
+  BaseTouchableOpacity,
+  ScreenContainer,
+} from "@/components";
 import { MarketCoinRow } from "@/components/markets/MarketCoinRow";
 import { MarketCoinRowSkeleton } from "@/components/markets/MarketCoinRowSkeleton";
 import { Colors } from "@/constants";
@@ -56,12 +61,10 @@ export default function WatchlistScreen() {
   );
 
   return (
-    <ScreenContainer withPadding={false} style={styles.container}>
-      <ScreenHeader
+    <ScreenContainer withPadding={true} style={styles.container}>
+      <BackHeader
         title="Watchlist"
         subtitle="Assets you follow with row sparklines."
-        withPadding={true}
-        style={{ marginBottom: 30 }}
       />
 
       {/* List content */}
@@ -111,7 +114,6 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   listContainer: {
-    paddingHorizontal: 20,
     paddingBottom: 30,
   },
   addMoreContainer: {

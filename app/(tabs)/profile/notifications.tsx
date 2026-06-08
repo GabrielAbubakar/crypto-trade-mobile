@@ -15,10 +15,14 @@ import {
 import { showErrorToast, showSuccessToast } from "@/utils";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { FlatList, StyleSheet, View } from "react-native";
 
 export default function NotificationsScreen() {
-  const { data: notificationsData, isLoading } = useGetNotificationsQuery();
+  const {
+    data: notificationsData,
+    isLoading,
+    refetch,
+  } = useGetNotificationsQuery();
   const notifications = notificationsData?.data ?? [];
   const [markNotificationAsRead] = useMarkNotificationAsReadMutation();
   const [markAllNotificationsAsRead, { isLoading: isMarkingAll }] =
@@ -73,86 +77,87 @@ export default function NotificationsScreen() {
     }
   };
 
-  const renderContent = () => {
-    if (isLoading) {
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <BackHeader title="Notifications" />
+
+      <BaseText color={Colors.textSecondary} style={styles.subtitle}>
+        Security, KYC, transaction, and alert messages.
+      </BaseText>
+
+      {/* Skeletons loader action row placeholder */}
+      {isLoading && (
+        <View style={styles.actionsRow}>
+          <Skeleton width="100%" height={48} borderRadius={16} />
+        </View>
+      )}
+
+      {/* Mark all as read button (only show when notifications exist and not loading) */}
+      {!isLoading && notifications.length > 0 && (
+        <View style={styles.actionsRow}>
+          <BaseButton
+            title="Mark all as read"
+            variant="secondary"
+            onPress={handleMarkAllRead}
+            isLoading={isMarkingAll}
+            disabled={isMarkingAll}
+            style={styles.markReadBtn}
+          />
+        </View>
+      )}
+    </View>
+  );
+
+  const renderItem = ({ item }: { item: any }) => {
+    if (item.isSkeleton) {
       return (
-        <View style={{ flex: 1 }}>
-          <View style={styles.actionsRow}>
-            <Skeleton width="100%" height={48} borderRadius={16} />
+        <View style={styles.skeletonCard}>
+          <View style={styles.skeletonLeft}>
+            <Skeleton width={40} height={40} borderRadius={20} />
+            <View style={styles.skeletonText}>
+              <Skeleton
+                width={120}
+                height={14}
+                borderRadius={4}
+                style={{ marginBottom: 8 }}
+              />
+              <Skeleton width={180} height={12} borderRadius={4} />
+            </View>
           </View>
-          <ScrollView
-            contentContainerStyle={styles.scrollList}
-            scrollEnabled={false}
-          >
-            {Array.from({ length: 4 }).map((_, index) => (
-              <View key={`skeleton-${index}`} style={styles.skeletonCard}>
-                <View style={styles.skeletonLeft}>
-                  <Skeleton width={40} height={40} borderRadius={20} />
-                  <View style={styles.skeletonText}>
-                    <Skeleton
-                      width={120}
-                      height={14}
-                      borderRadius={4}
-                      style={{ marginBottom: 8 }}
-                    />
-                    <Skeleton width={180} height={12} borderRadius={4} />
-                  </View>
-                </View>
-                <Skeleton width={48} height={24} borderRadius={12} />
-              </View>
-            ))}
-          </ScrollView>
+          <Skeleton width={48} height={24} borderRadius={12} />
         </View>
       );
     }
 
-    if (notifications.length > 0) {
-      return (
-        <View style={{ flex: 1 }}>
-          <View style={styles.actionsRow}>
-            <BaseButton
-              title="Mark all as read"
-              variant="secondary"
-              onPress={handleMarkAllRead}
-              isLoading={isMarkingAll}
-              disabled={isMarkingAll}
-              style={styles.markReadBtn}
-            />
-          </View>
+    const type = (item.type as "kyc" | "wallet" | "alert") || "alert";
+    return (
+      <View style={styles.cardWrapper}>
+        <ProfileOptionCard
+          title={item.title}
+          description={item.body}
+          icon={getIcon(type, item.isRead)}
+          iconBgColor={
+            item.isRead ? Colors.iconBgInactive : Colors.iconBgActive
+          }
+          rightElement={
+            <View style={item.isRead ? styles.badgeRead : styles.badgeNow}>
+              <BaseText
+                variant="bold"
+                size="xs"
+                color={item.isRead ? Colors.textSecondary : Colors.primary}
+              >
+                {formatNotificationTime(item.createdAt, item.isRead)}
+              </BaseText>
+            </View>
+          }
+          onPress={() => handleNotificationPress(item.id)}
+        />
+      </View>
+    );
+  };
 
-          <ScrollView contentContainerStyle={styles.scrollList}>
-            {notifications.map((notif) => {
-              const type =
-                (notif.type as "kyc" | "wallet" | "alert") || "alert";
-              return (
-                <ProfileOptionCard
-                  key={notif.id}
-                  title={notif.title}
-                  description={notif.body}
-                  icon={getIcon(type, notif.isRead)}
-                  iconBgColor={notif.isRead ? Colors.iconBgInactive : Colors.iconBgActive}
-                  rightElement={
-                    <View
-                      style={notif.isRead ? styles.badgeRead : styles.badgeNow}
-                    >
-                      <BaseText
-                        variant="bold"
-                        size="xs"
-                        color={notif.isRead ? Colors.textSecondary : Colors.primary}
-                      >
-                        {formatNotificationTime(notif.createdAt, notif.isRead)}
-                      </BaseText>
-                    </View>
-                  }
-                  onPress={() => handleNotificationPress(notif.id)}
-                />
-              );
-            })}
-          </ScrollView>
-        </View>
-      );
-    }
-
+  const renderEmpty = () => {
+    if (isLoading) return null;
     return (
       <View style={styles.emptyContainer}>
         <Ionicons
@@ -164,7 +169,11 @@ export default function NotificationsScreen() {
         <BaseText variant="bold" color={Colors.white} style={styles.emptyTitle}>
           All caught up
         </BaseText>
-        <BaseText size="sm" color={Colors.textSecondary} style={styles.emptyText}>
+        <BaseText
+          size="sm"
+          color={Colors.textSecondary}
+          style={styles.emptyText}
+        >
           When the list is empty, show this calm state instead of a blank
           screen.
         </BaseText>
@@ -172,15 +181,31 @@ export default function NotificationsScreen() {
     );
   };
 
+  const listData = isLoading
+    ? Array.from({ length: 4 }).map((_, index) => ({
+        id: `skeleton-${index}`,
+        isSkeleton: true,
+      }))
+    : notifications;
+
   return (
-    <ScreenContainer style={styles.container} withPadding={true}>
-      <BackHeader title="Notifications" />
-
-      <BaseText color={Colors.textSecondary} style={styles.subtitle}>
-        Security, KYC, transaction, and alert messages.
-      </BaseText>
-
-      {renderContent()}
+    <ScreenContainer
+      style={styles.container}
+      withPadding={true}
+      scrollable={false}
+    >
+      {renderHeader()}
+      <FlatList
+        data={listData}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        // ListHeaderComponent={renderHeader}
+        ListEmptyComponent={renderEmpty}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.listContent}
+        refreshing={isLoading}
+        onRefresh={refetch}
+      />
     </ScreenContainer>
   );
 }
@@ -188,9 +213,12 @@ export default function NotificationsScreen() {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.secondary,
+    flex: 1,
+  },
+  header: {
+    marginTop: 20,
   },
   subtitle: {
-    marginTop: 8,
     marginBottom: 24,
     lineHeight: 20,
   },
@@ -201,8 +229,8 @@ const styles = StyleSheet.create({
   markReadBtn: {
     width: "100%",
   },
-  scrollList: {
-    paddingBottom: 40,
+  listContent: {
+    paddingBottom: 120, // space for tab bar
   },
   badgeNow: {
     backgroundColor: "rgba(94, 213, 168, 0.12)",
@@ -251,5 +279,8 @@ const styles = StyleSheet.create({
   },
   skeletonText: {
     flex: 1,
+  },
+  cardWrapper: {
+    marginBottom: 12,
   },
 });

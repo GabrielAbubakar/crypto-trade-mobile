@@ -49,12 +49,23 @@ export interface IWalletBalanceResponse {
 }
 
 export interface IPortfolioHistoryPoint {
-  timestamp: string;
+  time: string;
   valueUsd: number;
+  value: number;
+  currency: string;
+}
+
+export interface IPortfolioHistoryMeta {
+  count: number;
+  range: string;
+  latestValueUsd: number;
+  latestValue: number;
+  currency: string;
 }
 
 export interface IPortfolioHistoryResponse {
-  history: IPortfolioHistoryPoint[];
+  data: IPortfolioHistoryPoint[];
+  meta: IPortfolioHistoryMeta;
 }
 
 export interface IDepositAddressItem {
@@ -95,6 +106,14 @@ export interface ITransactionsMeta {
   status: string;
   type: string;
   order: string;
+}
+
+export interface IGetTransactionsRequest {
+  status?: string;
+  type?: string;
+  page?: number;
+  limit?: number;
+  order?: string;
 }
 
 export interface ITransactionsResponse {

@@ -4,6 +4,7 @@ import type {
   IPortfolioHistoryResponse,
   ISimulateDepositRequest,
   ISimulateDepositResponse,
+  IGetTransactionsRequest,
   ITransactionItem,
   ITransactionsResponse,
   IWalletBalanceResponse,
@@ -24,10 +25,11 @@ export const walletApi = baseApi.injectEndpoints({
       },
       providesTags: ["Wallet"],
     }),
-    getPortfolioHistory: builder.query<IPortfolioHistoryResponse, void>({
-      query: () => ({
+    getPortfolioHistory: builder.query<IPortfolioHistoryResponse, string | void>({
+      query: (range) => ({
         url: "/wallet/portfolio/history",
         method: "GET",
+        params: range ? { range } : undefined,
       }),
       providesTags: ["Wallet"],
     }),
@@ -45,10 +47,11 @@ export const walletApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Wallet"],
     }),
-    getWalletTransactions: builder.query<ITransactionsResponse, void>({
-      query: () => ({
+    getWalletTransactions: builder.query<ITransactionsResponse, IGetTransactionsRequest | void>({
+      query: (params) => ({
         url: "/wallet/transactions",
         method: "GET",
+        params: params || undefined,
       }),
       providesTags: ["Wallet"],
     }),

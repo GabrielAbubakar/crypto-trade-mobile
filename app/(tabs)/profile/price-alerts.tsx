@@ -6,17 +6,22 @@ import {
 } from "@/components";
 import { BaseText } from "@/components/ui/BaseText";
 import { Colors } from "@/constants";
-import { useDeletePriceAlertMutation, useGetPriceAlertsQuery } from "@/store";
+import {
+  useDeletePriceAlertMutation,
+  useGetPriceAlertsQuery,
+  useUpdatePriceAlertMutation,
+} from "@/store";
 import type { IPriceAlert } from "@/types";
 import { showErrorToast, showSuccessToast } from "@/utils";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native";
 
 export default function PriceAlertsScreen() {
   const { data: alerts = [], isLoading } = useGetPriceAlertsQuery();
   const [deletePriceAlert, { isLoading: isDeleting }] =
     useDeletePriceAlertMutation();
+  const [updatePriceAlert] = useUpdatePriceAlertMutation();
 
   const [selectedAlert, setSelectedAlert] = useState<IPriceAlert | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -26,12 +31,28 @@ export default function PriceAlertsScreen() {
     setModalVisible(true);
   };
 
+  const handleToggleAlert = async (alert: IPriceAlert) => {
+    try {
+      await updatePriceAlert({
+        alertId: alert.id,
+        body: { isActive: !alert.isActive },
+      }).unwrap();
+      showSuccessToast(
+        `Alert for ${alert.assetSymbol} ${!alert.isActive ? "activated" : "paused"}`,
+      );
+    } catch (err) {
+      console.error("Failed to update price alert:", err);
+      showErrorToast("Failed to update price alert");
+    }
+  };
+
   const handleDeleteConfirm = async () => {
     if (selectedAlert) {
       try {
         await deletePriceAlert(selectedAlert.id).unwrap();
         showSuccessToast(`Alert for ${selectedAlert.assetSymbol} removed`);
       } catch (err) {
+        console.error("Failed to delete price alert:", err);
         showErrorToast("Failed to delete price alert");
       }
     }
@@ -48,7 +69,7 @@ export default function PriceAlertsScreen() {
     });
   };
 
-  const getStatusBadge = (status: "on" | "off" | "read") => {
+  const getStatusBadge = (status: "on" | "off") => {
     switch (status) {
       case "on":
         return (
@@ -63,14 +84,6 @@ export default function PriceAlertsScreen() {
           <View style={styles.badgeOff}>
             <BaseText variant="bold" size="xs" color={Colors.error}>
               Off
-            </BaseText>
-          </View>
-        );
-      case "read":
-        return (
-          <View style={styles.badgeRead}>
-            <BaseText variant="bold" size="xs" color={Colors.textSecondary}>
-              Read
             </BaseText>
           </View>
         );
@@ -96,8 +109,12 @@ export default function PriceAlertsScreen() {
         Create, edit, pause, or delete market alerts.
       </BaseText>
 
-      <ScrollView contentContainerStyle={styles.scrollList}>
-        {alerts.length === 0 ? (
+      <FlatList
+        data={alerts}
+        keyExtractor={(item) => item.id}
+        style={styles.list}
+        contentContainerStyle={styles.scrollList}
+        ListEmptyComponent={
           <View style={styles.emptyState}>
             <Ionicons
               name="notifications-off-outline"
@@ -108,41 +125,36 @@ export default function PriceAlertsScreen() {
               No price alerts set. Create alerts from the asset details screen.
             </BaseText>
           </View>
-        ) : (
-          alerts.map((alert) => {
-            const status: "on" | "off" | "read" = alert.isActive
-              ? alert.triggeredAt
-                ? "read"
-                : "on"
-              : "off";
-            const description =
-              status === "read"
-                ? "Triggered"
-                : status === "off"
-                  ? "Paused"
-                  : "Active - push notification on";
-            const formattedPrice = formatPrice(alert.targetPriceUsd);
+        }
+        renderItem={({ item: alert }) => {
+          const status: "on" | "off" = alert.isActive ? "on" : "off";
+          const description =
+            status === "off" ? "Paused" : "Active - push notification on";
+          const formattedPrice = formatPrice(alert.targetPriceUsd);
 
-            return (
-              <ProfileOptionCard
-                key={alert.id}
-                title={`${alert.assetSymbol} ${alert.direction} ${formattedPrice}`}
-                description={description}
-                icon={
-                  <Ionicons
-                    name="trending-up-outline"
-                    size={20}
-                    color={status === "off" ? Colors.textSecondary : Colors.primary}
-                  />
-                }
-                iconBgColor={status === "off" ? Colors.iconBgInactive : Colors.iconBgActive}
-                rightElement={getStatusBadge(status)}
-                onLongPress={() => handleAlertPress(alert)}
-              />
-            );
-          })
-        )}
-      </ScrollView>
+          return (
+            <ProfileOptionCard
+              title={`${alert.assetSymbol} ${alert.direction} ${formattedPrice}`}
+              description={description}
+              onPress={() => handleToggleAlert(alert)}
+              icon={
+                <Ionicons
+                  name="trending-up-outline"
+                  size={20}
+                  color={
+                    status === "off" ? Colors.textSecondary : Colors.primary
+                  }
+                />
+              }
+              iconBgColor={
+                status === "off" ? Colors.iconBgInactive : Colors.iconBgActive
+              }
+              rightElement={getStatusBadge(status)}
+              onLongPress={() => handleAlertPress(alert)}
+            />
+          );
+        }}
+      />
 
       {/* Delete Confirmation Modal */}
       <ConfirmationModal
@@ -176,6 +188,9 @@ const styles = StyleSheet.create({
   scrollList: {
     paddingBottom: 40,
   },
+  list: {
+    maxHeight: 400,
+  },
   badgeOn: {
     backgroundColor: "rgba(94, 213, 168, 0.12)",
     paddingHorizontal: 12,
@@ -188,12 +203,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 12,
   },
-  badgeRead: {
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
+
   centered: {
     flex: 1,
     justifyContent: "center",

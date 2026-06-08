@@ -74,16 +74,18 @@ export default function ProfileScreen() {
           {data?.email}
         </BaseText>
         <BaseText
-          color={Colors.primary}
+          color={data?.verification.canTrade ? Colors.primary : Colors.error}
           size="xs"
           style={{
             paddingVertical: 4,
             paddingHorizontal: 16,
             borderRadius: 20,
-            backgroundColor: "#23362F",
+            backgroundColor: data?.verification.canTrade
+              ? "#23362F"
+              : "#e4201013",
           }}
         >
-          {data?.emailVerified ? "Verified" : "Not Verified"}
+          {data?.verification.canTrade ? "Verified" : "Not Verified"}
         </BaseText>
       </View>
 

@@ -1,4 +1,9 @@
-import { BaseText, BaseTouchableOpacity, ScreenContainer } from "@/components";
+import {
+  BackHeader,
+  BaseText,
+  BaseTouchableOpacity,
+  ScreenContainer,
+} from "@/components";
 import { MarketCoinRow } from "@/components/markets/MarketCoinRow";
 import { MarketCoinRowSkeleton } from "@/components/markets/MarketCoinRowSkeleton";
 import { Sparkline } from "@/components/ui/Sparkline";
@@ -48,7 +53,9 @@ export default function TrendingScreen() {
           <BaseText style={styles.topGainerDesc}>Highest 24h move</BaseText>
           <View style={styles.viewAssetButton}>
             <BaseTouchableOpacity
-              onPress={() => router.push(`/markets/${trendingData?.data[0].symbol}` as any)}
+              onPress={() =>
+                router.push(`/markets/${trendingData?.data[0].symbol}` as any)
+              }
             >
               <BaseText style={styles.viewAssetText}>View asset</BaseText>
             </BaseTouchableOpacity>
@@ -154,9 +161,7 @@ export default function TrendingScreen() {
   return (
     <ScreenContainer withPadding={false} style={styles.container}>
       <View style={styles.header}>
-        <BaseText size="3xl" variant="bold" style={styles.title}>
-          Trending
-        </BaseText>
+        <BackHeader title="Trending" />
         <BaseText size="md" style={styles.subtitle}>
           Top moving assets from the simulated market feed.
         </BaseText>
