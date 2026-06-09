@@ -1,13 +1,13 @@
 import type {
+  IAssetCandlesResponse,
   IAssetDetails,
+  IAssetDetailsResponse,
   IGetMarketAssetsRequest,
   IMarketAssetsResponse,
   IMarketPrice,
-  ITrendingResponse,
-  IAssetDetailsResponse,
   IOrderBookResponse,
   ITradesResponse,
-  IAssetCandlesResponse,
+  ITrendingResponse,
 } from "@/types";
 import { baseApi } from "./baseApi";
 
@@ -37,13 +37,16 @@ export const marketApi = baseApi.injectEndpoints({
         params,
       }),
     }),
-    getMarketPrices: builder.query<IMarketPrice[], void>({
+    getMarketPrices: builder.query<{ data: IMarketPrice[] }, void>({
       query: () => ({
         url: "/market/prices",
         method: "GET",
       }),
     }),
-    getOrderBook: builder.query<IOrderBookResponse, { symbol: string; levels?: number }>({
+    getOrderBook: builder.query<
+      IOrderBookResponse,
+      { symbol: string; levels?: number }
+    >({
       query: ({ symbol, levels = 10 }) => ({
         url: `/market/assets/${symbol}/order-book`,
         method: "GET",
@@ -58,7 +61,11 @@ export const marketApi = baseApi.injectEndpoints({
     }),
     getAssetCandles: builder.query<
       IAssetCandlesResponse,
-      { symbol: string; interval: "1m" | "5m" | "15m" | "1h" | "1d"; limit?: number }
+      {
+        symbol: string;
+        interval: "1m" | "5m" | "15m" | "1h" | "1d";
+        limit?: number;
+      }
     >({
       query: ({ symbol, interval, limit }) => ({
         url: `/market/assets/${symbol}/candles`,

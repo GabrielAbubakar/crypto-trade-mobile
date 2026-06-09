@@ -15,7 +15,7 @@ import {
 import { showErrorToast, showSuccessToast } from "@/utils";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { FlatList, StyleSheet, View } from "react-native";
+import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native";
 
 export default function NotificationsScreen() {
   const {
@@ -24,9 +24,13 @@ export default function NotificationsScreen() {
     refetch,
   } = useGetNotificationsQuery();
   const notifications = notificationsData?.data ?? [];
-  const [markNotificationAsRead] = useMarkNotificationAsReadMutation();
+  const [markNotificationAsRead, { isLoading: isMarkingOne }] =
+    useMarkNotificationAsReadMutation();
   const [markAllNotificationsAsRead, { isLoading: isMarkingAll }] =
     useMarkAllNotificationsAsReadMutation();
+  const [markingId, setMarkingId] = React.useState<string | null>(null);
+
+  // console.log(notifications);
 
   const handleMarkAllRead = async () => {
     try {
@@ -38,10 +42,13 @@ export default function NotificationsScreen() {
   };
 
   const handleNotificationPress = async (id: string) => {
+    setMarkingId(id);
     try {
       await markNotificationAsRead(id).unwrap();
     } catch (err) {
       showErrorToast("Failed to mark notification as read");
+    } finally {
+      setMarkingId(null);
     }
   };
 
@@ -140,15 +147,19 @@ export default function NotificationsScreen() {
             item.isRead ? Colors.iconBgInactive : Colors.iconBgActive
           }
           rightElement={
-            <View style={item.isRead ? styles.badgeRead : styles.badgeNow}>
-              <BaseText
-                variant="bold"
-                size="xs"
-                color={item.isRead ? Colors.textSecondary : Colors.primary}
-              >
-                {formatNotificationTime(item.createdAt, item.isRead)}
-              </BaseText>
-            </View>
+            isMarkingOne && markingId === item.id ? (
+              <ActivityIndicator size="small" color={Colors.primary} />
+            ) : (
+              <View style={item.isRead ? styles.badgeRead : styles.badgeNow}>
+                <BaseText
+                  variant="bold"
+                  size="xs"
+                  color={item.isRead ? Colors.textSecondary : Colors.primary}
+                >
+                  {formatNotificationTime(item.createdAt, item.isRead)}
+                </BaseText>
+              </View>
+            )
           }
           onPress={() => handleNotificationPress(item.id)}
         />

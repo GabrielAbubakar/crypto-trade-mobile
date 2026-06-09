@@ -35,7 +35,9 @@ export default function SimulateDepositScreen() {
         showErrorToast(response.message || "Failed to simulate deposit.");
       }
     } catch (err: any) {
-      showErrorToast(err?.data?.message || "An error occurred during simulation.");
+      showErrorToast(
+        err?.data?.message || "An error occurred during simulation.",
+      );
     }
   };
 
@@ -44,7 +46,8 @@ export default function SimulateDepositScreen() {
       <View style={styles.content}>
         <BackHeader title="Simulate deposit" />
         <BaseText style={styles.subtitle}>
-          Create a pending {assetSymbol} deposit for testing polling and receipts.
+          Create a pending {assetSymbol} deposit for testing polling and
+          receipts.
         </BaseText>
 
         <View style={styles.formContainer}>
@@ -122,7 +125,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
     marginTop: 20,
   },
   subtitle: {

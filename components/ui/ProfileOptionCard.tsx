@@ -29,9 +29,9 @@ export const ProfileOptionCard: React.FC<ProfileOptionCardProps> = ({
   onLongPress,
 }) => {
   return (
-    <BaseTouchableOpacity 
-      onPress={onPress} 
-      onLongPress={onLongPress} 
+    <BaseTouchableOpacity
+      onPress={onPress}
+      onLongPress={onLongPress}
       style={styles.container}
     >
       <View style={styles.leftSection}>
@@ -47,7 +47,11 @@ export const ProfileOptionCard: React.FC<ProfileOptionCardProps> = ({
             {title}
           </BaseText>
           {description ? (
-            <BaseText size="xs" color={Colors.textSecondary} style={styles.description}>
+            <BaseText
+              size="xs"
+              color={Colors.textSecondary}
+              style={styles.description}
+            >
               {description}
             </BaseText>
           ) : null}
@@ -60,7 +64,11 @@ export const ProfileOptionCard: React.FC<ProfileOptionCardProps> = ({
           </BaseText>
         ) : null}
         {rightElement || (
-          <Ionicons name="chevron-forward" size={18} color={Colors.textSecondary} />
+          <Ionicons
+            name="chevron-forward"
+            size={18}
+            color={Colors.textSecondary}
+          />
         )}
       </View>
     </BaseTouchableOpacity>
