@@ -1,4 +1,7 @@
 import type {
+  IKycVerificationRequest,
+  IKycUploadRequest,
+  IKycUploadResponse,
   ILoginRequest,
   ILoginResponse,
   IRegisterRequest,
@@ -46,7 +49,10 @@ export const authApi = baseApi.injectEndpoints({
         body,
       }),
     }),
-    verifyOTP: builder.mutation<ILoginResponse["data"], { email: string; code: string }>({
+    verifyOTP: builder.mutation<
+      ILoginResponse["data"],
+      { email: string; code: string }
+    >({
       query: (body) => ({
         url: "/auth/otp/verify",
         method: "POST",
@@ -54,12 +60,24 @@ export const authApi = baseApi.injectEndpoints({
       }),
       transformResponse: (response: ILoginResponse) => response.data,
     }),
-    kycVerification: builder.mutation({
-      query: () => ({
+    kycVerification: builder.mutation<
+      { success: boolean },
+      IKycVerificationRequest
+    >({
+      query: (body) => ({
         url: "/auth/kyc",
         method: "POST",
+        body,
       }),
     }),
+    kycUpload: builder.mutation<IKycUploadResponse, IKycUploadRequest>({
+      query: (body) => ({
+        url: "/kyc/uploads",
+        method: "POST",
+        body,
+      }),
+    }),
+
     logOut: builder.mutation<void, any>({
       query: () => ({
         url: "/auth/logout",
@@ -85,5 +103,6 @@ export const {
   useRequestOTPMutation,
   useVerifyOTPMutation,
   useKycVerificationMutation,
+  useKycUploadMutation,
   useLogOutMutation,
 } = authApi;

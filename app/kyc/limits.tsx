@@ -66,24 +66,21 @@ export default function KYCLimits() {
 
         {/* Verified Tier */}
         <View style={[styles.tierCard, styles.verifiedTierCard]}>
-          <View
-            style={[styles.tierBadge, { backgroundColor: Colors.secondary }]}
-          >
-            <BaseText style={[styles.tierBadgeText, { color: Colors.primary }]}>
+          <View style={[styles.tierBadge, { backgroundColor: Colors.primary }]}>
+            <BaseText
+              style={[styles.tierBadgeText, { color: Colors.secondary }]}
+            >
               2
             </BaseText>
           </View>
           <View style={styles.tierDetails}>
-            <BaseText
-              variant="bold"
-              style={[styles.tierName, { color: Colors.secondary }]}
-            >
+            <BaseText variant="bold" style={styles.tierName}>
               Verified
             </BaseText>
             <BaseText
               style={[
                 styles.tierDescription,
-                { color: "rgba(27, 35, 42, 0.7)" },
+                { color: "rgba(255, 255, 255, 0.7)" },
               ]}
             >
               $5,000 trade • $2,500 withdrawal
@@ -128,8 +125,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255, 255, 255, 0.05)",
   },
   verifiedTierCard: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+    backgroundColor: "#083D2B",
   },
   tierBadge: {
     width: 36,

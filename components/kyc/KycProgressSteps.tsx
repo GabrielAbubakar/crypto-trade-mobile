@@ -26,7 +26,8 @@ export const KycProgressSteps: React.FC<KycProgressStepsProps> = ({
         style={[
           styles.lineActive,
           {
-            width: currentStep <= 1 ? "0%" : currentStep === 2 ? "50%" : "100%",
+            width:
+              currentStep <= 1 ? "0%" : currentStep === 2 ? "45 %" : "100%",
           },
         ]}
       />
@@ -113,6 +114,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1,
+    backgroundColor: "red",
   },
   circleActive: {
     backgroundColor: Colors.primary,
@@ -121,8 +123,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.grayStepsAlt,
   },
   circleCurrent: {
-    borderWidth: 2,
-    borderColor: Colors.white,
+    // borderWidth: 2,
+    // borderColor: Colors.white,
   },
   stepNumber: {
     fontSize: 12,

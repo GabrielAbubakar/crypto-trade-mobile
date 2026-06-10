@@ -1,4 +1,4 @@
-import { Colors, FontFamily } from "@/constants";
+import { Colors } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -46,6 +46,6 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   title: {
-    fontFamily: FontFamily.bold,
+    // fontFamily: FontFamily.bold,
   },
 });

@@ -80,3 +80,25 @@ export interface IVerifyOTPRequest {
   email: string;
   code: string;
 }
+
+export interface IKycVerificationRequest {
+  legalName: string;
+  country: string;
+  documentType: string;
+  documentNumber: string;
+  selfieImageUrl: string;
+  documentImageUrl: string;
+}
+
+export interface IKycUploadRequest {
+  fileName: string;
+  contentType: string;
+  documentKind: "document_front" | "document_back" | "selfie" | string;
+}
+
+export interface IKycUploadResponse {
+  success: boolean;
+  uploadUrl: string;
+  imageUrl: string;
+}
+

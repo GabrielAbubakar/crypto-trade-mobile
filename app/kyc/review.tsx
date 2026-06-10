@@ -6,28 +6,46 @@ import {
   ScreenContainer,
 } from "@/components/ui";
 import { Colors } from "@/constants";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, View } from "react-native";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useKycVerificationMutation,
+  resetKyc,
+} from "@/store";
 
 export default function KYCReview() {
   const router = useRouter();
-  const params = useLocalSearchParams();
+  const dispatch = useAppDispatch();
+  const kycState = useAppSelector((state) => state.kyc);
+  const [submitKyc, { isLoading }] = useKycVerificationMutation();
 
   // Handle fallback mock values for visual excellence if fields are empty
-  const name = (params.name as string) || "Ada Student";
-  const country = (params.country as string) || "Nigeria";
-  const docType = (params.docType as string) || "National ID";
-  const frontUploaded =
-    params.frontUploaded === "yes" || params.passportUploaded === "yes"
-      ? "Uploaded"
-      : "Not Uploaded";
-  const selfieUploaded =
-    params.selfieUploaded === "yes" ? "Uploaded" : "Not Uploaded";
+  const name = kycState.legalName || "Ada Student";
+  const country = kycState.country || "Nigeria";
+  const docType = kycState.documentType || "National ID";
+  const frontUploaded = kycState.documentImageUrl ? "Uploaded" : "Not Uploaded";
+  const selfieUploaded = kycState.selfieImageUrl ? "Uploaded" : "Not Uploaded";
 
-  const handleSubmit = () => {
-    // Navigate back to the main KYC dashboard
-    router.replace("/kyc");
+  const handleSubmit = async () => {
+    try {
+      const payload = {
+        legalName: name,
+        country: country,
+        documentType: kycState.documentType || "national_id",
+        documentNumber: kycState.documentNumber || "NIN-000-000",
+        selfieImageUrl: kycState.selfieImageUrl || "https://example.com/uploads/ada-selfie.jpg",
+        documentImageUrl: kycState.documentImageUrl || "https://example.com/uploads/ada-national-id.jpg",
+      };
+      await submitKyc(payload).unwrap();
+      dispatch(resetKyc());
+      // Navigate back to the main KYC dashboard
+      router.replace("/kyc");
+    } catch (error) {
+      console.error("KYC submission failed:", error);
+    }
   };
 
   return (
@@ -88,6 +106,7 @@ export default function KYCReview() {
 
       <BaseButton
         title="Submit for review"
+        isLoading={isLoading}
         onPress={handleSubmit}
         style={styles.continueButton}
       />

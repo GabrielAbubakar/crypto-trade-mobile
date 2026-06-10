@@ -7,18 +7,21 @@ import {
 } from "@/components/ui";
 import { Colors, FontFamily } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { useAppDispatch, useAppSelector, setDocumentImageUrl } from "@/store";
 
 type DocTab = "front" | "back" | "passport";
 
 export default function KYCDocument() {
   const router = useRouter();
-  const params = useLocalSearchParams();
+  const dispatch = useAppDispatch();
+  const kycState = useAppSelector((state) => state.kyc);
+
   const [activeTab, setActiveTab] = useState<DocTab>("front");
   const [uploadedFiles, setUploadedFiles] = useState<Record<DocTab, boolean>>({
-    front: false,
+    front: !!kycState.documentImageUrl,
     back: false,
     passport: false,
   });
@@ -32,16 +35,8 @@ export default function KYCDocument() {
   };
 
   const handleContinue = () => {
-    router.push({
-      pathname: "/kyc/selfie",
-      params: {
-        ...params,
-        frontUploaded: uploadedFiles.front ? "yes" : "no",
-        backUploaded: uploadedFiles.back ? "yes" : "no",
-        passportUploaded: uploadedFiles.passport ? "yes" : "no",
-        hasDocumentImage: "yes",
-      },
-    });
+    dispatch(setDocumentImageUrl("https://example.com/uploads/ada-national-id.jpg"));
+    router.push("/kyc/selfie");
   };
 
   // We require either Front to be uploaded OR Passport to be uploaded

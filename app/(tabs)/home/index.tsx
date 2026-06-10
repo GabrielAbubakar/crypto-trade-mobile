@@ -41,13 +41,23 @@ export default function HomeScreen() {
     isFetching: trendingIsLoading,
     refetch: refetchTrending,
   } = useGetTrendingAssetsQuery(undefined);
-  const { data: user } = useGetProfileQuery();
-  const { data: walletData } = useGetWalletBalancesQuery();
+  const {
+    data: user,
+    refetch: refetchUser,
+    isLoading: userIsLoading,
+  } = useGetProfileQuery();
+  const {
+    data: walletData,
+    refetch: refetchWallet,
+    isLoading: walletIsLoading,
+  } = useGetWalletBalancesQuery();
 
   // console.log(walletData);
 
   function handleRefresh() {
     refetchTrending();
+    refetchUser();
+    refetchWallet();
   }
 
   // useEffect(() => {

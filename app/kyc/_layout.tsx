@@ -16,9 +16,6 @@ export default function KYCLayout() {
       <Stack.Screen name="document" />
       <Stack.Screen name="selfie" />
       <Stack.Screen name="review" />
-      <Stack.Screen name="pending" />
-      <Stack.Screen name="approved" />
-      <Stack.Screen name="rejected" />
     </Stack>
   );
 }

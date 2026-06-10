@@ -12,6 +12,7 @@ import {
 } from "redux-persist";
 import { baseApi } from "./api";
 import authReducer from "./slices/authSlice";
+import kycReducer from "./slices/kycSlice";
 
 const persistConfig = {
   key: "root",
@@ -21,6 +22,7 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   auth: authReducer,
+  kyc: kycReducer,
   [baseApi.reducerPath]: baseApi.reducer,
 });
 

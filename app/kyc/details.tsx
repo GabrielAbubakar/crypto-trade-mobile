@@ -7,29 +7,56 @@ import {
   ScreenContainer,
 } from "@/components/ui";
 import { Colors, FontFamily } from "@/constants";
+import { setKycDetails, useAppDispatch, useAppSelector } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
+import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import React, { useRef, useState } from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
+
+const docTypeOptions = [
+  { label: "Passport", value: "passport" },
+  { label: "National ID", value: "national_id" },
+  { label: "Drivers License", value: "drivers_license" },
+];
 
 export default function KYCDetails() {
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [country, setCountry] = useState("");
-  const [docType, setDocType] = useState("");
-  const [docNumber, setDocNumber] = useState("");
+  const dispatch = useAppDispatch();
+  const kycState = useAppSelector((state) => state.kyc);
+
+  const [name, setName] = useState(kycState.legalName);
+  const [country, setCountry] = useState(kycState.country);
+  const [docType, setDocType] = useState(kycState.documentType);
+  const [docNumber, setDocNumber] = useState(kycState.documentNumber);
+
+  const sheetRef = useRef<BottomSheetModal>(null);
+  // const snapPoints = useMemo(() => ["40%"], []);
+
+  const handleOpenSheet = () => {
+    sheetRef.current?.present();
+  };
+
+  const handleSelectOption = (value: string) => {
+    setDocType(value);
+    sheetRef.current?.dismiss();
+  };
+
+  const getDocTypeLabel = (val: string) => {
+    const option = docTypeOptions.find((o) => o.value === val);
+    return option ? option.label : val;
+  };
 
   const handleContinue = () => {
-    // Navigate to next step and pass parameters along
-    router.push({
-      pathname: "/kyc/document",
-      params: {
-        name,
+    dispatch(
+      setKycDetails({
+        legalName: name,
         country,
-        docType,
-        docNumber,
-      },
-    });
+        documentType: docType,
+        documentNumber: docNumber,
+      }),
+    );
+    router.push("/kyc/document");
   };
 
   const isFormValid =
@@ -64,6 +91,7 @@ export default function KYCDetails() {
             placeholder="Enter your country"
             value={country}
             onChangeText={setCountry}
+            editable={false}
             containerStyle={styles.inputStyle}
           />
         </View>
@@ -71,12 +99,23 @@ export default function KYCDetails() {
         {/* Document Type */}
         <View style={styles.inputGroup}>
           <BaseText style={styles.inputLabel}>Document type</BaseText>
-          <BaseInput
-            placeholder="Passport, National ID, Drivers License..."
-            value={docType}
-            onChangeText={setDocType}
-            containerStyle={styles.inputStyle}
-          />
+          <TouchableOpacity onPress={handleOpenSheet} activeOpacity={0.8}>
+            <View pointerEvents="none">
+              <BaseInput
+                placeholder="Select document type"
+                value={getDocTypeLabel(docType)}
+                editable={false}
+                containerStyle={styles.inputStyle}
+                rightIcon={
+                  <Ionicons
+                    name="chevron-down"
+                    size={20}
+                    color={Colors.textSecondary}
+                  />
+                }
+              />
+            </View>
+          </TouchableOpacity>
         </View>
 
         {/* Document Number */}
@@ -110,6 +149,50 @@ export default function KYCDetails() {
         onPress={handleContinue}
         style={styles.continueButton}
       />
+
+      <BottomSheetModal
+        ref={sheetRef}
+        index={0}
+        // snapPoints={snapPoints}
+        backgroundStyle={styles.sheetBackground}
+        handleIndicatorStyle={styles.sheetHandle}
+      >
+        <BottomSheetView style={styles.sheetContainer}>
+          <BaseText style={styles.sheetTitle}>Select Document Type</BaseText>
+          <View style={styles.optionsContainer}>
+            {docTypeOptions.map((option) => {
+              const isActive = docType === option.value;
+              return (
+                <TouchableOpacity
+                  key={option.value}
+                  onPress={() => handleSelectOption(option.value)}
+                  style={[
+                    styles.optionButton,
+                    isActive && styles.optionButtonActive,
+                  ]}
+                  activeOpacity={0.7}
+                >
+                  <BaseText
+                    style={[
+                      styles.optionText,
+                      isActive && styles.optionTextActive,
+                    ]}
+                  >
+                    {option.label}
+                  </BaseText>
+                  {isActive && (
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={20}
+                      color={Colors.primary}
+                    />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </BottomSheetView>
+      </BottomSheetModal>
     </ScreenContainer>
   );
 }
@@ -159,5 +242,52 @@ const styles = StyleSheet.create({
   },
   continueButton: {
     marginVertical: 24,
+  },
+  sheetBackground: {
+    backgroundColor: Colors.secondary,
+  },
+  sheetHandle: {
+    backgroundColor: "rgba(255, 255, 255, 0.25)",
+    width: 60,
+    height: 4,
+  },
+  sheetContainer: {
+    padding: 24,
+    backgroundColor: Colors.secondary,
+    flex: 1,
+  },
+  sheetTitle: {
+    fontSize: 18,
+    color: Colors.white,
+    fontFamily: FontFamily.bold,
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  optionsContainer: {
+    gap: 12,
+  },
+  optionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "rgba(255, 255, 255, 0.03)",
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.05)",
+  },
+  optionButtonActive: {
+    backgroundColor: "rgba(94, 213, 168, 0.08)",
+    borderColor: "rgba(94, 213, 168, 0.3)",
+  },
+  optionText: {
+    fontSize: 15,
+    color: Colors.textSecondary,
+    fontFamily: FontFamily.medium,
+  },
+  optionTextActive: {
+    color: Colors.primary,
+    fontFamily: FontFamily.bold,
   },
 });

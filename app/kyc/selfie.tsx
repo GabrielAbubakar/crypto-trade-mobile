@@ -7,27 +7,24 @@ import {
 } from "@/components/ui";
 import { Colors, FontFamily } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { useAppDispatch, useAppSelector, setSelfieImageUrl } from "@/store";
 
 export default function KYCSelfie() {
   const router = useRouter();
-  const params = useLocalSearchParams();
-  const [captured, setCaptured] = useState(false);
+  const dispatch = useAppDispatch();
+  const kycState = useAppSelector((state) => state.kyc);
+  const [captured, setCaptured] = useState(!!kycState.selfieImageUrl);
 
   const handleCapture = () => {
     setCaptured((prev) => !prev);
   };
 
   const handleContinue = () => {
-    router.push({
-      pathname: "/kyc/review",
-      params: {
-        ...params,
-        selfieUploaded: "yes",
-      },
-    });
+    dispatch(setSelfieImageUrl("https://example.com/uploads/ada-selfie.jpg"));
+    router.push("/kyc/review");
   };
 
   return (

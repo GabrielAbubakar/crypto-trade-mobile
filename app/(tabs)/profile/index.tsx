@@ -2,6 +2,7 @@ import profileImage from "@/assets/images/avatar.jpg";
 import {
   BackHeader,
   BaseButton,
+  ConfirmationModal,
   ProfileOptionCard,
   ScreenContainer,
 } from "@/components";
@@ -13,25 +14,38 @@ import {
   useGetNotificationsQuery,
   useGetPriceAlertsQuery,
   useGetProfileQuery,
+  useLogOutMutation,
 } from "@/store";
+import { showToast } from "@/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 export default function ProfileScreen() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { data, isLoading } = useGetProfileQuery();
+  const { data, isLoading: isProfileLoading } = useGetProfileQuery();
   const { data: alerts } = useGetPriceAlertsQuery();
   const { data: notificationsData } = useGetNotificationsQuery();
 
-  const handleLogout = () => {
-    dispatch(logout());
-    router.replace("/(auth)");
-  };
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [logOut, { isLoading: isLoggingOut }] = useLogOutMutation();
+
+  async function handleConfirmLogout() {
+    try {
+      await logOut("").unwrap();
+      setShowLogoutModal(false);
+      dispatch(logout());
+      showToast("success", "Logged out successfully");
+      router.replace("/(auth)");
+    } catch (error) {
+      console.log(error);
+      showToast("error", "Unable to logout. Please try again.");
+    }
+  }
 
   const activeAlertsCount = alerts?.filter((a) => a.isActive).length ?? 0;
   const unreadNotificationsCount =
@@ -68,7 +82,7 @@ export default function ProfileScreen() {
           </LinearGradient>
         </View>
         <Title variant="bold" style={styles.username}>
-          {isLoading ? "Loading..." : data?.fullName}
+          {isProfileLoading ? "Loading..." : data?.fullName}
         </Title>
         <BaseText color={Colors.textSecondary} style={{ marginBottom: 8 }}>
           {data?.email}
@@ -133,12 +147,20 @@ export default function ProfileScreen() {
         />
 
         <BaseButton
-          title="Logout"
           variant="cancel"
-          onPress={handleLogout}
-          style={styles.logoutButton}
+          title="Log out"
+          disabled={isLoggingOut}
+          onPress={() => setShowLogoutModal(true)}
+          style={{ marginTop: 20 }}
         />
       </View>
+
+      <ConfirmationModal
+        visible={showLogoutModal}
+        onCancel={() => setShowLogoutModal(false)}
+        onConfirm={handleConfirmLogout}
+        isLoading={isLoggingOut}
+      />
     </ScreenContainer>
   );
 }

@@ -9,15 +9,15 @@ import { Colors, FontFamily } from "@/constants";
 import { useGetProfileQuery } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 type KYCStatus = "starter" | "pending" | "approved" | "rejected";
 
 export default function KYCIndex() {
   const router = useRouter();
-  const { data: profileData } = useGetProfileQuery();
-  const [status, setStatus] = useState<KYCStatus>("starter");
+  const { data: profileData, isLoading } = useGetProfileQuery();
+  const [status, setStatus] = useState<KYCStatus>();
 
   React.useEffect(() => {
     if (profileData?.verification.tier) {
@@ -25,7 +25,7 @@ export default function KYCIndex() {
     }
   }, [profileData]);
 
-  console.log(profileData?.verification);
+  // console.log(profileData?.verification);
 
   const renderContent = () => {
     switch (status) {
@@ -94,7 +94,7 @@ export default function KYCIndex() {
             </View>
 
             <BaseText variant="bold" style={styles.mainTitle}>
-              Pending review
+              {profileData?.verification.label}
             </BaseText>
             <BaseText style={styles.subtitle}>
               You can browse markets while we review your documents. Trading and
@@ -105,7 +105,9 @@ export default function KYCIndex() {
 
             <View style={styles.infoRow}>
               <BaseText style={styles.infoLabel}>Current level</BaseText>
-              <BaseText style={styles.infoValue}>Review</BaseText>
+              <BaseText style={styles.infoValue}>
+                {profileData?.verification.level}
+              </BaseText>
             </View>
             <View style={styles.infoRow}>
               <BaseText style={styles.infoLabel}>Sandbox deposit</BaseText>
@@ -114,7 +116,7 @@ export default function KYCIndex() {
 
             <BaseButton
               title="Back to home"
-              variant="secondary"
+              variant="primary"
               onPress={() => router.replace("/(tabs)/home")}
               style={styles.actionButton}
             />
@@ -217,6 +219,22 @@ export default function KYCIndex() {
     }
   };
 
+  useEffect(() => {
+    if (profileData?.verification.status) {
+      setStatus(profileData.verification.status as KYCStatus);
+    }
+  }, [profileData]);
+
+  if (isLoading) {
+    return (
+      <ScreenContainer
+        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+      >
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </ScreenContainer>
+    );
+  }
+
   return (
     <ScreenContainer scrollable style={styles.container}>
       <BackHeader title={getHeaderTitle()} />
@@ -227,15 +245,13 @@ export default function KYCIndex() {
       </BaseText>
 
       {/* Progress Indicator */}
-      <KycProgressSteps
-        currentStep={status === "starter" ? 0 : status === "pending" ? 2 : 3}
-      />
+      <KycProgressSteps currentStep={status === "starter" ? 0 : 3} />
 
       {/* Dynamic Content */}
       <View style={styles.content}>{renderContent()}</View>
 
       {/* Developer helper panel */}
-      <View style={styles.devPanel}>
+      {/* <View style={styles.devPanel}>
         <BaseText style={styles.devTitle}>DEV STATUS PREVIEW:</BaseText>
         <View style={styles.devButtons}>
           {(["starter", "pending", "approved", "rejected"] as KYCStatus[]).map(
@@ -262,7 +278,7 @@ export default function KYCIndex() {
             ),
           )}
         </View>
-      </View>
+      </View> */}
     </ScreenContainer>
   );
 }
