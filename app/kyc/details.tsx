@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     gap: 16,
     marginTop: 8,
   },

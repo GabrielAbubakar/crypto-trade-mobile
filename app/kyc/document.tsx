@@ -6,13 +6,26 @@ import {
   ScreenContainer,
 } from "@/components/ui";
 import { Colors, FontFamily } from "@/constants";
+import {
+  setDocumentBackImageUrl,
+  setDocumentImageUrl,
+  useAppDispatch,
+  useAppSelector,
+  useKycUploadMutation,
+} from "@/store";
+import { showErrorToast, showSuccessToast } from "@/utils";
 import { Ionicons } from "@expo/vector-icons";
+import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
-import { useAppDispatch, useAppSelector, setDocumentImageUrl } from "@/store";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-type DocTab = "front" | "back" | "passport";
+type DocTab = "front" | "back";
 
 export default function KYCDocument() {
   const router = useRouter();
@@ -20,37 +33,111 @@ export default function KYCDocument() {
   const kycState = useAppSelector((state) => state.kyc);
 
   const [activeTab, setActiveTab] = useState<DocTab>("front");
+
   const [uploadedFiles, setUploadedFiles] = useState<Record<DocTab, boolean>>({
     front: !!kycState.documentImageUrl,
-    back: false,
-    passport: false,
+    back: !!kycState.documentBackImageUrl,
   });
 
-  const handleUpload = (tab: DocTab) => {
-    // Mock the upload status toggling
-    setUploadedFiles((prev) => ({
-      ...prev,
-      [tab]: !prev[tab],
-    }));
+  const [kycUpload, { isLoading: isUploadingApi }] = useKycUploadMutation();
+  const [uploadingTab, setUploadingTab] = useState<Record<DocTab, boolean>>({
+    front: false,
+    back: false,
+  });
+
+  const handleUpload = async (tab: DocTab) => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "image/*",
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled || !result.assets || result.assets.length === 0) {
+        return;
+      }
+
+      const file = result.assets[0];
+      const fileName = file.name;
+      const contentType = file.mimeType || "image/jpeg";
+
+      setUploadingTab((prev) => ({ ...prev, [tab]: true }));
+
+      const documentKind = tab === "front" ? "document_front" : "document_back";
+
+      // 1. Request presigned URL
+      const uploadInstructions = await kycUpload({
+        fileName,
+        contentType,
+        documentKind,
+      }).unwrap();
+
+      const { uploadUrl, imageUrl } = uploadInstructions;
+
+      // 2. Fetch and upload raw binary data
+      const response = await fetch(file.uri);
+      const blob = await response.blob();
+
+      const uploadResponse = await fetch(uploadUrl, {
+        method: "PUT",
+        body: blob,
+        headers: {
+          "Content-Type": contentType,
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error("Failed to upload binary file to S3");
+      }
+
+      // 3. Update Redux store state
+      if (tab === "back") {
+        dispatch(setDocumentBackImageUrl(imageUrl));
+      } else {
+        dispatch(setDocumentImageUrl(imageUrl));
+      }
+
+      setUploadedFiles((prev) => ({
+        ...prev,
+        [tab]: true,
+      }));
+
+      showSuccessToast(`${tab.toUpperCase()} document uploaded successfully!`);
+    } catch (err: any) {
+      console.error(err);
+      showErrorToast(err?.message || "An error occurred during file upload.");
+    } finally {
+      setUploadingTab((prev) => ({ ...prev, [tab]: false }));
+    }
   };
 
   const handleContinue = () => {
-    dispatch(setDocumentImageUrl("https://example.com/uploads/ada-national-id.jpg"));
     router.push("/kyc/selfie");
   };
 
-  // We require either Front to be uploaded OR Passport to be uploaded
-  const canContinue = uploadedFiles.front || uploadedFiles.passport;
+  // We require Front to be uploaded
+  const canContinue = uploadedFiles.front;
 
   const renderUploadPlaceholder = (tab: DocTab, label: string) => {
     const isUploaded = uploadedFiles[tab];
+    const isUploading = uploadingTab[tab];
 
     return (
       <TouchableOpacity
         style={[styles.uploadCard, isUploaded && styles.uploadCardActive]}
         onPress={() => handleUpload(tab)}
+        disabled={isUploading}
       >
-        {isUploaded ? (
+        {isUploading ? (
+          <View style={styles.uploadedContent}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+            <BaseText
+              variant="bold"
+              style={[styles.uploadedTitle, { marginTop: 16 }]}
+            >
+              Uploading...
+            </BaseText>
+          </View>
+        ) : isUploaded ? (
           <View style={styles.uploadedContent}>
             <View style={styles.uploadedCircle}>
               <Ionicons name="checkmark" size={32} color={Colors.primary} />
@@ -59,7 +146,7 @@ export default function KYCDocument() {
               {label} uploaded
             </BaseText>
             <BaseText style={styles.uploadedSubtitle}>
-              Tap to delete or re-upload
+              Tap to re-upload
             </BaseText>
           </View>
         ) : (
@@ -96,13 +183,12 @@ export default function KYCDocument() {
       <View style={styles.content}>
         {/* Horizontal tabs */}
         <View style={styles.tabsContainer}>
-          {(["front", "back", "passport"] as DocTab[]).map((tab) => {
+          {(["front", "back"] as DocTab[]).map((tab) => {
             const isTabActive = activeTab === tab;
             const hasUpload = uploadedFiles[tab];
             const getLabel = () => {
               if (tab === "front") return "Front required";
-              if (tab === "back") return "Back optional";
-              return "Passport page";
+              return "Back optional";
             };
 
             return (
@@ -141,8 +227,6 @@ export default function KYCDocument() {
         {/* Dynamic upload placeholders */}
         {activeTab === "front" && renderUploadPlaceholder("front", "front")}
         {activeTab === "back" && renderUploadPlaceholder("back", "back")}
-        {activeTab === "passport" &&
-          renderUploadPlaceholder("passport", "passport page")}
 
         <View style={styles.guidelines}>
           <BaseText style={styles.guidelinesTitle}>Requirements:</BaseText>

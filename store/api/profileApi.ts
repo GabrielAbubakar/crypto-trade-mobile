@@ -48,7 +48,7 @@ export const profileApi = baseApi.injectEndpoints({
     }),
     updateTransactionPin: builder.mutation<
       { success: boolean },
-      { pin: string }
+      { currentPin: string; newPin: string }
     >({
       query: (body) => ({
         url: "/me/pin",

@@ -6,6 +6,14 @@ import type {
   ILoginResponse,
   IRegisterRequest,
   IRegisterResponse,
+  ISetup2FAResponse,
+  IEnable2FARequest,
+  IEnable2FAResponse,
+  IVerify2FARequest,
+  IRegenerateRecoveryCodesRequest,
+  IRegenerateRecoveryCodesResponse,
+  IDisable2FARequest,
+  IDisable2FAResponse,
 } from "@/types";
 import { logout, setCredentials } from "../slices/authSlice";
 import { baseApi } from "./baseApi";
@@ -72,10 +80,58 @@ export const authApi = baseApi.injectEndpoints({
     }),
     kycUpload: builder.mutation<IKycUploadResponse, IKycUploadRequest>({
       query: (body) => ({
-        url: "/kyc/uploads",
+        url: "/auth/kyc/uploads",
         method: "POST",
         body,
       }),
+    }),
+    setup2FA: builder.mutation<ISetup2FAResponse["data"], void>({
+      query: () => ({
+        url: "/auth/2fa/setup",
+        method: "POST",
+      }),
+      transformResponse: (response: ISetup2FAResponse) => response.data,
+    }),
+    enable2FA: builder.mutation<IEnable2FAResponse["data"], IEnable2FARequest>({
+      query: (body) => ({
+        url: "/auth/2fa/enable",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: IEnable2FAResponse) => response.data,
+      invalidatesTags: ["User"],
+    }),
+    verify2FA: builder.mutation<ILoginResponse["data"], IVerify2FARequest>({
+      query: (body) => ({
+        url: "/auth/2fa/verify",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: ILoginResponse) => response.data,
+    }),
+    regenerate2FARecoveryCodes: builder.mutation<
+      IRegenerateRecoveryCodesResponse["data"],
+      IRegenerateRecoveryCodesRequest
+    >({
+      query: (body) => ({
+        url: "/auth/2fa/recovery-codes/regenerate",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: IRegenerateRecoveryCodesResponse) =>
+        response.data,
+    }),
+    disable2FA: builder.mutation<
+      IDisable2FAResponse["data"],
+      IDisable2FARequest
+    >({
+      query: (body) => ({
+        url: "/auth/2fa/disable",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: IDisable2FAResponse) => response.data,
+      invalidatesTags: ["User"],
     }),
 
     logOut: builder.mutation<void, any>({
@@ -105,4 +161,9 @@ export const {
   useKycVerificationMutation,
   useKycUploadMutation,
   useLogOutMutation,
+  useSetup2FAMutation,
+  useEnable2FAMutation,
+  useVerify2FAMutation,
+  useRegenerate2FARecoveryCodesMutation,
+  useDisable2FAMutation,
 } = authApi;

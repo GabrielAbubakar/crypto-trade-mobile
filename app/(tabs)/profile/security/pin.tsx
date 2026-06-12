@@ -1,43 +1,52 @@
-import { BackHeader, BaseButton, ScreenContainer } from "@/components";
+import {
+  BackHeader,
+  BaseButton,
+  BaseInput,
+  ScreenContainer,
+} from "@/components";
 import { BaseText } from "@/components/ui/BaseText";
 import { Colors } from "@/constants";
+import { updatePinSchema } from "@/schema";
 import { useUpdateTransactionPinMutation } from "@/store";
-import { showSuccessToast, showErrorToast } from "@/utils";
+import { showErrorToast, showSuccessToast } from "@/utils";
+import { Ionicons } from "@expo/vector-icons";
+import { useForm } from "@tanstack/react-form";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { StyleSheet, TextInput, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 export default function TransactionPinScreen() {
   const router = useRouter();
-  const [currentPin, setCurrentPin] = useState("");
-  const [newPin, setNewPin] = useState("");
-  const [confirmPin, setConfirmPin] = useState("");
   const [updatePin, { isLoading }] = useUpdateTransactionPinMutation();
 
-  const handleUpdatePin = async () => {
-    if (!currentPin || !newPin || !confirmPin) {
-      showErrorToast("All fields are required");
-      return;
-    }
+  const [showPin, setShowPin] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
 
-    if (newPin.length !== 4 || confirmPin.length !== 4 || currentPin.length !== 4) {
-      showErrorToast("PIN must be exactly 4 digits");
-      return;
-    }
-
-    if (newPin !== confirmPin) {
-      showErrorToast("New PIN and Confirm PIN do not match");
-      return;
-    }
-
-    try {
-      await updatePin({ pin: newPin }).unwrap();
-      showSuccessToast("Transaction PIN updated successfully");
-      router.back();
-    } catch (err: any) {
-      showErrorToast(err?.data?.message || "Failed to update transaction PIN");
-    }
-  };
+  const form = useForm({
+    defaultValues: {
+      currentPin: "",
+      newPin: "",
+      confirmPin: "",
+    },
+    validators: {
+      onChange: updatePinSchema,
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        await updatePin({
+          currentPin: value.currentPin,
+          newPin: value.newPin,
+        }).unwrap();
+        showSuccessToast("Transaction PIN updated successfully");
+        router.back();
+      } catch (err: any) {
+        showErrorToast(err?.data?.error?.message || "Failed to update PIN");
+      }
+    },
+  });
 
   return (
     <ScreenContainer style={styles.container} withPadding={true}>
@@ -48,52 +57,142 @@ export default function TransactionPinScreen() {
       </BaseText>
 
       <View style={styles.form}>
+        {/* Current PIN */}
         <View style={styles.inputGroup}>
           <BaseText variant="bold" color="#FFFFFF" style={styles.label}>
             Current PIN
           </BaseText>
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            maxLength={4}
-            secureTextEntry
-            value={currentPin}
-            onChangeText={setCurrentPin}
-            placeholder="••••"
-            placeholderTextColor="#4E586E"
-          />
+          <form.Field name="currentPin">
+            {(field) => (
+              <BaseInput
+                placeholder="••••"
+                secureTextEntry={!showPin.current}
+                value={field.state.value}
+                onChangeText={field.handleChange}
+                keyboardType="numeric"
+                maxLength={4}
+                containerStyle={styles.authInput}
+                style={{ color: "#FFFFFF", fontSize: 18 }}
+                rightIcon={
+                  <TouchableOpacity
+                    onPress={() =>
+                      setShowPin((prev) => ({
+                        ...prev,
+                        current: !prev.current,
+                      }))
+                    }
+                  >
+                    <Ionicons
+                      name={showPin.current ? "eye-off" : "eye"}
+                      size={20}
+                      color="#8594A6"
+                    />
+                  </TouchableOpacity>
+                }
+                error={
+                  field.state.meta.isTouched &&
+                  field.state.meta.errors.length > 0
+                    ? field.state.meta.errors
+                        .map((err: any) =>
+                          typeof err === "string" ? err : err.message,
+                        )
+                        .join(", ")
+                    : undefined
+                }
+              />
+            )}
+          </form.Field>
         </View>
 
+        {/* New PIN */}
         <View style={styles.inputGroup}>
           <BaseText variant="bold" color="#FFFFFF" style={styles.label}>
             New PIN
           </BaseText>
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            maxLength={4}
-            secureTextEntry
-            value={newPin}
-            onChangeText={setNewPin}
-            placeholder="••••"
-            placeholderTextColor="#4E586E"
-          />
+          <form.Field name="newPin">
+            {(field) => (
+              <BaseInput
+                placeholder="••••"
+                secureTextEntry={!showPin.new}
+                value={field.state.value}
+                onChangeText={field.handleChange}
+                keyboardType="numeric"
+                maxLength={4}
+                containerStyle={styles.authInput}
+                style={{ color: "#FFFFFF", fontSize: 18 }}
+                rightIcon={
+                  <TouchableOpacity
+                    onPress={() =>
+                      setShowPin((prev) => ({ ...prev, new: !prev.new }))
+                    }
+                  >
+                    <Ionicons
+                      name={showPin.new ? "eye-off" : "eye"}
+                      size={20}
+                      color="#8594A6"
+                    />
+                  </TouchableOpacity>
+                }
+                error={
+                  field.state.meta.isTouched &&
+                  field.state.meta.errors.length > 0
+                    ? field.state.meta.errors
+                        .map((err: any) =>
+                          typeof err === "string" ? err : err.message,
+                        )
+                        .join(", ")
+                    : undefined
+                }
+              />
+            )}
+          </form.Field>
         </View>
 
+        {/* Confirm PIN */}
         <View style={styles.inputGroup}>
           <BaseText variant="bold" color="#FFFFFF" style={styles.label}>
             Confirm PIN
           </BaseText>
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            maxLength={4}
-            secureTextEntry
-            value={confirmPin}
-            onChangeText={setConfirmPin}
-            placeholder="••••"
-            placeholderTextColor="#4E586E"
-          />
+          <form.Field name="confirmPin">
+            {(field) => (
+              <BaseInput
+                placeholder="••••"
+                secureTextEntry={!showPin.confirm}
+                value={field.state.value}
+                onChangeText={field.handleChange}
+                keyboardType="numeric"
+                maxLength={4}
+                containerStyle={styles.authInput}
+                style={{ color: "#FFFFFF", fontSize: 18 }}
+                rightIcon={
+                  <TouchableOpacity
+                    onPress={() =>
+                      setShowPin((prev) => ({
+                        ...prev,
+                        confirm: !prev.confirm,
+                      }))
+                    }
+                  >
+                    <Ionicons
+                      name={showPin.confirm ? "eye-off" : "eye"}
+                      size={20}
+                      color="#8594A6"
+                    />
+                  </TouchableOpacity>
+                }
+                error={
+                  field.state.meta.isTouched &&
+                  field.state.meta.errors.length > 0
+                    ? field.state.meta.errors
+                        .map((err: any) =>
+                          typeof err === "string" ? err : err.message,
+                        )
+                        .join(", ")
+                    : undefined
+                }
+              />
+            )}
+          </form.Field>
         </View>
       </View>
 
@@ -109,7 +208,7 @@ export default function TransactionPinScreen() {
 
       <BaseButton
         title="Update PIN"
-        onPress={handleUpdatePin}
+        onPress={() => form.handleSubmit()}
         isLoading={isLoading}
         style={styles.actionButton}
       />
@@ -136,12 +235,10 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
   },
-  input: {
+  authInput: {
     backgroundColor: "#141820",
+    height: 56,
     borderRadius: 16,
-    padding: 16,
-    color: "#FFFFFF",
-    fontSize: 18,
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.05)",
   },

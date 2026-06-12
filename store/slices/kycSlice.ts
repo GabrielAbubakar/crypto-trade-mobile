@@ -8,6 +8,7 @@ export interface KycState {
   documentNumber: string;
   selfieImageUrl: string;
   documentImageUrl: string;
+  documentBackImageUrl: string;
 }
 
 const initialState: KycState = {
@@ -17,6 +18,7 @@ const initialState: KycState = {
   documentNumber: "",
   selfieImageUrl: "",
   documentImageUrl: "",
+  documentBackImageUrl: "",
 };
 
 const kycSlice = createSlice({
@@ -40,6 +42,9 @@ const kycSlice = createSlice({
     setDocumentImageUrl: (state, action: PayloadAction<string>) => {
       state.documentImageUrl = action.payload;
     },
+    setDocumentBackImageUrl: (state, action: PayloadAction<string>) => {
+      state.documentBackImageUrl = action.payload;
+    },
     setSelfieImageUrl: (state, action: PayloadAction<string>) => {
       state.selfieImageUrl = action.payload;
     },
@@ -50,6 +55,7 @@ const kycSlice = createSlice({
       state.documentNumber = "";
       state.selfieImageUrl = "";
       state.documentImageUrl = "";
+      state.documentBackImageUrl = "";
     },
   },
 });
@@ -57,6 +63,7 @@ const kycSlice = createSlice({
 export const {
   setKycDetails,
   setDocumentImageUrl,
+  setDocumentBackImageUrl,
   setSelfieImageUrl,
   resetKyc,
 } = kycSlice.actions;

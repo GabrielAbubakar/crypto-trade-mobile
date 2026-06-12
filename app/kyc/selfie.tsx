@@ -6,24 +6,86 @@ import {
   ScreenContainer,
 } from "@/components/ui";
 import { Colors, FontFamily } from "@/constants";
+import {
+  setSelfieImageUrl,
+  useAppDispatch,
+  useAppSelector,
+  useKycUploadMutation,
+} from "@/store";
+import { showErrorToast, showSuccessToast } from "@/utils";
 import { Ionicons } from "@expo/vector-icons";
+import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
-import { useAppDispatch, useAppSelector, setSelfieImageUrl } from "@/store";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function KYCSelfie() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const kycState = useAppSelector((state) => state.kyc);
-  const [captured, setCaptured] = useState(!!kycState.selfieImageUrl);
 
-  const handleCapture = () => {
-    setCaptured((prev) => !prev);
+  const [kycUpload, { isLoading: isUploadingApi }] = useKycUploadMutation();
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleCapture = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "image/*",
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled || !result.assets || result.assets.length === 0) {
+        return;
+      }
+
+      const file = result.assets[0];
+      const fileName = file.name;
+      const contentType = file.mimeType || "image/jpeg";
+
+      setIsUploading(true);
+
+      // 1. Fetch pre-signed upload URL instructions
+      const uploadInstructions = await kycUpload({
+        fileName,
+        contentType,
+        documentKind: "selfie",
+      }).unwrap();
+
+      const { uploadUrl, imageUrl } = uploadInstructions;
+
+      // 2. Fetch local file blob and PUT upload
+      const response = await fetch(file.uri);
+      const blob = await response.blob();
+
+      const uploadResponse = await fetch(uploadUrl, {
+        method: "PUT",
+        body: blob,
+        headers: {
+          "Content-Type": contentType,
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error("Failed to upload selfie file to S3");
+      }
+
+      // 3. Update Redux store state
+      dispatch(setSelfieImageUrl(imageUrl));
+      showSuccessToast("Selfie image uploaded successfully!");
+    } catch (err: any) {
+      console.error(err);
+      showErrorToast(err?.message || "An error occurred during selfie upload.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleContinue = () => {
-    dispatch(setSelfieImageUrl("https://example.com/uploads/ada-selfie.jpg"));
     router.push("/kyc/review");
   };
 
@@ -32,7 +94,7 @@ export default function KYCSelfie() {
       <BackHeader title="Selfie check" />
 
       <BaseText style={styles.headerSubtitle}>
-        Take a clear selfie so compliance can compare your face with your
+        Upload a clear selfie so compliance can compare your face with your
         document.
       </BaseText>
 
@@ -42,10 +104,25 @@ export default function KYCSelfie() {
         {/* Circular camera match area */}
         <TouchableOpacity
           activeOpacity={0.8}
-          style={[styles.cameraCircle, captured && styles.cameraCircleCaptured]}
+          style={[
+            styles.cameraCircle,
+            (kycState.selfieImageUrl || isUploading) &&
+              styles.cameraCircleCaptured,
+          ]}
           onPress={handleCapture}
+          disabled={isUploading}
         >
-          {captured ? (
+          {isUploading ? (
+            <View style={styles.capturedContainer}>
+              <ActivityIndicator size="large" color={Colors.primary} />
+              <BaseText
+                variant="bold"
+                style={[styles.capturedText, { marginTop: 16 }]}
+              >
+                Uploading selfie...
+              </BaseText>
+            </View>
+          ) : kycState.selfieImageUrl ? (
             <View style={styles.capturedContainer}>
               <Ionicons
                 name="checkmark-circle"
@@ -53,9 +130,9 @@ export default function KYCSelfie() {
                 color={Colors.primary}
               />
               <BaseText variant="bold" style={styles.capturedText}>
-                Selfie captured!
+                Selfie uploaded!
               </BaseText>
-              <BaseText style={styles.tapToRetake}>Tap to retake</BaseText>
+              <BaseText style={styles.tapToRetake}>Tap to re-upload</BaseText>
             </View>
           ) : (
             <View style={styles.cameraPlaceholder}>
@@ -65,7 +142,7 @@ export default function KYCSelfie() {
                 color={Colors.primary}
               />
               <BaseText variant="medium" style={styles.cameraText}>
-                Face match
+                Upload Face Photo
               </BaseText>
             </View>
           )}
@@ -95,8 +172,8 @@ export default function KYCSelfie() {
       </View>
 
       <BaseButton
-        title="Upload selfie"
-        disabled={!captured}
+        title="Continue"
+        disabled={!kycState.selfieImageUrl || isUploading}
         onPress={handleContinue}
         style={styles.continueButton}
       />

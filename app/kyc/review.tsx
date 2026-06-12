@@ -27,6 +27,7 @@ export default function KYCReview() {
   const country = kycState.country || "Nigeria";
   const docType = kycState.documentType || "National ID";
   const frontUploaded = kycState.documentImageUrl ? "Uploaded" : "Not Uploaded";
+  const backUploaded = kycState.documentBackImageUrl ? "Uploaded" : "Not Uploaded";
   const selfieUploaded = kycState.selfieImageUrl ? "Uploaded" : "Not Uploaded";
 
   const handleSubmit = async () => {
@@ -38,6 +39,7 @@ export default function KYCReview() {
         documentNumber: kycState.documentNumber || "NIN-000-000",
         selfieImageUrl: kycState.selfieImageUrl || "https://example.com/uploads/ada-selfie.jpg",
         documentImageUrl: kycState.documentImageUrl || "https://example.com/uploads/ada-national-id.jpg",
+        documentBackImageUrl: kycState.documentBackImageUrl || undefined,
       };
       await submitKyc(payload).unwrap();
       dispatch(resetKyc());
@@ -79,12 +81,28 @@ export default function KYCReview() {
             </BaseText>
           </View>
           <View style={styles.infoRow}>
-            <BaseText style={styles.infoLabel}>Document Image</BaseText>
+            <BaseText style={styles.infoLabel}>Document Image (Front)</BaseText>
             <BaseText
               variant="medium"
               style={[styles.infoValue, { color: Colors.primary }]}
             >
               {frontUploaded}
+            </BaseText>
+          </View>
+          <View style={styles.infoRow}>
+            <BaseText style={styles.infoLabel}>Document Image (Back)</BaseText>
+            <BaseText
+              variant="medium"
+              style={[
+                styles.infoValue,
+                {
+                  color: kycState.documentBackImageUrl
+                    ? Colors.primary
+                    : Colors.textSecondary,
+                },
+              ]}
+            >
+              {backUploaded}
             </BaseText>
           </View>
           <View style={styles.infoRow}>

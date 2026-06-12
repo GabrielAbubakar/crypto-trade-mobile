@@ -14,7 +14,6 @@ import {
   BackHandler,
   Dimensions,
   Image,
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
@@ -105,8 +104,7 @@ export default function AuthIndexScreen() {
         }}
       />
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      <View
         style={{ flex: 1 }}
       >
         {renderHeader()}
@@ -131,7 +129,7 @@ export default function AuthIndexScreen() {
             <SignUpForm />
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </View>
     </ScreenContainer>
   );
 }

@@ -9,7 +9,7 @@ import { Colors, FontFamily } from "@/constants";
 import { useGetProfileQuery } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 type KYCStatus = "starter" | "pending" | "approved" | "rejected";
@@ -17,13 +17,13 @@ type KYCStatus = "starter" | "pending" | "approved" | "rejected";
 export default function KYCIndex() {
   const router = useRouter();
   const { data: profileData, isLoading } = useGetProfileQuery();
-  const [status, setStatus] = useState<KYCStatus>();
+  const [status, setStatus] = useState<KYCStatus>("starter");
 
-  React.useEffect(() => {
-    if (profileData?.verification.tier) {
-      setStatus(profileData.verification.tier as KYCStatus);
-    }
-  }, [profileData]);
+  // React.useEffect(() => {
+  //   if (profileData?.verification.tier) {
+  //     setStatus(profileData.verification.tier as KYCStatus);
+  //   }
+  // }, [profileData]);
 
   // console.log(profileData?.verification);
 
@@ -219,11 +219,11 @@ export default function KYCIndex() {
     }
   };
 
-  useEffect(() => {
-    if (profileData?.verification.status) {
-      setStatus(profileData.verification.status as KYCStatus);
-    }
-  }, [profileData]);
+  // useEffect(() => {
+  //   if (profileData?.verification.status) {
+  //     setStatus(profileData.verification.status as KYCStatus);
+  //   }
+  // }, [profileData]);
 
   if (isLoading) {
     return (

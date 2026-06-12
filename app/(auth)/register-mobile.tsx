@@ -6,7 +6,6 @@ import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Image,
-  KeyboardAvoidingView,
   Platform,
   StyleSheet,
   TouchableOpacity,
@@ -50,8 +49,7 @@ export default function RegisterMobileScreen() {
           height: "120%",
         }}
       />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      <View
         style={{ flex: 1 }}
       >
         {/* Back Button Header */}
@@ -98,7 +96,7 @@ export default function RegisterMobileScreen() {
           onPress={handleSendOTP}
           style={styles.submitButton}
         />
-      </KeyboardAvoidingView>
+      </View>
     </ScreenContainer>
   );
 }

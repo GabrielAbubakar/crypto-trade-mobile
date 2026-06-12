@@ -88,6 +88,7 @@ export interface IKycVerificationRequest {
   documentNumber: string;
   selfieImageUrl: string;
   documentImageUrl: string;
+  documentBackImageUrl?: string;
 }
 
 export interface IKycUploadRequest {
@@ -100,5 +101,56 @@ export interface IKycUploadResponse {
   success: boolean;
   uploadUrl: string;
   imageUrl: string;
+}
+
+export interface ISetup2FAResponse {
+  data: {
+    secret: string;
+    otpauthUri: string;
+    enabled: boolean;
+  };
+}
+
+export interface IEnable2FARequest {
+  code: string;
+}
+
+export interface IEnable2FAResponse {
+  data: {
+    enabled: boolean;
+    recoveryCodes: string[];
+    recoveryCodeCount: number;
+  };
+}
+
+export interface IVerify2FARequest {
+  challengeId?: string;
+  code: string;
+  recoveryCode?: string;
+}
+
+export interface IRegenerateRecoveryCodesRequest {
+  password?: string;
+  code?: string;
+}
+
+export interface IRegenerateRecoveryCodesResponse {
+  data: {
+    recoveryCodes: string[];
+    recoveryCodeCount: number;
+  };
+}
+
+export interface IDisable2FARequest {
+  password?: string;
+  code?: string;
+  recoveryCode?: string;
+}
+
+export interface IDisable2FAResponse {
+  data: {
+    enabled: boolean;
+    recoveryCodeCount: number;
+  };
 }
 

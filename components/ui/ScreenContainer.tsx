@@ -30,7 +30,11 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
 }) => {
   const content = (
     <View
-      style={[styles.content, withPadding && styles.padding, style]}
+      style={[
+        scrollable ? { flexGrow: 1 } : styles.content,
+        withPadding && styles.padding,
+        style,
+      ]}
       {...props}
     >
       {children}
@@ -38,14 +42,15 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   );
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
-      keyboardVerticalOffset={50} // because this is hardcoded it cannot account for all screen heights and might break on smaller phones
-    >
-      <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 50 : 0}
+      >
         {scrollable ? (
           <ScrollView
+            style={{ flex: 1 }}
             refreshControl={
               onRefresh && (
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -59,8 +64,8 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
         ) : (
           content
         )}
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 

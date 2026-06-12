@@ -10,7 +10,6 @@ import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Image,
-  KeyboardAvoidingView,
   Platform,
   StyleSheet,
   TextInput,
@@ -168,8 +167,7 @@ export default function OTPScreen() {
           height: "120%",
         }}
       />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      <View
         style={{ flex: 1 }}
       >
         {/* Back Button Header */}
@@ -235,7 +233,7 @@ export default function OTPScreen() {
           isLoading={verifyOtpLoading}
           style={styles.submitButton}
         />
-      </KeyboardAvoidingView>
+      </View>
     </ScreenContainer>
   );
 }

@@ -1,6 +1,7 @@
 import { BackHeader, ProfileOptionCard, ScreenContainer } from "@/components";
 import { BaseText } from "@/components/ui/BaseText";
 import { Colors } from "@/constants";
+import { useGetProfileQuery } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -8,6 +9,9 @@ import { StyleSheet, View } from "react-native";
 
 export default function SecurityScreen() {
   const router = useRouter();
+  const { data: profile } = useGetProfileQuery();
+
+  console.log(profile);
 
   return (
     <ScreenContainer style={styles.container} withPadding={true}>
@@ -28,7 +32,11 @@ export default function SecurityScreen() {
         />
         <ProfileOptionCard
           title="Authenticator app"
-          description="Enabled for login protection"
+          description={
+            profile?.twoFactorEnabled
+              ? "Enabled for login protection"
+              : "Not enabled for login protection"
+          }
           icon={
             <Ionicons
               name="shield-checkmark-outline"
@@ -36,8 +44,8 @@ export default function SecurityScreen() {
               color="#5ED5A8"
             />
           }
-          value="On"
-          valueColor={Colors.primary}
+          value={profile?.twoFactorEnabled ? "On" : "Off"}
+          valueColor={profile?.twoFactorEnabled ? Colors.primary : Colors.error}
           onPress={() => router.push("/profile/security/2fa")}
         />
         <ProfileOptionCard
