@@ -71,29 +71,56 @@ export default function KYCDocument() {
         documentKind,
       }).unwrap();
 
-      const { uploadUrl, imageUrl } = uploadInstructions;
+      const { uploadUrl, publicUrl, imageUrl, method, formFields } = uploadInstructions.data;
+      const finalImageUrl = publicUrl || imageUrl || "";
 
-      // 2. Fetch and upload raw binary data
-      const response = await fetch(file.uri);
-      const blob = await response.blob();
+      // 2. Upload the file
+      if (method === "POST" || method === "post") {
+        const formData = new FormData();
+        if (formFields) {
+          Object.entries(formFields).forEach(([key, value]) => {
+            formData.append(key, String(value));
+          });
+        }
+        formData.append("file", {
+          uri: file.uri,
+          type: contentType,
+          name: fileName,
+        } as any);
 
-      const uploadResponse = await fetch(uploadUrl, {
-        method: "PUT",
-        body: blob,
-        headers: {
-          "Content-Type": contentType,
-        },
-      });
+        const uploadResponse = await fetch(uploadUrl, {
+          method: "POST",
+          body: formData,
+        });
 
-      if (!uploadResponse.ok) {
-        throw new Error("Failed to upload binary file to S3");
+        if (!uploadResponse.ok) {
+          const errorText = await uploadResponse.text().catch(() => "");
+          console.error("Cloudinary upload failed:", errorText);
+          throw new Error("Failed to upload document file to Cloudinary");
+        }
+      } else {
+        // 2. Fetch and upload raw binary data
+        const response = await fetch(file.uri);
+        const blob = await response.blob();
+
+        const uploadResponse = await fetch(uploadUrl, {
+          method: "PUT",
+          body: blob,
+          headers: {
+            "Content-Type": contentType,
+          },
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error("Failed to upload binary file to S3");
+        }
       }
 
       // 3. Update Redux store state
       if (tab === "back") {
-        dispatch(setDocumentBackImageUrl(imageUrl));
+        dispatch(setDocumentBackImageUrl(finalImageUrl));
       } else {
-        dispatch(setDocumentImageUrl(imageUrl));
+        dispatch(setDocumentImageUrl(finalImageUrl));
       }
 
       setUploadedFiles((prev) => ({
@@ -103,7 +130,7 @@ export default function KYCDocument() {
 
       showSuccessToast(`${tab.toUpperCase()} document uploaded successfully!`);
     } catch (err: any) {
-      console.error(err);
+      // console.error(err);
       showErrorToast(err?.message || "An error occurred during file upload.");
     } finally {
       setUploadingTab((prev) => ({ ...prev, [tab]: false }));

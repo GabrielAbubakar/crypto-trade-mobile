@@ -1,6 +1,7 @@
 import { BackHeader, BaseText, ScreenContainer, Skeleton } from "@/components";
 import { Colors } from "@/constants";
 import { useGetTransactionDetailsQuery } from "@/store";
+import { capitalize } from "@/utils";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
@@ -12,7 +13,7 @@ export default function TransactionDetailsScreen() {
   // Fetch specific transaction details from RTK query
   const { data: transaction, isFetching } = useGetTransactionDetailsQuery(
     id || "",
-    { skip: !id }
+    { skip: !id },
   );
 
   const handleBackToWallet = () => {
@@ -26,10 +27,21 @@ export default function TransactionDetailsScreen() {
   const statusColor = isCompleted
     ? Colors.primary
     : transaction?.status === "pending"
-    ? Colors.warning
-    : Colors.error;
+      ? Colors.warning
+      : Colors.error;
 
   const amountPrefix = isDeposit ? "+" : isWithdrawal ? "-" : "";
+
+  const displayAsset = transaction
+    ? transaction.type === "withdrawal"
+      ? transaction.fromAsset
+      : transaction.toAsset
+    : "";
+  const displayAmount = transaction
+    ? transaction.type === "withdrawal"
+      ? transaction.fromAmount
+      : transaction.toAmount
+    : 0;
 
   // Helper date formatting
   const formatDate = (dateStr?: string) => {
@@ -59,7 +71,7 @@ export default function TransactionDetailsScreen() {
   };
 
   return (
-    <ScreenContainer scrollable={false} style={styles.container}>
+    <ScreenContainer scrollable style={styles.container}>
       <View style={styles.content}>
         <BackHeader title="Transaction details" />
         <BaseText style={styles.subtitle}>
@@ -68,7 +80,12 @@ export default function TransactionDetailsScreen() {
 
         {isFetching ? (
           <View style={styles.loaderContainer}>
-            <Skeleton width={screenWidth - 40} height={120} borderRadius={24} style={{ marginBottom: 24 }} />
+            <Skeleton
+              width={screenWidth - 40}
+              height={120}
+              borderRadius={24}
+              style={{ marginBottom: 24 }}
+            />
             <Skeleton width={screenWidth - 40} height={260} borderRadius={24} />
           </View>
         ) : transaction ? (
@@ -77,10 +94,10 @@ export default function TransactionDetailsScreen() {
             <View style={styles.summaryCard}>
               <BaseText style={styles.summaryLabel}>
                 {isDeposit
-                  ? `Sandbox ${transaction.symbol} deposit`
+                  ? `Sandbox ${displayAsset} deposit`
                   : isWithdrawal
-                  ? `Sandbox ${transaction.symbol} withdrawal`
-                  : `Transfer ${transaction.symbol}`}
+                    ? `Sandbox ${displayAsset} withdrawal`
+                    : `Transfer ${displayAsset}`}
               </BaseText>
               <BaseText
                 variant="bold"
@@ -90,13 +107,16 @@ export default function TransactionDetailsScreen() {
                 ]}
               >
                 {amountPrefix}
-                {Number(transaction.amount).toLocaleString(undefined, {
+                {Number(displayAmount).toLocaleString(undefined, {
                   maximumFractionDigits: 6,
                 })}{" "}
-                {transaction.symbol}
+                {displayAsset}
               </BaseText>
-              <BaseText variant="bold" style={[styles.summaryStatus, { color: statusColor }]}>
-                {transaction.status.toUpperCase()}
+              <BaseText
+                variant="bold"
+                style={[styles.summaryStatus, { color: statusColor }]}
+              >
+                {capitalize(transaction.status)}
               </BaseText>
             </View>
 
@@ -105,48 +125,59 @@ export default function TransactionDetailsScreen() {
               <View style={styles.detailRow}>
                 <BaseText style={styles.detailLabel}>Reference</BaseText>
                 <BaseText variant="bold" style={styles.detailValue}>
-                  {transaction.txHash || transaction.id}
+                  {transaction.reference || transaction.id}
                 </BaseText>
               </View>
               <View style={styles.detailRow}>
                 <BaseText style={styles.detailLabel}>Asset</BaseText>
                 <BaseText variant="bold" style={styles.detailValue}>
-                  {transaction.symbol}
+                  {displayAsset}
                 </BaseText>
               </View>
               <View style={styles.detailRow}>
                 <BaseText style={styles.detailLabel}>Network</BaseText>
                 <BaseText variant="bold" style={styles.detailValue}>
-                  {transaction.symbol === "BTC"
+                  {displayAsset === "BTC"
                     ? "Testnet"
-                    : transaction.symbol === "ETH"
-                    ? "Sepolia"
-                    : "TRC20"}
+                    : displayAsset === "ETH"
+                      ? "Sepolia"
+                      : "TRC20"}
                 </BaseText>
               </View>
               <View style={styles.detailRow}>
                 <BaseText style={styles.detailLabel}>Rate</BaseText>
                 <BaseText variant="bold" style={styles.detailValue}>
-                  {getExchangeRate(transaction.symbol)}
+                  {getExchangeRate(displayAsset)}
                 </BaseText>
               </View>
               <View style={styles.detailRow}>
                 <BaseText style={styles.detailLabel}>Created</BaseText>
                 <BaseText variant="bold" style={styles.detailValue}>
-                  {formatDate(transaction.timestamp)}
+                  {formatDate(transaction.createdAt)}
                 </BaseText>
               </View>
-              <View style={[styles.detailRow, { borderBottomWidth: 0, paddingBottom: 0 }]}>
+              <View
+                style={[
+                  styles.detailRow,
+                  { borderBottomWidth: 0, paddingBottom: 0 },
+                ]}
+              >
                 <BaseText style={styles.detailLabel}>Completed</BaseText>
                 <BaseText variant="bold" style={styles.detailValue}>
-                  {isCompleted ? formatDate(transaction.timestamp) : "Pending"}
+                  {isCompleted
+                    ? formatDate(
+                        transaction.completedAt || transaction.createdAt,
+                      )
+                    : "Pending"}
                 </BaseText>
               </View>
             </View>
           </>
         ) : (
           <View style={styles.errorCard}>
-            <BaseText style={styles.errorText}>Transaction details not found.</BaseText>
+            <BaseText style={styles.errorText}>
+              Transaction details not found.
+            </BaseText>
           </View>
         )}
       </View>
@@ -172,12 +203,12 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.secondary,
     flex: 1,
-    justifyContent: "space-between",
+    paddingBottom: 100,
   },
   content: {
-    flex: 1,
-    paddingHorizontal: 20,
+    // flex: 1,
     marginTop: 20,
+    marginBottom: 30,
   },
   subtitle: {
     color: "#777777",
@@ -186,16 +217,13 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   loaderContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    flex: 1,
+    // flex: 1,
   },
   summaryCard: {
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#161C22",
+    backgroundColor: "#14231F",
     borderRadius: 24,
     paddingVertical: 24,
+    paddingHorizontal: 24,
     marginBottom: 24,
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.03)",
@@ -224,8 +252,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottomWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.05)",
+    // borderBottomWidth: 1,
+    // borderColor: "rgba(255, 255, 255, 0.05)",
     paddingBottom: 14,
     marginBottom: 14,
   },
@@ -248,8 +276,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   footer: {
-    paddingHorizontal: 20,
-    paddingBottom: 40,
+    // paddingBottom: 40,
   },
   backBtn: {
     backgroundColor: Colors.primary,

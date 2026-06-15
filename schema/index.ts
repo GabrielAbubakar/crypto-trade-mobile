@@ -1,3 +1,4 @@
-export * from "./auth.schema";
-export * from "./security.schema";
+export * from "./auth/auth.schema";
+export * from "./kyc/kyc.schema";
+export * from "./security/security.schema";
 

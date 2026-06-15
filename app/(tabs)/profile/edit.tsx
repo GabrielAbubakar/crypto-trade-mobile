@@ -70,7 +70,12 @@ export default function EditProfileScreen() {
   }
 
   return (
-    <ScreenContainer scrollable style={styles.container} withPadding={false}>
+    <ScreenContainer
+      scrollable
+      avoidKeyboard
+      style={styles.container}
+      withPadding={false}
+    >
       {/* Top Header Background */}
       <LinearGradient
         colors={["#1F2B30", "#1A2128"]}

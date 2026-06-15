@@ -156,6 +156,7 @@ export default function DepositDetailsScreen() {
 const styles = StyleSheet.create({
   container: {
     // flex: 1,
+    paddingBottom: 100,
   },
   content: {
     // flex: 1,

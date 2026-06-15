@@ -121,10 +121,9 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.secondary,
     flex: 1,
-    justifyContent: "space-between",
   },
   content: {
-    flex: 1,
+    // flex: 1,
     marginTop: 20,
   },
   subtitle: {
@@ -178,8 +177,8 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   footer: {
-    paddingHorizontal: 20,
     paddingBottom: 40,
+    marginTop: 30,
   },
   submitBtn: {
     backgroundColor: Colors.primary,

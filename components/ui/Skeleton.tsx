@@ -17,7 +17,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   width = "100%",
   height = 16,
   borderRadius = 4,
-  backgroundColor = "#777",
+  backgroundColor = "rgba(255, 255, 255, 0.1)",
   style,
 }) => {
   const shimmerAnim = useRef(new Animated.Value(0)).current;

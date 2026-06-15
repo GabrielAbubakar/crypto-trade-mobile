@@ -1,9 +1,8 @@
 import { BaseText, ScreenContainer } from "@/components";
 import { Colors } from "@/constants";
-import { useGetAssetDetailsQuery, useGetAssetCandlesQuery } from "@/store";
+import { useGetAssetCandlesQuery, useGetAssetDetailsQuery } from "@/store";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
-import { CandlestickChart } from "react-native-wagmi-charts";
 import {
   ActivityIndicator,
   Dimensions,
@@ -12,11 +11,11 @@ import {
   View,
 } from "react-native";
 import { SvgUri } from "react-native-svg";
+import { CandlestickChart } from "react-native-wagmi-charts";
 
 import { formatCompact } from "@/utils";
 
 const { width: screenWidth } = Dimensions.get("window");
-
 
 const INTERVALS = [
   { label: "1m", value: "1m" as const },
@@ -34,7 +33,9 @@ export default function CoinDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
   // Interval state matching values in API: 1m, 5m, 15m, 1h, 1d
-  const [activeInterval, setActiveInterval] = React.useState<"1m" | "5m" | "15m" | "1h" | "1d">("1h");
+  const [activeInterval, setActiveInterval] = React.useState<
+    "1m" | "5m" | "15m" | "1h" | "1d"
+  >("1h");
 
   // Track exact container width to prevent chart overflow
   const [chartWidth, setChartWidth] = React.useState(screenWidth - 72);
@@ -59,7 +60,7 @@ export default function CoinDetailsScreen() {
     {
       skip: !id,
       pollingInterval: 15000,
-    }
+    },
   );
 
   const handleRefresh = React.useCallback(async () => {
@@ -77,7 +78,6 @@ export default function CoinDetailsScreen() {
       close: point.closeUsd,
     }));
   }, [candlesResponse?.data]);
-
 
   if (isLoading || !coin) {
     return (
@@ -153,7 +153,8 @@ export default function CoinDetailsScreen() {
                 {coin.symbol} / USD
               </BaseText>
               <BaseText size="xs" style={{ color: Colors.textSecondary }}>
-                {INTERVALS.find((i) => i.value === activeInterval)?.label} interval
+                {INTERVALS.find((i) => i.value === activeInterval)?.label}{" "}
+                interval
               </BaseText>
             </View>
             <View style={{ alignItems: "flex-end" }}>
@@ -174,11 +175,16 @@ export default function CoinDetailsScreen() {
             </View>
           </View>
           {isCandlesLoading && candlestickData.length === 0 ? (
-            <View style={[styles.chartWrapper, { justifyContent: "center", alignItems: "center" }]}>
+            <View
+              style={[
+                styles.chartWrapper,
+                { justifyContent: "center", alignItems: "center" },
+              ]}
+            >
               <ActivityIndicator color={Colors.primary} size="small" />
             </View>
           ) : candlestickData.length > 0 ? (
-            <View 
+            <View
               style={styles.chartWrapper}
               onLayout={(e) => setChartWidth(e.nativeEvent.layout.width)}
             >
@@ -245,9 +251,7 @@ export default function CoinDetailsScreen() {
           <TouchableOpacity
             activeOpacity={0.8}
             style={styles.actionBtn}
-            onPress={() =>
-              router.push(`/markets/${coin.symbol}/alert` as any)
-            }
+            onPress={() => router.push(`/markets/${coin.symbol}/alert` as any)}
           >
             <BaseText variant="bold" style={styles.actionBtnText}>
               Alert

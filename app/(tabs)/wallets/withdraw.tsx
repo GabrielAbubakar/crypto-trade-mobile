@@ -11,7 +11,7 @@ import { showErrorToast, showSuccessToast } from "@/utils";
 import { Feather } from "@expo/vector-icons";
 import { useForm } from "@tanstack/react-form";
 import { useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { TextInput } from "react-native";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
@@ -27,7 +27,6 @@ export default function WithdrawScreen() {
 
   // API Integration
   const { data: balanceData } = useGetWalletBalancesQuery();
-  console.log("Balance Data", balanceData);
   const [withdraw, { isLoading: isSubmitting }] = useWithdrawMutation();
   const [txId, setTxId] = useState<string>("wd_8392");
 
@@ -56,7 +55,7 @@ export default function WithdrawScreen() {
     }
   }, [step]);
 
-  const handleSubmitWithdrawal = async () => {
+  const handleSubmitWithdrawal = useCallback(async () => {
     if (pin.length < 4) {
       showErrorToast("Please enter your 4-digit PIN.");
       return;
@@ -85,14 +84,14 @@ export default function WithdrawScreen() {
         err?.data?.message || "An error occurred during withdrawal.",
       );
     }
-  };
+  }, [pin, withdraw, form]);
 
   // Trigger submission when PIN is complete
   useEffect(() => {
     if (pin.length === 4 && step === "confirm") {
       handleSubmitWithdrawal();
     }
-  }, [pin]);
+  }, [pin, step, handleSubmitWithdrawal]);
 
   const handleBack = () => {
     if (step === "confirm") {
@@ -115,331 +114,332 @@ export default function WithdrawScreen() {
   );
 
   return (
-    <ScreenContainer scrollable={true} style={styles.container}>
-      <View style={{ flex: 1 }}>
-        {step === "form" && (
-          <>
-            {renderHeader(
-              "Withdraw",
-              "Withdrawals require verification and transaction PIN.",
-            )}
+    <ScreenContainer
+      avoidKeyboard={true}
+      scrollable={true}
+      keyboardVerticalOffset={40}
+      style={styles.container}
+    >
+      {/* <View style={{ flex: 1 }}> */}
+      {step === "form" && (
+        <>
+          {renderHeader(
+            "Withdraw",
+            "Withdrawals require verification and transaction PIN.",
+          )}
 
-            {balanceData?.verification.canTrade === false && (
-              <ItemBgContainer
-                style={{ marginBottom: 26 }}
-                paddingHorizontal={22}
-                paddingVertical={28}
+          {balanceData?.verification.canTrade === false && (
+            <ItemBgContainer
+              style={{ marginBottom: 26 }}
+              paddingHorizontal={22}
+              paddingVertical={28}
+            >
+              <BaseText
+                color={Colors.error}
+                size="lg"
+                variant="bold"
+                style={{ marginBottom: 10 }}
               >
-                <BaseText
-                  color={Colors.error}
-                  size="lg"
-                  variant="bold"
-                  style={{ marginBottom: 10 }}
-                >
-                  Withdrawal unavailable
-                </BaseText>
-                <BaseText size="sm" color={Colors.textSecondary}>
-                  Your verification is not completed. You can not withdraw until
-                  it is completed.
-                </BaseText>
-              </ItemBgContainer>
-            )}
+                Withdrawal unavailable
+              </BaseText>
+              <BaseText size="sm" color={Colors.textSecondary}>
+                Your verification is not completed. You can not withdraw until
+                it is completed.
+              </BaseText>
+            </ItemBgContainer>
+          )}
 
-            <View style={styles.formContent}>
-              {/* Asset Display */}
-              <View style={styles.inputGroup}>
-                <BaseText style={styles.label}>Asset</BaseText>
-                <BaseInput
-                  value={`USDT · Available ${usdtBalance.toLocaleString(
-                    "en-US",
-                    {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    },
-                  )}`}
-                  editable={false}
-                  containerStyle={styles.disabledInput}
-                  style={{ color: "#777777" }}
-                />
-              </View>
+          <View style={styles.formContent}>
+            {/* Asset Display */}
+            <View style={styles.inputGroup}>
+              <BaseText style={styles.label}>Asset</BaseText>
+              <BaseInput
+                value={`USDT · Available ${usdtBalance.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}`}
+                editable={false}
+                containerStyle={styles.disabledInput}
+                style={{ color: "#777777" }}
+              />
+            </View>
 
-              {/* Amount Input */}
-              <View style={styles.inputGroup}>
-                <BaseText style={styles.label}>Amount</BaseText>
-                <form.Field
-                  name="amount"
-                  validators={{
-                    onChange: ({ value }) => {
-                      const num = parseFloat(value);
-                      if (isNaN(num) || num <= 0) {
-                        return "Please enter a valid amount.";
-                      }
-                      if (num > usdtBalance) {
-                        return `Insufficient balance. Available: ${usdtBalance} USDT`;
-                      }
-                      return undefined;
-                    },
-                  }}
-                >
-                  {(field) => (
-                    <BaseInput
-                      value={field.state.value}
-                      onChangeText={field.handleChange}
-                      keyboardType="numeric"
-                      containerStyle={styles.activeInput}
-                      style={{ color: "#FFFFFF" }}
-                      placeholder="0.00"
-                      error={
-                        field.state.meta.isTouched &&
-                        field.state.meta.errors.length > 0
-                          ? field.state.meta.errors
-                              .map((err: any) =>
-                                typeof err === "string" ? err : err.message,
-                              )
-                              .join(", ")
-                          : undefined
-                      }
-                    />
-                  )}
-                </form.Field>
-              </View>
+            {/* Amount Input */}
+            <View style={styles.inputGroup}>
+              <BaseText style={styles.label}>Amount</BaseText>
+              <form.Field
+                name="amount"
+                validators={{
+                  onChange: ({ value }) => {
+                    const num = parseFloat(value);
+                    if (isNaN(num) || num <= 0) {
+                      return "Please enter a valid amount.";
+                    }
+                    if (num > usdtBalance) {
+                      return `Insufficient balance. Available: ${usdtBalance} USDT`;
+                    }
+                    return undefined;
+                  },
+                }}
+              >
+                {(field) => (
+                  <BaseInput
+                    value={field.state.value}
+                    onChangeText={field.handleChange}
+                    keyboardType="numeric"
+                    containerStyle={styles.activeInput}
+                    style={{ color: "#FFFFFF" }}
+                    placeholder="0.00"
+                    error={
+                      field.state.meta.isTouched &&
+                      field.state.meta.errors.length > 0
+                        ? field.state.meta.errors
+                            .map((err: any) =>
+                              typeof err === "string" ? err : err.message,
+                            )
+                            .join(", ")
+                        : undefined
+                    }
+                  />
+                )}
+              </form.Field>
+            </View>
 
-              {/* Destination Address Input */}
-              <View style={styles.inputGroup}>
-                <BaseText style={styles.label}>Destination address</BaseText>
-                <form.Field
-                  name="address"
-                  validators={{
-                    onChange: ({ value }) => {
-                      if (!value || !value.trim()) {
-                        return "Please enter a destination address.";
-                      }
-                      return undefined;
-                    },
-                  }}
-                >
-                  {(field) => (
-                    <BaseInput
-                      value={field.state.value}
-                      onChangeText={field.handleChange}
-                      containerStyle={styles.activeInput}
-                      style={{ color: "#FFFFFF" }}
-                      placeholder="Enter address"
-                      error={
-                        field.state.meta.isTouched &&
-                        field.state.meta.errors.length > 0
-                          ? field.state.meta.errors
-                              .map((err: any) =>
-                                typeof err === "string" ? err : err.message,
-                              )
-                              .join(", ")
-                          : undefined
-                      }
-                    />
-                  )}
-                </form.Field>
-              </View>
+            {/* Destination Address Input */}
+            <View style={styles.inputGroup}>
+              <BaseText style={styles.label}>Destination address</BaseText>
+              <form.Field
+                name="address"
+                validators={{
+                  onChange: ({ value }) => {
+                    if (!value || !value.trim()) {
+                      return "Please enter a destination address.";
+                    }
+                    return undefined;
+                  },
+                }}
+              >
+                {(field) => (
+                  <BaseInput
+                    value={field.state.value}
+                    onChangeText={field.handleChange}
+                    containerStyle={styles.activeInput}
+                    style={{ color: "#FFFFFF" }}
+                    placeholder="Enter address"
+                    error={
+                      field.state.meta.isTouched &&
+                      field.state.meta.errors.length > 0
+                        ? field.state.meta.errors
+                            .map((err: any) =>
+                              typeof err === "string" ? err : err.message,
+                            )
+                            .join(", ")
+                        : undefined
+                    }
+                  />
+                )}
+              </form.Field>
+            </View>
 
-              {/* Network Select */}
-              <View style={styles.inputGroup}>
-                <BaseText style={styles.label}>Network</BaseText>
-                <BaseInput
-                  value={network}
-                  editable={false}
-                  containerStyle={styles.disabledInput}
-                  style={{ color: "#777777" }}
-                />
-              </View>
+            {/* Network Select */}
+            <View style={styles.inputGroup}>
+              <BaseText style={styles.label}>Network</BaseText>
+              <BaseInput
+                value={network}
+                editable={false}
+                containerStyle={styles.disabledInput}
+                style={{ color: "#777777" }}
+              />
+            </View>
 
-              {/* Verified limit label */}
-              <View style={styles.limitInfo}>
+            {/* Verified limit label */}
+            {/* <View style={styles.limitInfo}>
                 <BaseText variant="bold" style={styles.limitTitle}>
                   Verified limit
                 </BaseText>
                 <BaseText style={styles.limitDescription}>
                   $2,500 per request · $10,000 daily
                 </BaseText>
+              </View> */}
+          </View>
+
+          <View style={styles.footer}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => form.handleSubmit()}
+              style={styles.actionBtn}
+            >
+              <BaseText variant="bold" style={styles.actionBtnText}>
+                Preview withdrawal
+              </BaseText>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
+
+      {step === "confirm" && (
+        <>
+          {renderHeader(
+            "Confirm withdrawal",
+            "Review every detail before submitting.",
+          )}
+
+          <View style={styles.formContent}>
+            <View style={styles.summaryContainer}>
+              <BaseText variant="bold" style={styles.summaryAmount}>
+                {parseFloat(form.state.values.amount).toFixed(2)} USDT
+              </BaseText>
+            </View>
+
+            {/* Details table */}
+            <View style={styles.detailsTable}>
+              <View style={styles.detailsRow}>
+                <BaseText style={styles.detailsLabel}>Asset</BaseText>
+                <BaseText variant="bold" style={styles.detailsValue}>
+                  USDT
+                </BaseText>
+              </View>
+              <View style={styles.detailsRow}>
+                <BaseText style={styles.detailsLabel}>Network</BaseText>
+                <BaseText variant="bold" style={styles.detailsValue}>
+                  TRC20
+                </BaseText>
+              </View>
+              <View style={styles.detailsRow}>
+                <BaseText style={styles.detailsLabel}>Address</BaseText>
+                <BaseText variant="bold" style={styles.detailsValue}>
+                  {form.state.values.address.length > 15
+                    ? `${form.state.values.address.slice(0, 8)}...${form.state.values.address.slice(-6)}`
+                    : form.state.values.address}
+                </BaseText>
+              </View>
+              <View style={styles.detailsRow}>
+                <BaseText style={styles.detailsLabel}>Fee</BaseText>
+                <BaseText variant="bold" style={styles.detailsValue}>
+                  1.00 USDT
+                </BaseText>
+              </View>
+              <View
+                style={[
+                  styles.detailsRow,
+                  { borderBottomWidth: 0, paddingBottom: 0 },
+                ]}
+              >
+                <BaseText style={styles.detailsLabel}>You receive</BaseText>
+                <BaseText
+                  variant="bold"
+                  style={[styles.detailsValue, { color: Colors.primary }]}
+                >
+                  {(parseFloat(form.state.values.amount) - 1.0).toFixed(2)} USDT
+                </BaseText>
               </View>
             </View>
 
-            <View style={styles.footer}>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => form.handleSubmit()}
-                style={styles.actionBtn}
-              >
-                <BaseText variant="bold" style={styles.actionBtnText}>
-                  Preview withdrawal
-                </BaseText>
-              </TouchableOpacity>
+            {/* Pin Code Input Block */}
+            <View style={styles.pinSection}>
+              <BaseInput
+                containerStyle={{ backgroundColor: Colors.cardBg }}
+                placeholder="Transaction PIN"
+              />
             </View>
-          </>
-        )}
+          </View>
 
-        {step === "confirm" && (
-          <>
-            {renderHeader(
-              "Confirm withdrawal",
-              "Review every detail before submitting.",
-            )}
+          <View style={styles.footer}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleSubmitWithdrawal}
+              disabled={isSubmitting || pin.length < 4}
+              style={[
+                styles.actionBtn,
+                (isSubmitting || pin.length < 4) && styles.disabledBtn,
+              ]}
+            >
+              <BaseText variant="bold" style={styles.actionBtnText}>
+                {isSubmitting ? "Submitting..." : "Submit withdrawal"}
+              </BaseText>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
 
-            <View style={styles.formContent}>
-              <View style={styles.summaryContainer}>
-                <BaseText variant="bold" style={styles.summaryAmount}>
+      {step === "submitted" && (
+        <>
+          {renderHeader(
+            "Withdrawal submitted",
+            "Finance review can approve or reject this request.",
+          )}
+
+          <View style={styles.formContent}>
+            {/* Checkmark Indicator */}
+            <View style={styles.successContainer}>
+              <View style={styles.successCircle}>
+                <Feather name="check" size={48} color={Colors.primary} />
+              </View>
+            </View>
+
+            {/* Status table */}
+            <View style={styles.detailsTable}>
+              <View style={styles.detailsRow}>
+                <BaseText style={styles.detailsLabel}>Status</BaseText>
+                <BaseText variant="bold" style={{ color: Colors.warning }}>
+                  Pending review
+                </BaseText>
+              </View>
+              <View style={styles.detailsRow}>
+                <BaseText style={styles.detailsLabel}>Amount</BaseText>
+                <BaseText variant="bold" style={styles.detailsValue}>
                   {parseFloat(form.state.values.amount).toFixed(2)} USDT
                 </BaseText>
               </View>
-
-              {/* Details table */}
-              <View style={styles.detailsTable}>
-                <View style={styles.detailsRow}>
-                  <BaseText style={styles.detailsLabel}>Asset</BaseText>
-                  <BaseText variant="bold" style={styles.detailsValue}>
-                    USDT
-                  </BaseText>
-                </View>
-                <View style={styles.detailsRow}>
-                  <BaseText style={styles.detailsLabel}>Network</BaseText>
-                  <BaseText variant="bold" style={styles.detailsValue}>
-                    TRC20
-                  </BaseText>
-                </View>
-                <View style={styles.detailsRow}>
-                  <BaseText style={styles.detailsLabel}>Address</BaseText>
-                  <BaseText variant="bold" style={styles.detailsValue}>
-                    {form.state.values.address.length > 15
-                      ? `${form.state.values.address.slice(0, 8)}...${form.state.values.address.slice(-6)}`
-                      : form.state.values.address}
-                  </BaseText>
-                </View>
-                <View style={styles.detailsRow}>
-                  <BaseText style={styles.detailsLabel}>Fee</BaseText>
-                  <BaseText variant="bold" style={styles.detailsValue}>
-                    1.00 USDT
-                  </BaseText>
-                </View>
-                <View
-                  style={[
-                    styles.detailsRow,
-                    { borderBottomWidth: 0, paddingBottom: 0 },
-                  ]}
-                >
-                  <BaseText style={styles.detailsLabel}>You receive</BaseText>
-                  <BaseText
-                    variant="bold"
-                    style={[styles.detailsValue, { color: Colors.primary }]}
-                  >
-                    {(parseFloat(form.state.values.amount) - 1.0).toFixed(2)}{" "}
-                    USDT
-                  </BaseText>
-                </View>
+              <View style={styles.detailsRow}>
+                <BaseText style={styles.detailsLabel}>Fee</BaseText>
+                <BaseText variant="bold" style={styles.detailsValue}>
+                  1.00 USDT
+                </BaseText>
               </View>
-
-              {/* Pin Code Input Block */}
-              <View style={styles.pinSection}>
-                <BaseInput
-                  containerStyle={{ backgroundColor: Colors.cardBg }}
-                  placeholder="Transaction PIN"
-                />
+              <View style={styles.detailsRow}>
+                <BaseText style={styles.detailsLabel}>Reference</BaseText>
+                <BaseText variant="bold" style={styles.detailsValue}>
+                  {txId}
+                </BaseText>
               </View>
-            </View>
-
-            <View style={styles.footer}>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={handleSubmitWithdrawal}
-                disabled={isSubmitting || pin.length < 4}
+              <View
                 style={[
-                  styles.actionBtn,
-                  (isSubmitting || pin.length < 4) && styles.disabledBtn,
+                  styles.detailsRow,
+                  { borderBottomWidth: 0, paddingBottom: 0 },
                 ]}
               >
-                <BaseText variant="bold" style={styles.actionBtnText}>
-                  {isSubmitting ? "Submitting..." : "Submit withdrawal"}
+                <BaseText style={styles.detailsLabel}>Created</BaseText>
+                <BaseText variant="bold" style={styles.detailsValue}>
+                  {new Date().toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
                 </BaseText>
-              </TouchableOpacity>
-            </View>
-          </>
-        )}
-
-        {step === "submitted" && (
-          <>
-            {renderHeader(
-              "Withdrawal submitted",
-              "Finance review can approve or reject this request.",
-            )}
-
-            <View style={styles.formContent}>
-              {/* Checkmark Indicator */}
-              <View style={styles.successContainer}>
-                <View style={styles.successCircle}>
-                  <Feather name="check" size={48} color={Colors.primary} />
-                </View>
-              </View>
-
-              {/* Status table */}
-              <View style={styles.detailsTable}>
-                <View style={styles.detailsRow}>
-                  <BaseText style={styles.detailsLabel}>Status</BaseText>
-                  <BaseText variant="bold" style={{ color: Colors.warning }}>
-                    Pending review
-                  </BaseText>
-                </View>
-                <View style={styles.detailsRow}>
-                  <BaseText style={styles.detailsLabel}>Amount</BaseText>
-                  <BaseText variant="bold" style={styles.detailsValue}>
-                    {parseFloat(form.state.values.amount).toFixed(2)} USDT
-                  </BaseText>
-                </View>
-                <View style={styles.detailsRow}>
-                  <BaseText style={styles.detailsLabel}>Fee</BaseText>
-                  <BaseText variant="bold" style={styles.detailsValue}>
-                    1.00 USDT
-                  </BaseText>
-                </View>
-                <View style={styles.detailsRow}>
-                  <BaseText style={styles.detailsLabel}>Reference</BaseText>
-                  <BaseText variant="bold" style={styles.detailsValue}>
-                    {txId}
-                  </BaseText>
-                </View>
-                <View
-                  style={[
-                    styles.detailsRow,
-                    { borderBottomWidth: 0, paddingBottom: 0 },
-                  ]}
-                >
-                  <BaseText style={styles.detailsLabel}>Created</BaseText>
-                  <BaseText variant="bold" style={styles.detailsValue}>
-                    {new Date().toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </BaseText>
-                </View>
               </View>
             </View>
+          </View>
 
-            <View style={styles.footer}>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() =>
-                  router.push({
-                    pathname: "/(tabs)/wallets/transaction/[id]",
-                    params: { id: txId },
-                  })
-                }
-                style={styles.actionBtn}
-              >
-                <BaseText variant="bold" style={styles.actionBtnText}>
-                  View transaction
-                </BaseText>
-              </TouchableOpacity>
-            </View>
-          </>
-        )}
-      </View>
+          <View style={styles.footer}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() =>
+                router.push({
+                  pathname: "/(tabs)/wallets/transaction/[id]",
+                  params: { id: txId },
+                })
+              }
+              style={styles.actionBtn}
+            >
+              <BaseText variant="bold" style={styles.actionBtnText}>
+                View transaction
+              </BaseText>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
+      {/* </View> */}
     </ScreenContainer>
   );
 }
@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.secondary,
     flex: 1,
-    paddingBottom: 80,
+    paddingBottom: 50,
   },
   header: {
     marginTop: 20,

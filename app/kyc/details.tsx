@@ -8,10 +8,12 @@ import {
 } from "@/components/ui";
 import { Colors, FontFamily } from "@/constants";
 import { setKycDetails, useAppDispatch, useAppSelector } from "@/store";
+import { kycDetailsSchema } from "@/schema";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
+import { useForm, useStore } from "@tanstack/react-form";
 import { useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 const docTypeOptions = [
@@ -25,20 +27,47 @@ export default function KYCDetails() {
   const dispatch = useAppDispatch();
   const kycState = useAppSelector((state) => state.kyc);
 
-  const [name, setName] = useState(kycState.legalName);
-  const [country, setCountry] = useState(kycState.country);
-  const [docType, setDocType] = useState(kycState.documentType);
-  const [docNumber, setDocNumber] = useState(kycState.documentNumber);
-
   const sheetRef = useRef<BottomSheetModal>(null);
-  // const snapPoints = useMemo(() => ["40%"], []);
+
+  const form = useForm({
+    defaultValues: {
+      legalName: kycState.legalName || "",
+      country: kycState.country || "Nigeria",
+      documentType: kycState.documentType || "",
+      documentNumber: kycState.documentNumber || "",
+    },
+    validators: {
+      onChange: kycDetailsSchema,
+    },
+    onSubmit: async ({ value }) => {
+      dispatch(
+        setKycDetails({
+          legalName: value.legalName,
+          country: value.country,
+          documentType: value.documentType,
+          documentNumber: value.documentNumber,
+        }),
+      );
+      router.push("/kyc/document");
+    },
+  });
+
+  const formValues = useStore(form.baseStore, (state: any) => state.values);
+  const currentDocType = formValues.documentType;
+
+  const isFormValid =
+    formValues.legalName.trim().length >= 2 &&
+    formValues.country.trim().length >= 1 &&
+    ["passport", "national_id", "drivers_license"].includes(formValues.documentType) &&
+    formValues.documentNumber.trim().length >= 3;
 
   const handleOpenSheet = () => {
     sheetRef.current?.present();
   };
 
   const handleSelectOption = (value: string) => {
-    setDocType(value);
+    form.setFieldValue("documentType", value);
+    form.validate("change");
     sheetRef.current?.dismiss();
   };
 
@@ -46,21 +75,6 @@ export default function KYCDetails() {
     const option = docTypeOptions.find((o) => o.value === val);
     return option ? option.label : val;
   };
-
-  const handleContinue = () => {
-    dispatch(
-      setKycDetails({
-        legalName: name,
-        country,
-        documentType: docType,
-        documentNumber: docNumber,
-      }),
-    );
-    router.push("/kyc/document");
-  };
-
-  const isFormValid =
-    name.trim() && country.trim() && docType.trim() && docNumber.trim();
 
   return (
     <ScreenContainer scrollable>
@@ -76,57 +90,100 @@ export default function KYCDetails() {
         {/* Legal Name */}
         <View style={styles.inputGroup}>
           <BaseText style={styles.inputLabel}>Legal name</BaseText>
-          <BaseInput
-            placeholder="Enter your legal name"
-            value={name}
-            onChangeText={setName}
-            containerStyle={styles.inputStyle}
-          />
+          <form.Field name="legalName">
+            {(field) => (
+              <BaseInput
+                placeholder="Enter your legal name"
+                value={field.state.value}
+                onChangeText={field.handleChange}
+                containerStyle={styles.inputStyle}
+                error={
+                  field.state.meta.isTouched && field.state.meta.errors.length > 0
+                    ? field.state.meta.errors
+                        .map((err: any) =>
+                          typeof err === "string" ? err : err.message,
+                        )
+                        .join(", ")
+                    : undefined
+                }
+              />
+            )}
+          </form.Field>
         </View>
 
         {/* Country */}
         <View style={styles.inputGroup}>
           <BaseText style={styles.inputLabel}>Country</BaseText>
-          <BaseInput
-            placeholder="Enter your country"
-            value={country}
-            onChangeText={setCountry}
-            editable={false}
-            containerStyle={styles.inputStyle}
-          />
+          <form.Field name="country">
+            {(field) => (
+              <BaseInput
+                placeholder="Enter your country"
+                value={field.state.value}
+                onChangeText={field.handleChange}
+                editable={false}
+                containerStyle={styles.inputStyle}
+              />
+            )}
+          </form.Field>
         </View>
 
         {/* Document Type */}
         <View style={styles.inputGroup}>
           <BaseText style={styles.inputLabel}>Document type</BaseText>
-          <TouchableOpacity onPress={handleOpenSheet} activeOpacity={0.8}>
-            <View pointerEvents="none">
-              <BaseInput
-                placeholder="Select document type"
-                value={getDocTypeLabel(docType)}
-                editable={false}
-                containerStyle={styles.inputStyle}
-                rightIcon={
-                  <Ionicons
-                    name="chevron-down"
-                    size={20}
-                    color={Colors.textSecondary}
+          <form.Field name="documentType">
+            {(field) => (
+              <TouchableOpacity onPress={handleOpenSheet} activeOpacity={0.8}>
+                <View pointerEvents="none">
+                  <BaseInput
+                    placeholder="Select document type"
+                    value={getDocTypeLabel(field.state.value)}
+                    editable={false}
+                    containerStyle={styles.inputStyle}
+                    rightIcon={
+                      <Ionicons
+                        name="chevron-down"
+                        size={20}
+                        color={Colors.textSecondary}
+                      />
+                    }
+                    error={
+                      field.state.meta.isTouched && field.state.meta.errors.length > 0
+                        ? field.state.meta.errors
+                            .map((err: any) =>
+                              typeof err === "string" ? err : err.message,
+                            )
+                            .join(", ")
+                        : undefined
+                    }
                   />
-                }
-              />
-            </View>
-          </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            )}
+          </form.Field>
         </View>
 
         {/* Document Number */}
         <View style={styles.inputGroup}>
           <BaseText style={styles.inputLabel}>Document number</BaseText>
-          <BaseInput
-            placeholder="Enter document number"
-            value={docNumber}
-            onChangeText={setDocNumber}
-            containerStyle={styles.inputStyle}
-          />
+          <form.Field name="documentNumber">
+            {(field) => (
+              <BaseInput
+                placeholder="Enter document number"
+                value={field.state.value}
+                onChangeText={field.handleChange}
+                containerStyle={styles.inputStyle}
+                error={
+                  field.state.meta.isTouched && field.state.meta.errors.length > 0
+                    ? field.state.meta.errors
+                        .map((err: any) =>
+                          typeof err === "string" ? err : err.message,
+                        )
+                        .join(", ")
+                    : undefined
+                }
+              />
+            )}
+          </form.Field>
         </View>
 
         {/* Warning card */}
@@ -146,7 +203,7 @@ export default function KYCDetails() {
       <BaseButton
         title="Continue"
         disabled={!isFormValid}
-        onPress={handleContinue}
+        onPress={() => form.handleSubmit()}
         style={styles.continueButton}
       />
 
@@ -161,7 +218,7 @@ export default function KYCDetails() {
           <BaseText style={styles.sheetTitle}>Select Document Type</BaseText>
           <View style={styles.optionsContainer}>
             {docTypeOptions.map((option) => {
-              const isActive = docType === option.value;
+              const isActive = currentDocType === option.value;
               return (
                 <TouchableOpacity
                   key={option.value}

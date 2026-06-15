@@ -1,8 +1,9 @@
 import { Colors } from "@/constants";
 import type { ITransactionItem } from "@/types";
 import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { BaseText } from "../ui";
 
 interface WalletTransactionRowProps {
@@ -12,143 +13,135 @@ interface WalletTransactionRowProps {
 export const WalletTransactionRow: React.FC<WalletTransactionRowProps> = ({
   transaction,
 }) => {
-  let IconName: any = "arrow-down-left";
+  const router = useRouter();
+
+  const displayAsset =
+    transaction.type === "withdrawal" ? transaction.fromAsset : transaction.toAsset;
+  const displayAmount =
+    transaction.type === "withdrawal" ? transaction.fromAmount : transaction.toAmount;
+
+  let iconName: any = "arrow-down-left";
   let iconColor = Colors.primary;
   let amountPrefix = "+";
 
   if (transaction.type === "withdrawal") {
-    IconName = "arrow-up-right";
+    iconName = "arrow-up-right";
     iconColor = Colors.error;
     amountPrefix = "-";
   } else if (transaction.type === "transfer") {
-    IconName = "repeat";
-    iconColor = "#3861FB";
+    iconName = "repeat";
+    iconColor = Colors.info;
     amountPrefix = "";
   }
 
-  const dateStr = new Date(transaction.timestamp).toLocaleDateString("en-US", {
+  const isCompleted = transaction.status === "completed";
+  const dateStr = new Date(transaction.createdAt).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+    year: "numeric",
   });
 
   return (
-    <View style={styles.row}>
-      <View style={styles.leftCol}>
-        <View style={[styles.iconContainer, { backgroundColor: `${iconColor}15` }]}>
-          <Feather name={IconName} size={18} color={iconColor} />
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={() =>
+        router.push({
+          pathname: "/(tabs)/wallets/transaction/[id]",
+          params: { id: transaction.id },
+        })
+      }
+      style={styles.transactionRow}
+    >
+      <View style={styles.transactionLeft}>
+        <View
+          style={[
+            styles.transactionIcon,
+            { backgroundColor: `${iconColor}15` },
+          ]}
+        >
+          <Feather name={iconName} size={16} color={iconColor} />
         </View>
-        <View style={styles.textStack}>
-          <BaseText variant="bold" style={styles.title}>
-            {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)} {transaction.symbol}
+        <View style={styles.transactionNameStack}>
+          <BaseText variant="bold" style={styles.transactionTitle}>
+            {transaction.type === "deposit"
+              ? "Sandbox deposit"
+              : transaction.type === "withdrawal"
+                ? "USDT withdrawal"
+                : "Transfer"}
           </BaseText>
-          <BaseText style={styles.date}>{dateStr}</BaseText>
+          <BaseText style={styles.transactionSubtitle}>
+            {isCompleted ? "Completed" : "Pending"}
+          </BaseText>
         </View>
       </View>
-
-      <View style={styles.rightCol}>
+      <View style={styles.transactionRight}>
         <BaseText
           variant="bold"
           style={[
-            styles.amount,
+            styles.transactionAmount,
             {
               color:
-                transaction.type === "deposit"
-                  ? Colors.primary
-                  : transaction.type === "withdrawal"
-                  ? Colors.error
-                  : "#FFFFFF",
+                transaction.type === "withdrawal" ? Colors.error : Colors.primary,
             },
           ]}
         >
           {amountPrefix}
-          {Number(transaction.amount).toLocaleString(undefined, {
+          {Number(displayAmount).toLocaleString(undefined, {
             maximumFractionDigits: 6,
           })}{" "}
-          {transaction.symbol}
+          {displayAsset}
         </BaseText>
-        <View
-          style={[
-            styles.statusBadge,
-            {
-              backgroundColor:
-                transaction.status === "completed"
-                  ? "rgba(94, 213, 168, 0.1)"
-                  : transaction.status === "pending"
-                  ? "rgba(255, 178, 54, 0.1)"
-                  : "rgba(255, 87, 87, 0.1)",
-            },
-          ]}
-        >
-          <BaseText
-            style={[
-              styles.statusText,
-              {
-                color:
-                  transaction.status === "completed"
-                    ? Colors.primary
-                    : transaction.status === "pending"
-                    ? "#FFB236"
-                    : Colors.error,
-              },
-            ]}
-          >
-            {transaction.status}
-          </BaseText>
-        </View>
+        <BaseText style={styles.transactionTime}>{dateStr}</BaseText>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  row: {
+  transactionRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 12,
+    backgroundColor: "#161C22",
+    borderRadius: 16,
+    padding: 16,
+    marginHorizontal: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.03)",
   },
-  leftCol: {
+  transactionLeft: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
   },
-  iconContainer: {
+  transactionIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
   },
-  textStack: {
+  transactionNameStack: {
     justifyContent: "center",
   },
-  title: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    marginBottom: 4,
+  transactionTitle: {
+    color: Colors.white,
+    fontSize: 14,
+    marginBottom: 2,
   },
-  date: {
+  transactionSubtitle: {
     color: "#777777",
     fontSize: 12,
   },
-  rightCol: {
+  transactionRight: {
     alignItems: "flex-end",
-    justifyContent: "center",
   },
-  amount: {
-    fontSize: 16,
-    marginBottom: 4,
+  transactionAmount: {
+    fontSize: 14,
+    marginBottom: 2,
   },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  statusText: {
-    fontSize: 10,
-    fontWeight: "bold",
-    textTransform: "capitalize",
+  transactionTime: {
+    color: "#777777",
+    fontSize: 12,
   },
 });

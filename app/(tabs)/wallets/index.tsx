@@ -1,9 +1,16 @@
-import { BaseText, ScreenContainer, Skeleton } from "@/components";
+import {
+  BaseText,
+  ScreenContainer,
+  Skeleton,
+  WalletAssetRow,
+  WalletTransactionRow,
+} from "@/components";
 import { Colors } from "@/constants";
 import {
   useGetWalletBalancesQuery,
   useGetWalletTransactionsQuery,
 } from "@/store";
+import type { ITransactionItem } from "@/types";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -14,6 +21,30 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
+export const AssetRowSkeleton: React.FC = () => {
+  return (
+    <View style={styles.assetRow}>
+      <View
+        style={{
+          flexDirection: "row",
+          gap: 12,
+          alignItems: "center",
+        }}
+      >
+        <Skeleton width={40} height={40} borderRadius={20} />
+        <View style={{ gap: 4 }}>
+          <Skeleton width={80} height={16} borderRadius={4} />
+          <Skeleton width={40} height={12} borderRadius={4} />
+        </View>
+      </View>
+      <View style={{ gap: 4, alignItems: "flex-end" }}>
+        <Skeleton width={70} height={16} borderRadius={4} />
+        <Skeleton width={50} height={12} borderRadius={4} />
+      </View>
+    </View>
+  );
+};
 
 export default function WalletsScreen() {
   const router = useRouter();
@@ -33,6 +64,8 @@ export default function WalletsScreen() {
     refetch: refetchTransactions,
   } = useGetWalletTransactionsQuery();
 
+  // console.log(walletTransactions);
+
   const toggleBalance = () => {
     setBalanceVisible((prev) => !prev);
   };
@@ -40,48 +73,6 @@ export default function WalletsScreen() {
   const handleRefresh = () => {
     refetchBalances();
     refetchTransactions();
-  };
-
-  // Static/calculated mapping for display values matching Screen 1 UI
-  const getAssetDetails = (symbol: string, balance: number) => {
-    switch (symbol.toUpperCase()) {
-      case "USDT":
-        return {
-          name: "Tether",
-          sub: "USDT",
-          iconLetter: "U",
-          iconBg: "rgba(94, 213, 168, 0.15)",
-          iconColor: Colors.primary,
-          valueUsd: balance * 2.45, // Demo rate
-        };
-      case "BTC":
-        return {
-          name: "Bitcoin",
-          sub: "BTC",
-          iconLetter: "B",
-          iconBg: "rgba(255, 178, 54, 0.15)",
-          iconColor: Colors.warning,
-          valueUsd: balance * 64200.5, // Demo rate
-        };
-      case "ETH":
-        return {
-          name: "Ethereum",
-          sub: "ETH",
-          iconLetter: "E",
-          iconBg: "rgba(56, 97, 251, 0.15)",
-          iconColor: Colors.info,
-          valueUsd: balance * 3420.0, // Demo rate
-        };
-      default:
-        return {
-          name: symbol,
-          sub: symbol,
-          iconLetter: symbol.charAt(0),
-          iconBg: "rgba(255, 255, 255, 0.1)",
-          iconColor: "#FFFFFF",
-          valueUsd: balance * 1.0,
-        };
-    }
   };
 
   const renderHeader = () => {
@@ -184,79 +175,16 @@ export default function WalletsScreen() {
         <View style={styles.assetsList}>
           {isFetchingBalances
             ? Array.from({ length: 3 }).map((_, index) => (
-                <View key={`skeleton-asset-${index}`} style={styles.assetRow}>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      gap: 12,
-                      alignItems: "center",
-                    }}
-                  >
-                    <Skeleton width={40} height={40} borderRadius={20} />
-                    <View style={{ gap: 4 }}>
-                      <Skeleton width={80} height={16} borderRadius={4} />
-                      <Skeleton width={40} height={12} borderRadius={4} />
-                    </View>
-                  </View>
-                  <View style={{ gap: 4, alignItems: "flex-end" }}>
-                    <Skeleton width={70} height={16} borderRadius={4} />
-                    <Skeleton width={50} height={12} borderRadius={4} />
-                  </View>
-                </View>
+                <AssetRowSkeleton key={`skeleton-asset-${index}`} />
               ))
-            : walletBalance?.wallet.balances.map((balance, index) => {
-                const details = getAssetDetails(
-                  balance.assetSymbol,
-                  balance.available,
-                );
-                return (
-                  <View
-                    key={balance.assetSymbol || index}
-                    style={styles.assetRow}
-                  >
-                    <View style={styles.assetLeft}>
-                      <View
-                        style={[
-                          styles.assetIcon,
-                          { backgroundColor: details.iconBg },
-                        ]}
-                      >
-                        <BaseText
-                          variant="bold"
-                          style={{ color: details.iconColor, fontSize: 16 }}
-                        >
-                          {details.iconLetter}
-                        </BaseText>
-                      </View>
-                      <View style={styles.assetNameStack}>
-                        <BaseText variant="bold" style={styles.assetName}>
-                          {details.name}
-                        </BaseText>
-                        <BaseText style={styles.assetSymbolText}>
-                          {details.sub}
-                        </BaseText>
-                      </View>
-                    </View>
-                    <View style={styles.assetRight}>
-                      <BaseText variant="bold" style={styles.assetValueText}>
-                        {balanceVisible
-                          ? details.valueUsd.toLocaleString("en-US", {
-                              style: "currency",
-                              currency: "USD",
-                            })
-                          : "••••••"}
-                      </BaseText>
-                      <BaseText style={styles.assetAmountText}>
-                        {balanceVisible
-                          ? `${balance.available.toLocaleString("en-US", {
-                              maximumFractionDigits: 6,
-                            })} ${balance.assetSymbol}`
-                          : "••••••"}
-                      </BaseText>
-                    </View>
-                  </View>
-                );
-              })}
+            : walletBalance?.wallet.balances.map((balance, index) => (
+                <WalletAssetRow
+                  key={balance.assetSymbol || index}
+                  assetSymbol={balance.assetSymbol}
+                  available={balance.available}
+                  balanceVisible={balanceVisible}
+                />
+              ))}
         </View>
 
         {/* Recent Transactions Section Header */}
@@ -278,7 +206,7 @@ export default function WalletsScreen() {
     );
   };
 
-  const renderTransactionItem = ({ item }: { item: any }) => {
+  const renderTransactionItem = ({ item }: { item: ITransactionItem }) => {
     if (isFetchingTransactions) {
       return (
         <View style={styles.transactionSkeletonRow}>
@@ -292,76 +220,7 @@ export default function WalletsScreen() {
       );
     }
 
-    let iconName: any = "arrow-down-left";
-    let iconColor = Colors.primary;
-    let amountPrefix = "+";
-
-    if (item.type === "withdrawal") {
-      iconName = "arrow-up-right";
-      iconColor = Colors.error;
-      amountPrefix = "-";
-    } else if (item.type === "transfer") {
-      iconName = "repeat";
-      iconColor = Colors.info;
-      amountPrefix = "";
-    }
-
-    const isCompleted = item.status === "completed";
-
-    return (
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={() =>
-          router.push({
-            pathname: "/(tabs)/wallets/transaction/[id]",
-            params: { id: item.id },
-          })
-        }
-        style={styles.transactionRow}
-      >
-        <View style={styles.transactionLeft}>
-          <View
-            style={[
-              styles.transactionIcon,
-              { backgroundColor: `${iconColor}15` },
-            ]}
-          >
-            <Feather name={iconName} size={16} color={iconColor} />
-          </View>
-          <View style={styles.transactionNameStack}>
-            <BaseText variant="bold" style={styles.transactionTitle}>
-              {item.type === "deposit"
-                ? "Sandbox deposit"
-                : item.type === "withdrawal"
-                  ? "USDT withdrawal"
-                  : "Transfer"}
-            </BaseText>
-            <BaseText style={styles.transactionSubtitle}>
-              {isCompleted ? "Completed" : "Pending"}
-            </BaseText>
-          </View>
-        </View>
-        <View style={styles.transactionRight}>
-          <BaseText
-            variant="bold"
-            style={[
-              styles.transactionAmount,
-              {
-                color:
-                  item.type === "withdrawal" ? Colors.error : Colors.primary,
-              },
-            ]}
-          >
-            {amountPrefix}
-            {Number(item.amount).toLocaleString(undefined, {
-              maximumFractionDigits: 6,
-            })}{" "}
-            {item.symbol}
-          </BaseText>
-          <BaseText style={styles.transactionTime}>Today</BaseText>
-        </View>
-      </TouchableOpacity>
-    );
+    return <WalletTransactionRow transaction={item} />;
   };
 
   const recentTxData = walletTransactions?.data
@@ -373,9 +232,9 @@ export default function WalletsScreen() {
       <FlatList
         data={
           isFetchingTransactions
-            ? Array.from({ length: 2 }).map((_, index) => ({
+            ? (Array.from({ length: 2 }).map((_, index) => ({
                 id: `skeleton-${index}`,
-              }))
+              })) as unknown as ITransactionItem[])
             : recentTxData
         }
         keyExtractor={(item) => item.id}
@@ -499,42 +358,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 12,
   },
-  assetLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  assetIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  assetNameStack: {
-    justifyContent: "center",
-  },
-  assetName: {
-    color: Colors.white,
-    fontSize: 16,
-    marginBottom: 2,
-  },
-  assetSymbolText: {
-    color: "#777777",
-    fontSize: 12,
-  },
-  assetRight: {
-    alignItems: "flex-end",
-  },
-  assetValueText: {
-    color: Colors.white,
-    fontSize: 16,
-    marginBottom: 2,
-  },
-  assetAmountText: {
-    color: "#777777",
-    fontSize: 12,
-  },
+
   list: {
     flex: 1,
   },
@@ -550,52 +374,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginHorizontal: 20,
   },
-  transactionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#161C22",
-    borderRadius: 16,
-    padding: 16,
-    marginHorizontal: 20,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.03)",
-  },
-  transactionLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  transactionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  transactionNameStack: {
-    justifyContent: "center",
-  },
-  transactionTitle: {
-    color: Colors.white,
-    fontSize: 14,
-    marginBottom: 2,
-  },
-  transactionSubtitle: {
-    color: "#777777",
-    fontSize: 12,
-  },
-  transactionRight: {
-    alignItems: "flex-end",
-  },
-  transactionAmount: {
-    fontSize: 14,
-    marginBottom: 2,
-  },
-  transactionTime: {
-    color: "#777777",
-    fontSize: 12,
-  },
+
   emptyTransactions: {
     alignItems: "center",
     paddingVertical: 20,

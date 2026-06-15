@@ -7,6 +7,7 @@ module.exports = defineConfig([
   {
     ignores: ["dist/*"],
     rules: {
+      "no-console": "warn",
       "@typescript-eslint/consistent-type-imports": [
         "error",
         {

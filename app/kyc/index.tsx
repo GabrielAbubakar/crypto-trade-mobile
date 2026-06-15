@@ -7,9 +7,10 @@ import {
 } from "@/components/ui";
 import { Colors, FontFamily } from "@/constants";
 import { useGetProfileQuery } from "@/store";
+import { formatCurrency } from "@/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 type KYCStatus = "starter" | "pending" | "approved" | "rejected";
@@ -17,15 +18,7 @@ type KYCStatus = "starter" | "pending" | "approved" | "rejected";
 export default function KYCIndex() {
   const router = useRouter();
   const { data: profileData, isLoading } = useGetProfileQuery();
-  const [status, setStatus] = useState<KYCStatus>("starter");
-
-  // React.useEffect(() => {
-  //   if (profileData?.verification.tier) {
-  //     setStatus(profileData.verification.tier as KYCStatus);
-  //   }
-  // }, [profileData]);
-
-  // console.log(profileData?.verification);
+  const [status, setStatus] = useState<KYCStatus>();
 
   const renderContent = () => {
     switch (status) {
@@ -111,7 +104,11 @@ export default function KYCIndex() {
             </View>
             <View style={styles.infoRow}>
               <BaseText style={styles.infoLabel}>Sandbox deposit</BaseText>
-              <BaseText style={styles.infoValue}>$250 max</BaseText>
+              <BaseText style={styles.infoValue}>
+                {formatCurrency(
+                  profileData?.verification.limits.depositPerTransactionUsd,
+                )}
+              </BaseText>
             </View>
 
             <BaseButton
@@ -219,11 +216,11 @@ export default function KYCIndex() {
     }
   };
 
-  // useEffect(() => {
-  //   if (profileData?.verification.status) {
-  //     setStatus(profileData.verification.status as KYCStatus);
-  //   }
-  // }, [profileData]);
+  useEffect(() => {
+    if (profileData?.verification.status) {
+      setStatus(profileData.verification.status as KYCStatus);
+    }
+  }, [profileData]);
 
   if (isLoading) {
     return (
@@ -249,36 +246,6 @@ export default function KYCIndex() {
 
       {/* Dynamic Content */}
       <View style={styles.content}>{renderContent()}</View>
-
-      {/* Developer helper panel */}
-      {/* <View style={styles.devPanel}>
-        <BaseText style={styles.devTitle}>DEV STATUS PREVIEW:</BaseText>
-        <View style={styles.devButtons}>
-          {(["starter", "pending", "approved", "rejected"] as KYCStatus[]).map(
-            (state) => (
-              <TouchableOpacity
-                key={state}
-                style={[
-                  styles.devButton,
-                  status === state && styles.devButtonActive,
-                ]}
-                onPress={() => setStatus(state)}
-              >
-                <BaseText
-                  style={[
-                    styles.devButtonText,
-                    {
-                      color: status === state ? Colors.secondary : Colors.white,
-                    },
-                  ]}
-                >
-                  {state.charAt(0).toUpperCase() + state.slice(1)}
-                </BaseText>
-              </TouchableOpacity>
-            ),
-          )}
-        </View>
-      </View> */}
     </ScreenContainer>
   );
 }
@@ -387,42 +354,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     lineHeight: 18,
   },
-  devPanel: {
-    marginTop: 40,
-    padding: 16,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.1)",
-  },
-  devTitle: {
-    fontSize: 11,
-    fontFamily: FontFamily.bold,
-    color: Colors.primary,
-    marginBottom: 10,
-    textAlign: "center",
-  },
-  devButtons: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    justifyContent: "center",
-  },
-  devButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.2)",
-  },
-  devButtonActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  devButtonText: {
-    fontSize: 11,
-    fontFamily: FontFamily.medium,
-  },
+
 
   bottomText: {
     fontSize: 14,

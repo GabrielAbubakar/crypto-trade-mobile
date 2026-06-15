@@ -85,13 +85,19 @@ export interface IDepositAddressDetails {
 
 export interface ITransactionItem {
   id: string;
-  type: "deposit" | "withdrawal" | "transfer";
-  status: "pending" | "completed" | "failed";
-  amount: string | number;
-  symbol: string;
-  timestamp: string;
-  txHash?: string;
-  address?: string;
+  userId: string;
+  type: "deposit" | "withdrawal" | "transfer" | string;
+  status: "pending" | "completed" | "failed" | string;
+  fromAmount: number;
+  fromAsset: string;
+  toAmount: number;
+  toAsset: string;
+  feeAmount: number;
+  rate: number;
+  reference: string;
+  note?: string;
+  createdAt: string;
+  completedAt?: string;
 }
 
 export interface ITransactionsMeta {

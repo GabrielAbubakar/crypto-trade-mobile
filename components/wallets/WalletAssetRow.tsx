@@ -1,39 +1,95 @@
+import { Colors } from "@/constants";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { BaseText } from "../ui";
-import type { WalletAsset } from "@/constants";
 
 interface WalletAssetRowProps {
-  asset: WalletAsset;
+  assetSymbol: string;
+  available: number;
   balanceVisible: boolean;
 }
 
 export const WalletAssetRow: React.FC<WalletAssetRowProps> = ({
-  asset,
+  assetSymbol,
+  available,
   balanceVisible,
 }) => {
+  const getAssetDetails = (symbol: string, balance: number) => {
+    switch (symbol.toUpperCase()) {
+      case "USDT":
+        return {
+          name: "Tether",
+          sub: "USDT",
+          iconLetter: "U",
+          iconBg: "rgba(94, 213, 168, 0.15)",
+          iconColor: Colors.primary,
+          valueUsd: balance * 2.45,
+        };
+      case "BTC":
+        return {
+          name: "Bitcoin",
+          sub: "BTC",
+          iconLetter: "B",
+          iconBg: "rgba(255, 178, 54, 0.15)",
+          iconColor: Colors.warning,
+          valueUsd: balance * 64200.5,
+        };
+      case "ETH":
+        return {
+          name: "Ethereum",
+          sub: "ETH",
+          iconLetter: "E",
+          iconBg: "rgba(56, 97, 251, 0.15)",
+          iconColor: Colors.info,
+          valueUsd: balance * 3420.0,
+        };
+      default:
+        return {
+          name: symbol,
+          sub: symbol,
+          iconLetter: symbol.charAt(0),
+          iconBg: "rgba(255, 255, 255, 0.1)",
+          iconColor: "#FFFFFF",
+          valueUsd: balance * 1.0,
+        };
+    }
+  };
+
+  const details = getAssetDetails(assetSymbol, available);
+
   return (
     <View style={styles.assetRow}>
-      {/* Left Col: Icon and Name/Ticker */}
-      <View style={styles.leftCol}>
-        <View style={styles.iconContainer}>
-          <asset.Icon width={32} height={32} />
-        </View>
-        <View style={styles.nameStack}>
-          <BaseText variant="bold" style={styles.assetName}>
-            {asset.name}
+      <View style={styles.assetLeft}>
+        <View style={[styles.assetIcon, { backgroundColor: details.iconBg }]}>
+          <BaseText
+            variant="bold"
+            style={{ color: details.iconColor, fontSize: 16 }}
+          >
+            {details.iconLetter}
           </BaseText>
-          <BaseText style={styles.assetTicker}>{asset.ticker}</BaseText>
+        </View>
+        <View style={styles.assetNameStack}>
+          <BaseText variant="bold" style={styles.assetName}>
+            {details.name}
+          </BaseText>
+          <BaseText style={styles.assetSymbolText}>{details.sub}</BaseText>
         </View>
       </View>
-
-      {/* Right Col: Balance Amount & Value in USD */}
-      <View style={styles.rightCol}>
-        <BaseText variant="bold" style={styles.assetAmount}>
-          {balanceVisible ? asset.amount : "••••••"}
+      <View style={styles.assetRight}>
+        <BaseText variant="bold" style={styles.assetValueText}>
+          {balanceVisible
+            ? details.valueUsd.toLocaleString("en-US", {
+                style: "currency",
+                currency: "USD",
+              })
+            : "••••••"}
         </BaseText>
-        <BaseText style={styles.assetValue}>
-          {balanceVisible ? asset.valueUsd : "••••••"}
+        <BaseText style={styles.assetAmountText}>
+          {balanceVisible
+            ? `${available.toLocaleString("en-US", {
+                maximumFractionDigits: 6,
+              })} ${assetSymbol}`
+            : "••••••"}
         </BaseText>
       </View>
     </View>
@@ -45,21 +101,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 4,
+    paddingVertical: 12,
   },
-  leftCol: {
+  assetLeft: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
   },
-  iconContainer: {
+  assetIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
   },
-  nameStack: {
+  assetNameStack: {
     justifyContent: "center",
   },
   assetName: {
@@ -67,20 +123,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 2,
   },
-  assetTicker: {
+  assetSymbolText: {
     color: "#777777",
     fontSize: 12,
   },
-  rightCol: {
+  assetRight: {
     alignItems: "flex-end",
-    justifyContent: "center",
   },
-  assetAmount: {
+  assetValueText: {
     color: "#FFFFFF",
     fontSize: 16,
     marginBottom: 2,
   },
-  assetValue: {
+  assetAmountText: {
     color: "#777777",
     fontSize: 12,
   },

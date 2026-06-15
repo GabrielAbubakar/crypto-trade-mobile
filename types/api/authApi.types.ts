@@ -98,9 +98,32 @@ export interface IKycUploadRequest {
 }
 
 export interface IKycUploadResponse {
-  success: boolean;
-  uploadUrl: string;
-  imageUrl: string;
+  data: {
+    cloudName?: string;
+    expiresAt: string;
+    folder?: string;
+    formFields?: {
+      api_key?: string;
+      folder?: string;
+      overwrite?: string;
+      public_id?: string;
+      signature?: string;
+      timestamp?: number;
+      [key: string]: any;
+    };
+    headers?: Record<string, string>;
+    method: "POST" | "PUT" | string;
+    provider: "cloudinary" | "s3" | string;
+    publicId?: string;
+    publicUrl: string;
+    imageUrl?: string;
+    storageKey?: string;
+    uploadId?: string;
+    uploadUrl: string;
+  };
+  meta: {
+    requestId: string;
+  };
 }
 
 export interface ISetup2FAResponse {
@@ -153,4 +176,3 @@ export interface IDisable2FAResponse {
     recoveryCodeCount: number;
   };
 }
-

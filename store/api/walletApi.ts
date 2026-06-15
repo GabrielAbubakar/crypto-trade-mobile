@@ -1,10 +1,10 @@
 import type {
   IDepositAddressDetails,
   IDepositAddressesResponse,
+  IGetTransactionsRequest,
   IPortfolioHistoryResponse,
   ISimulateDepositRequest,
   ISimulateDepositResponse,
-  IGetTransactionsRequest,
   ITransactionItem,
   ITransactionsResponse,
   IWalletBalanceResponse,
@@ -25,7 +25,10 @@ export const walletApi = baseApi.injectEndpoints({
       },
       providesTags: ["Wallet"],
     }),
-    getPortfolioHistory: builder.query<IPortfolioHistoryResponse, string | void>({
+    getPortfolioHistory: builder.query<
+      IPortfolioHistoryResponse,
+      string | void
+    >({
       query: (range) => ({
         url: "/wallet/portfolio/history",
         method: "GET",
@@ -47,7 +50,10 @@ export const walletApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Wallet"],
     }),
-    getWalletTransactions: builder.query<ITransactionsResponse, IGetTransactionsRequest | void>({
+    getWalletTransactions: builder.query<
+      ITransactionsResponse,
+      IGetTransactionsRequest | void
+    >({
       query: (params) => ({
         url: "/wallet/transactions",
         method: "GET",
@@ -60,6 +66,7 @@ export const walletApi = baseApi.injectEndpoints({
         url: `/wallet/transactions/${transactionId}`,
         method: "GET",
       }),
+      transformResponse: (response: any) => response.data,
       providesTags: ["Wallet"],
     }),
     simulateDeposit: builder.mutation<

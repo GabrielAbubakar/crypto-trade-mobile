@@ -1,6 +1,7 @@
-import { BackHeader, BaseText, ScreenContainer, Skeleton } from "@/components";
+import { BackHeader, BaseText, ScreenContainer, Skeleton, WalletTransactionRow } from "@/components";
 import { Colors } from "@/constants";
 import { useGetWalletTransactionsQuery } from "@/store";
+import type { ITransactionItem } from "@/types";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -13,6 +14,7 @@ import {
 } from "react-native";
 
 type TxFilter = "all" | "deposit" | "withdrawal";
+
 
 export default function TransactionsScreen() {
   const router = useRouter();
@@ -60,7 +62,7 @@ export default function TransactionsScreen() {
     );
   };
 
-  const renderTransactionItem = ({ item }: { item: any }) => {
+  const renderTransactionItem = ({ item }: { item: ITransactionItem }) => {
     if (isFetching) {
       return (
         <View style={styles.transactionSkeletonRow}>
@@ -74,81 +76,7 @@ export default function TransactionsScreen() {
       );
     }
 
-    let iconName: any = "arrow-down-left";
-    let iconColor = Colors.primary;
-    let amountPrefix = "+";
-
-    if (item.type === "withdrawal") {
-      iconName = "arrow-up-right";
-      iconColor = Colors.error;
-      amountPrefix = "-";
-    } else if (item.type === "transfer") {
-      iconName = "repeat";
-      iconColor = Colors.info;
-      amountPrefix = "";
-    }
-
-    const isCompleted = item.status === "completed";
-    const dateStr = new Date(item.timestamp).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-
-    return (
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={() =>
-          router.push({
-            pathname: "/(tabs)/wallets/transaction/[id]",
-            params: { id: item.id },
-          })
-        }
-        style={styles.transactionRow}
-      >
-        <View style={styles.transactionLeft}>
-          <View
-            style={[
-              styles.transactionIcon,
-              { backgroundColor: `${iconColor}15` },
-            ]}
-          >
-            <Feather name={iconName} size={16} color={iconColor} />
-          </View>
-          <View style={styles.transactionNameStack}>
-            <BaseText variant="bold" style={styles.transactionTitle}>
-              {item.type === "deposit"
-                ? "Sandbox deposit"
-                : item.type === "withdrawal"
-                  ? "USDT withdrawal"
-                  : "Transfer"}
-            </BaseText>
-            <BaseText style={styles.transactionSubtitle}>
-              {isCompleted ? "Completed" : "Pending"}
-            </BaseText>
-          </View>
-        </View>
-        <View style={styles.transactionRight}>
-          <BaseText
-            variant="bold"
-            style={[
-              styles.transactionAmount,
-              {
-                color:
-                  item.type === "withdrawal" ? Colors.error : Colors.primary,
-              },
-            ]}
-          >
-            {amountPrefix}
-            {Number(item.amount).toLocaleString(undefined, {
-              maximumFractionDigits: 6,
-            })}{" "}
-            {item.symbol}
-          </BaseText>
-          <BaseText style={styles.transactionTime}>{dateStr}</BaseText>
-        </View>
-      </TouchableOpacity>
-    );
+    return <WalletTransactionRow transaction={item} />;
   };
 
   const renderHeader = () => (
@@ -172,12 +100,12 @@ export default function TransactionsScreen() {
       <FlatList
         data={
           isFetching
-            ? Array.from({ length: 5 }).map((_, index) => ({
+            ? (Array.from({ length: 5 }).map((_, index) => ({
                 id: `skeleton-${index}`,
-              }))
+              })) as unknown as ITransactionItem[])
             : filteredTransactions
         }
-        keyExtractor={(item: any) => item.id}
+        keyExtractor={(item) => item.id}
         renderItem={renderTransactionItem}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={
@@ -266,52 +194,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginHorizontal: 20,
   },
-  transactionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#161C22",
-    borderRadius: 16,
-    padding: 16,
-    marginHorizontal: 20,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.03)",
-  },
-  transactionLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  transactionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  transactionNameStack: {
-    justifyContent: "center",
-  },
-  transactionTitle: {
-    color: Colors.white,
-    fontSize: 14,
-    marginBottom: 2,
-  },
-  transactionSubtitle: {
-    color: "#777777",
-    fontSize: 12,
-  },
-  transactionRight: {
-    alignItems: "flex-end",
-  },
-  transactionAmount: {
-    fontSize: 14,
-    marginBottom: 2,
-  },
-  transactionTime: {
-    color: "#777777",
-    fontSize: 12,
-  },
+
   emptyContainer: {
     alignItems: "center",
     justifyContent: "center",

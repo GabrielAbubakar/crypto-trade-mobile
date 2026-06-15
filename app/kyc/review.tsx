@@ -1,4 +1,4 @@
-import { KycProgressSteps } from "@/components/kyc/KycProgressSteps";
+import { KycProgressSteps, ImagePreviewModal } from "@/components/kyc";
 import {
   BackHeader,
   BaseButton,
@@ -6,15 +6,16 @@ import {
   ScreenContainer,
 } from "@/components/ui";
 import { Colors } from "@/constants";
-import { useRouter } from "expo-router";
-import React from "react";
-import { StyleSheet, View } from "react-native";
 import {
+  resetKyc,
   useAppDispatch,
   useAppSelector,
   useKycVerificationMutation,
-  resetKyc,
 } from "@/store";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function KYCReview() {
   const router = useRouter();
@@ -27,8 +28,24 @@ export default function KYCReview() {
   const country = kycState.country || "Nigeria";
   const docType = kycState.documentType || "National ID";
   const frontUploaded = kycState.documentImageUrl ? "Uploaded" : "Not Uploaded";
-  const backUploaded = kycState.documentBackImageUrl ? "Uploaded" : "Not Uploaded";
+  const backUploaded = kycState.documentBackImageUrl
+    ? "Uploaded"
+    : "Not Uploaded";
   const selfieUploaded = kycState.selfieImageUrl ? "Uploaded" : "Not Uploaded";
+
+  const frontUrl = kycState.documentImageUrl || "https://example.com/uploads/ada-national-id.jpg";
+  const backUrl = kycState.documentBackImageUrl || undefined;
+  const selfieUrl = kycState.selfieImageUrl || "https://example.com/uploads/ada-selfie.jpg";
+
+  const [previewData, setPreviewData] = useState<{ url: string; title: string } | null>(null);
+
+  const handlePreview = (url: string, title: string) => {
+    setPreviewData({ url, title });
+  };
+
+  const closePreview = () => {
+    setPreviewData(null);
+  };
 
   const handleSubmit = async () => {
     try {
@@ -37,14 +54,18 @@ export default function KYCReview() {
         country: country,
         documentType: kycState.documentType || "national_id",
         documentNumber: kycState.documentNumber || "NIN-000-000",
-        selfieImageUrl: kycState.selfieImageUrl || "https://example.com/uploads/ada-selfie.jpg",
-        documentImageUrl: kycState.documentImageUrl || "https://example.com/uploads/ada-national-id.jpg",
+        selfieImageUrl:
+          kycState.selfieImageUrl ||
+          "https://example.com/uploads/ada-selfie.jpg",
+        documentImageUrl:
+          kycState.documentImageUrl ||
+          "https://example.com/uploads/ada-national-id.jpg",
         documentBackImageUrl: kycState.documentBackImageUrl || undefined,
       };
       await submitKyc(payload).unwrap();
       dispatch(resetKyc());
       // Navigate back to the main KYC dashboard
-      router.replace("/kyc");
+      router.replace("/home");
     } catch (error) {
       console.error("KYC submission failed:", error);
     }
@@ -80,40 +101,79 @@ export default function KYCReview() {
               {docType}
             </BaseText>
           </View>
-          <View style={styles.infoRow}>
+          <TouchableOpacity
+            style={styles.infoRow}
+            onPress={() => handlePreview(frontUrl, "Document Front")}
+            activeOpacity={0.7}
+          >
             <BaseText style={styles.infoLabel}>Document Image (Front)</BaseText>
-            <BaseText
-              variant="medium"
-              style={[styles.infoValue, { color: Colors.primary }]}
-            >
-              {frontUploaded}
-            </BaseText>
-          </View>
-          <View style={styles.infoRow}>
+            <View style={styles.valueContainer}>
+              <BaseText
+                variant="medium"
+                style={[styles.infoValue, { color: Colors.primary }]}
+              >
+                {frontUploaded}
+              </BaseText>
+              <Ionicons
+                name="eye-outline"
+                size={16}
+                color={Colors.primary}
+                style={styles.actionIcon}
+              />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.infoRow}
+            onPress={() => backUrl && handlePreview(backUrl, "Document Back")}
+            disabled={!backUrl}
+            activeOpacity={backUrl ? 0.7 : 1}
+          >
             <BaseText style={styles.infoLabel}>Document Image (Back)</BaseText>
-            <BaseText
-              variant="medium"
-              style={[
-                styles.infoValue,
-                {
-                  color: kycState.documentBackImageUrl
-                    ? Colors.primary
-                    : Colors.textSecondary,
-                },
-              ]}
-            >
-              {backUploaded}
-            </BaseText>
-          </View>
-          <View style={styles.infoRow}>
+            <View style={styles.valueContainer}>
+              <BaseText
+                variant="medium"
+                style={[
+                  styles.infoValue,
+                  {
+                    color: kycState.documentBackImageUrl
+                      ? Colors.primary
+                      : Colors.textSecondary,
+                  },
+                ]}
+              >
+                {backUploaded}
+              </BaseText>
+              {!!backUrl && (
+                <Ionicons
+                  name="eye-outline"
+                  size={16}
+                  color={Colors.primary}
+                  style={styles.actionIcon}
+                />
+              )}
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.infoRow}
+            onPress={() => handlePreview(selfieUrl, "Selfie")}
+            activeOpacity={0.7}
+          >
             <BaseText style={styles.infoLabel}>Selfie Image</BaseText>
-            <BaseText
-              variant="medium"
-              style={[styles.infoValue, { color: Colors.primary }]}
-            >
-              {selfieUploaded}
-            </BaseText>
-          </View>
+            <View style={styles.valueContainer}>
+              <BaseText
+                variant="medium"
+                style={[styles.infoValue, { color: Colors.primary }]}
+              >
+                {selfieUploaded}
+              </BaseText>
+              <Ionicons
+                name="eye-outline"
+                size={16}
+                color={Colors.primary}
+                style={styles.actionIcon}
+              />
+            </View>
+          </TouchableOpacity>
         </View>
 
         <BaseText style={styles.footerNotice}>
@@ -127,6 +187,13 @@ export default function KYCReview() {
         isLoading={isLoading}
         onPress={handleSubmit}
         style={styles.continueButton}
+      />
+
+      <ImagePreviewModal
+        visible={!!previewData}
+        onClose={closePreview}
+        imageUrl={previewData?.url}
+        title={previewData?.title}
       />
     </ScreenContainer>
   );
@@ -178,5 +245,13 @@ const styles = StyleSheet.create({
   continueButton: {
     marginVertical: 24,
     width: "100%",
+  },
+  valueContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  actionIcon: {
+    marginLeft: 4,
   },
 });
