@@ -14,5 +14,6 @@ export * from "./Skeleton";
 export * from "./Sparkline";
 export * from "./UserHeader";
 export * from "./ScreenHeader";
+export * from "./SelectOptionsSheet";
 
 

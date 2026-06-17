@@ -4,23 +4,25 @@ import {
   BaseInput,
   BaseText,
   ScreenContainer,
+  SelectOptionsSheet,
+  TradeDetailsCard,
+  TradeInputCard,
+  TradeTabs,
 } from "@/components";
 import { Colors, FontFamily } from "@/constants";
+
 import {
   useCreateQuoteMutation,
+  useGetMarketAssetsQuery,
   useGetMarketPricesQuery,
   useGetWalletBalancesQuery,
 } from "@/store";
 import { showErrorToast } from "@/utils";
-import { useForm } from "@tanstack/react-form";
+import type { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { useForm, useStore } from "@tanstack/react-form";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { StyleSheet, View } from "react-native";
 
 type TradeType = "buy" | "sell" | "swap";
 
@@ -36,8 +38,9 @@ export default function TradeOperationScreen() {
     useGetWalletBalancesQuery();
   const { data: marketPrices, isLoading: isPricesLoading } =
     useGetMarketPricesQuery();
+  const { data: marketAssetsResponse } = useGetMarketAssetsQuery({});
 
-  console.log(balanceData)
+  // console.log(balanceData)
 
   const [createQuote, { isLoading: isQuoteCreating }] =
     useCreateQuoteMutation();
@@ -46,19 +49,120 @@ export default function TradeOperationScreen() {
   const [fromAsset, setFromAsset] = useState("USDT");
   const [toAsset, setToAsset] = useState("BTC");
 
+  // Bottom Sheet Refs
+  const toSheetRef = useRef<BottomSheetModal>(null);
+  const fromSheetRef = useRef<BottomSheetModal>(null);
+
+  // Map market assets to options (Buy flow: excluding USDT)
+  const coinOptions = useMemo(() => {
+    if (!marketAssetsResponse?.data) return [];
+    return marketAssetsResponse.data
+      .filter((asset) => asset.symbol.toUpperCase() !== "USDT")
+      .map((asset) => ({
+        value: asset.symbol,
+        label: asset.name,
+      }));
+  }, [marketAssetsResponse]);
+
+  // Map user balances to options for selling (excluding stablecoins)
+  const sellCoinOptions = useMemo(() => {
+    if (!balanceData?.wallet?.balances) return [];
+    return balanceData.wallet.balances
+      .filter(
+        (b) =>
+          b.assetSymbol.toUpperCase() !== "USDT" &&
+          b.assetSymbol.toUpperCase() !== "USD",
+      )
+      .map((b) => {
+        const asset = marketAssetsResponse?.data?.find(
+          (a) => a.symbol.toUpperCase() === b.assetSymbol.toUpperCase(),
+        );
+        return {
+          value: b.assetSymbol,
+          label: asset?.name || b.assetSymbol,
+        };
+      });
+  }, [balanceData, marketAssetsResponse]);
+
+  // Map user balances to options for swapping (including stablecoins)
+  const swapFromOptions = useMemo(() => {
+    if (!balanceData?.wallet?.balances) return [];
+    return balanceData.wallet.balances.map((b) => {
+      const asset = marketAssetsResponse?.data?.find(
+        (a) => a.symbol.toUpperCase() === b.assetSymbol.toUpperCase(),
+      );
+      return {
+        value: b.assetSymbol,
+        label: asset?.name || b.assetSymbol,
+      };
+    });
+  }, [balanceData, marketAssetsResponse]);
+
+  // Map all market assets to options for swapping
+  const swapToOptions = useMemo(() => {
+    if (!marketAssetsResponse?.data) return [];
+    return marketAssetsResponse.data.map((asset) => ({
+      value: asset.symbol,
+      label: asset.name,
+    }));
+  }, [marketAssetsResponse]);
+
+  // Dynamically select options for the "From" input sheet
+  const fromOptions = useMemo(() => {
+    if (activeTab === "sell") {
+      return sellCoinOptions;
+    }
+    if (activeTab === "swap") {
+      return swapFromOptions;
+    }
+    return [];
+  }, [activeTab, sellCoinOptions, swapFromOptions]);
+
+  // Dynamically select options for the "To" input sheet
+  const toOptions = useMemo(() => {
+    if (activeTab === "buy") {
+      return coinOptions;
+    }
+    if (activeTab === "swap") {
+      return swapToOptions;
+    }
+    return [];
+  }, [activeTab, coinOptions, swapToOptions]);
+
+  // Find asset name helper
+  const getAssetName = (symbol: string): string => {
+    if (!marketAssetsResponse?.data) {
+      if (symbol === "BTC") return "Bitcoin";
+      if (symbol === "ETH") return "Ethereum";
+      if (symbol === "SOL") return "Solana";
+      return symbol;
+    }
+    const found = marketAssetsResponse.data.find(
+      (a) => a.symbol.toUpperCase() === symbol.toUpperCase(),
+    );
+    return found ? found.name : symbol;
+  };
+
   // Adjust defaults when tab switches
   useEffect(() => {
     if (activeTab === "buy") {
       setFromAsset("USDT");
       setToAsset("BTC");
     } else if (activeTab === "sell") {
-      setFromAsset("BTC");
+      const firstAsset = balanceData?.wallet?.balances?.find(
+        (b) =>
+          b.assetSymbol.toUpperCase() !== "USDT" &&
+          b.assetSymbol.toUpperCase() !== "USD",
+      );
+      setFromAsset(firstAsset?.assetSymbol || "BTC");
       setToAsset("USDT");
     } else {
-      setFromAsset("USDT");
-      setToAsset("BTC");
+      const firstAsset = balanceData?.wallet?.balances?.[0];
+      const defaultFrom = firstAsset?.assetSymbol || "USDT";
+      setFromAsset(defaultFrom);
+      setToAsset(defaultFrom.toUpperCase() === "BTC" ? "ETH" : "BTC");
     }
-  }, [activeTab]);
+  }, [activeTab, balanceData]);
 
   // Find asset price helper
   const getAssetPrice = (symbol: string): number => {
@@ -74,20 +178,30 @@ export default function TradeOperationScreen() {
       (p) => p.symbol.toUpperCase() === symbol.toUpperCase(),
     );
     if (!found) return 1.0;
-    return typeof found.price === "string"
-      ? parseFloat(found.price)
-      : found.price;
+    const priceVal = found.priceUsd ?? found.price;
+    if (priceVal === undefined || priceVal === null) return 1.0;
+    return typeof priceVal === "string"
+      ? parseFloat(priceVal)
+      : priceVal;
   };
 
   // Find user's available balance helper
   const getAvailableBalance = (symbol: string): number => {
     if (!balanceData?.wallet?.balances) return 0.0;
-    // For cash / stable, treat USD and USDT interchangeably if needed
-    const normalizedSymbol =
-      symbol.toUpperCase() === "USDT" ? "USD" : symbol.toUpperCase();
-    const balance = balanceData.wallet.balances.find(
-      (b) => b.assetSymbol.toUpperCase() === normalizedSymbol,
+    const searchSymbol = symbol.toUpperCase();
+    let balance = balanceData.wallet.balances.find(
+      (b) => b.assetSymbol.toUpperCase() === searchSymbol,
     );
+    if (!balance && searchSymbol === "USDT") {
+      balance = balanceData.wallet.balances.find(
+        (b) => b.assetSymbol.toUpperCase() === "USD",
+      );
+    }
+    if (!balance && searchSymbol === "USD") {
+      balance = balanceData.wallet.balances.find(
+        (b) => b.assetSymbol.toUpperCase() === "USDT",
+      );
+    }
     return balance?.available ?? 0.0;
   };
 
@@ -128,16 +242,18 @@ export default function TradeOperationScreen() {
       } catch (err: any) {
         showErrorToast(
           err?.data?.error?.message ||
-          err?.data?.message ||
-          "Failed to create quote. Please complete identity verification.",
+            err?.data?.message ||
+            "Failed to create quote.",
         );
       }
     },
   });
 
   // Calculate live conversion estimate
-  const amountStr = form.state.values.amount;
+  const formValues = useStore(form.baseStore, (state: any) => state.values);
+  const amountStr = formValues.amount;
   const inputAmount = parseFloat(amountStr) || 0;
+
   const fromPrice = getAssetPrice(fromAsset);
   const toPrice = getAssetPrice(toAsset);
 
@@ -148,16 +264,16 @@ export default function TradeOperationScreen() {
     // USDT -> BTC (Buy)
     receiveAmount = toPrice > 0 ? inputAmount / toPrice : 0;
     estimatedRateText = `1 ${toAsset} = ${toPrice?.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-    })}`;
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 6,
+    })} USDT`;
   } else if (activeTab === "sell") {
     // ETH -> USDT (Sell)
     receiveAmount = inputAmount * fromPrice;
     estimatedRateText = `1 ${fromAsset} = ${fromPrice?.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-    })}`;
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 6,
+    })} USDT`;
   } else {
     // ETH -> BTC (Swap)
     const totalUsdVal = inputAmount * fromPrice;
@@ -166,33 +282,15 @@ export default function TradeOperationScreen() {
     estimatedRateText = `1 ${fromAsset} ≈ ${swapRate.toFixed(5)} ${toAsset}`;
   }
 
-  const renderTabButton = (tab: TradeType, label: string) => (
-    <TouchableOpacity
-      style={[styles.tabButton, activeTab === tab && styles.tabButtonActive]}
-      onPress={() => {
-        setActiveTab(tab);
-        form.setFieldValue("amount", "");
-      }}
-    >
-      <BaseText
-        style={[
-          styles.tabButtonText,
-          activeTab === tab && styles.tabButtonTextActive,
-        ]}
-      >
-        {label}
-      </BaseText>
-    </TouchableOpacity>
-  );
 
   return (
     <ScreenContainer scrollable style={styles.container}>
       <BackHeader
         title={
           activeTab === "buy"
-            ? "Buy Bitcoin"
+            ? `Buy ${getAssetName(toAsset)}`
             : activeTab === "sell"
-              ? "Sell Bitcoin"
+              ? `Sell ${getAssetName(fromAsset)}`
               : "Swap assets"
         }
       />
@@ -206,44 +304,42 @@ export default function TradeOperationScreen() {
       </BaseText>
 
       {/* Tabs */}
-      <View style={styles.tabsContainer}>
-        {renderTabButton("buy", "Buy")}
-        {renderTabButton("sell", "Sell")}
-        {renderTabButton("swap", "Swap")}
-      </View>
+      <TradeTabs
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          form.setFieldValue("amount", "");
+        }}
+      />
 
-      <View style={styles.formContainer}>
+      <View>
         {/* You Pay / From field */}
-        <View style={styles.inputCard}>
-          <View style={styles.row}>
-            <View style={styles.inputCol}>
-              <BaseText style={styles.inputLabel}>
-                {activeTab === "buy"
-                  ? "You pay"
-                  : activeTab === "sell"
-                    ? "You sell"
-                    : "From"}
-              </BaseText>
-              <form.Field name="amount">
-                {(field) => (
-                  <BaseInput
-                    placeholder="0.00"
-                    keyboardType="numeric"
-                    value={field.state.value}
-                    onChangeText={field.handleChange}
-                    style={styles.fieldInput}
-                    containerStyle={styles.fieldInputContainer}
-                  />
-                )}
-              </form.Field>
-            </View>
-            <View style={styles.assetSelector}>
-              <BaseText variant="bold" style={styles.assetText}>
-                {fromAsset}
-              </BaseText>
-            </View>
-          </View>
-        </View>
+        <TradeInputCard
+          label={
+            activeTab === "buy"
+              ? "You pay"
+              : activeTab === "sell"
+                ? "You sell"
+                : "From"
+          }
+          assetSymbol={fromAsset}
+          isAssetClickable={activeTab === "sell" || activeTab === "swap"}
+          onAssetPress={() => fromSheetRef.current?.present()}
+          input={
+            <form.Field name="amount">
+              {(field) => (
+                <BaseInput
+                  placeholder="0.00"
+                  keyboardType="numeric"
+                  value={field.state.value}
+                  onChangeText={field.handleChange}
+                  style={styles.fieldInput}
+                  containerStyle={styles.fieldInputContainer}
+                />
+              )}
+            </form.Field>
+          }
+        />
 
         {/* Separator / Arrow for Swap */}
         {activeTab === "swap" && (
@@ -255,66 +351,32 @@ export default function TradeOperationScreen() {
         )}
 
         {/* You Receive / To field */}
-        <View
-          style={[
-            styles.inputCard,
-            { marginTop: activeTab === "swap" ? 0 : 16 },
-          ]}
-        >
-          <View style={styles.row}>
-            <View style={styles.inputCol}>
-              <BaseText style={styles.inputLabel}>
-                {activeTab === "swap" ? "To" : "You receive"}
-              </BaseText>
-              <BaseInput
-                placeholder="0.00"
-                editable={false}
-                value={inputAmount > 0 ? receiveAmount.toFixed(5) : "0.00000"}
-                style={[styles.fieldInput, { color: Colors.white }]}
-                containerStyle={styles.fieldInputContainer}
-              />
-            </View>
-            <View style={styles.assetSelector}>
-              <BaseText variant="bold" style={styles.assetText}>
-                {toAsset}
-              </BaseText>
-            </View>
-          </View>
-        </View>
+        <TradeInputCard
+          label={activeTab === "swap" ? "To" : "You receive"}
+          assetSymbol={toAsset}
+          isAssetClickable={activeTab === "buy" || activeTab === "swap"}
+          onAssetPress={() => toSheetRef.current?.present()}
+          input={
+            <BaseInput
+              placeholder="0.00"
+              editable={false}
+              value={inputAmount > 0 ? receiveAmount.toFixed(5) : "0.00000"}
+              style={[styles.fieldInput, { color: Colors.white }]}
+              containerStyle={styles.fieldInputContainer}
+            />
+          }
+          containerStyle={{ marginTop: activeTab === "swap" ? 0 : 16 }}
+        />
 
         {/* Context Details */}
-        <View style={styles.detailsCard}>
-          <View style={styles.detailsRow}>
-            <BaseText style={styles.detailLabel}>Available</BaseText>
-            {isBalanceLoading ? (
-              <ActivityIndicator size="small" color={Colors.primary} />
-            ) : (
-              <BaseText style={styles.detailValue}>
-                {currentAvailable.toFixed(4)} {fromAsset}
-              </BaseText>
-            )}
-          </View>
-
-          <View style={styles.detailsRow}>
-            <BaseText style={styles.detailLabel}>Estimated rate</BaseText>
-            {isPricesLoading ? (
-              <ActivityIndicator size="small" color={Colors.primary} />
-            ) : (
-              <BaseText style={styles.detailValue}>
-                {estimatedRateText}
-              </BaseText>
-            )}
-          </View>
-
-          <View style={styles.detailsRow}>
-            <BaseText style={styles.detailLabel}>
-              {activeTab === "swap" ? "Quote expires" : "Verification limit"}
-            </BaseText>
-            <BaseText style={[styles.detailValue, { color: Colors.primary }]}>
-              {activeTab === "swap" ? "30 seconds" : "$5,000"}
-            </BaseText>
-          </View>
-        </View>
+        <TradeDetailsCard
+          isBalanceLoading={isBalanceLoading}
+          isPricesLoading={isPricesLoading}
+          currentAvailable={currentAvailable}
+          fromAsset={fromAsset}
+          estimatedRateText={estimatedRateText}
+          activeTab={activeTab}
+        />
       </View>
 
       {/* Action Button */}
@@ -335,6 +397,30 @@ export default function TradeOperationScreen() {
           }}
         />
       </View>
+
+      {/* To Sheet */}
+      <SelectOptionsSheet
+        ref={toSheetRef}
+        title="Select Coin"
+        options={toOptions}
+        selectedValue={toAsset}
+        onSelect={(value) => {
+          setToAsset(value);
+          toSheetRef.current?.dismiss();
+        }}
+      />
+
+      {/* From Sheet */}
+      <SelectOptionsSheet
+        ref={fromSheetRef}
+        title="Select Asset"
+        options={fromOptions}
+        selectedValue={fromAsset}
+        onSelect={(value) => {
+          setFromAsset(value);
+          fromSheetRef.current?.dismiss();
+        }}
+      />
     </ScreenContainer>
   );
 }
@@ -351,54 +437,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 20,
   },
-  tabsContainer: {
-    flexDirection: "row",
-    backgroundColor: "#161C22",
-    borderRadius: 14,
-    padding: 4,
-    marginBottom: 24,
-  },
-  tabButton: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: "center",
-    borderRadius: 10,
-  },
-  tabButtonActive: {
-    backgroundColor: "#1B232A",
-  },
-  tabButtonText: {
-    color: "#777777",
-    fontSize: 14,
-    fontFamily: FontFamily.bold,
-  },
-  tabButtonTextActive: {
-    color: Colors.white,
-  },
-  formContainer: {
-    // flex: 1,
-  },
-  inputCard: {
-    backgroundColor: Colors.cardBg,
-    borderRadius: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.04)",
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  inputCol: {
-    flex: 1,
-  },
-  inputLabel: {
-    color: Colors.textSecondary,
-    fontSize: 12,
-    marginBottom: 4,
-  },
   fieldInputContainer: {
     backgroundColor: "transparent",
     borderWidth: 0,
@@ -409,17 +447,7 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontFamily: FontFamily.bold,
   },
-  assetSelector: {
-    backgroundColor: "#161C22",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 14,
-    marginLeft: 10,
-  },
-  assetText: {
-    color: Colors.white,
-    fontSize: 14,
-  },
+
   arrowRow: {
     alignItems: "center",
     marginVertical: -8,
@@ -439,31 +467,6 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: 16,
     lineHeight: 18,
-  },
-  detailsCard: {
-    backgroundColor: "rgba(255, 255, 255, 0.02)",
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.04)",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    marginTop: 24,
-  },
-  detailsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255, 255, 255, 0.04)",
-  },
-  detailLabel: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-  },
-  detailValue: {
-    fontSize: 13,
-    color: Colors.white,
-    fontFamily: FontFamily.bold,
   },
   footer: {
     marginTop: 32,

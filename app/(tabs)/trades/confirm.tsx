@@ -14,11 +14,11 @@ import { showErrorToast, showSuccessToast } from "@/utils";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   StyleSheet,
   TextInput,
-  View,
-  ActivityIndicator,
   TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function ConfirmTradeScreen() {
@@ -26,9 +26,12 @@ export default function ConfirmTradeScreen() {
   const { quoteId } = useLocalSearchParams<{ quoteId: string }>();
 
   // API Hooks
-  const { data: quote, isLoading: isQuoteLoading } = useGetQuoteDetailsQuery(quoteId, {
-    skip: !quoteId,
-  });
+  const { data: quote, isLoading: isQuoteLoading } = useGetQuoteDetailsQuery(
+    quoteId,
+    {
+      skip: !quoteId,
+    },
+  );
   const { data: balanceData } = useGetWalletBalancesQuery();
   const [executeQuote, { isLoading: isExecuting }] = useExecuteQuoteMutation();
 
@@ -45,15 +48,19 @@ export default function ConfirmTradeScreen() {
 
   const getAvailableBalance = (symbol: string): number => {
     if (!balanceData?.wallet?.balances) return 0.0;
-    const normalizedSymbol = symbol.toUpperCase() === "USDT" ? "USD" : symbol.toUpperCase();
+    const normalizedSymbol =
+      symbol.toUpperCase() === "USDT" ? "USD" : symbol.toUpperCase();
     const balance = balanceData.wallet.balances.find(
-      (b) => b.assetSymbol.toUpperCase() === normalizedSymbol
+      (b) => b.assetSymbol.toUpperCase() === normalizedSymbol,
     );
     return balance?.available ?? 0.0;
   };
 
   const handleSubmit = async (enteredPin: string) => {
-    if (enteredPin.length < 4 || isExecuting || !quote) return;
+    if (enteredPin.length < 4 || isExecuting || !quote) {
+      showErrorToast("Please enter a valid PIN");
+      return;
+    }
 
     try {
       const result = await executeQuote({
@@ -76,8 +83,9 @@ export default function ConfirmTradeScreen() {
         },
       });
     } catch (err: any) {
-      const errorMsg = err?.data?.error?.message || err?.data?.message || "Trade failed";
-      
+      const errorMsg =
+        err?.data?.error?.message || err?.data?.message || "Trade failed";
+
       const fromAsset = quote.fromAsset;
       const currentAvail = getAvailableBalance(fromAsset);
 
@@ -126,10 +134,16 @@ export default function ConfirmTradeScreen() {
       {/* Trade details overview card */}
       <View style={styles.summaryCard}>
         <BaseText variant="bold" style={styles.summaryTitle}>
-          {quote.type === "buy" ? "Buy" : quote.type === "sell" ? "Sell" : "Swap"} {quote.toAsset}
+          {quote.type === "buy"
+            ? "Buy"
+            : quote.type === "sell"
+              ? "Sell"
+              : "Swap"}{" "}
+          {quote.toAsset}
         </BaseText>
         <BaseText style={styles.summaryDetails}>
-          {quote.fromAmount.toFixed(2)} {quote.fromAsset} → {estimatedReceive.toFixed(5)} {quote.toAsset}
+          {quote.fromAmount.toFixed(2)} {quote.fromAsset} →{" "}
+          {estimatedReceive.toFixed(5)} {quote.toAsset}
         </BaseText>
         <BaseText style={styles.summaryFee}>
           Fee: {quote.feeAmount.toFixed(2)} {quote.toAsset}
@@ -147,6 +161,8 @@ export default function ConfirmTradeScreen() {
         style={styles.hiddenInput}
       />
 
+      <BaseText variant="bold">Transaction PIN</BaseText>
+
       {/* Display dots */}
       <TouchableOpacity
         activeOpacity={1}
@@ -158,18 +174,15 @@ export default function ConfirmTradeScreen() {
           return (
             <View
               key={index}
-              style={[
-                styles.pinDot,
-                filled && styles.pinDotFilled,
-              ]}
+              style={[styles.pinDot, filled && styles.pinDotFilled]}
             />
           );
         })}
       </TouchableOpacity>
 
-      <BaseText style={styles.apiDisclaimer}>
+      {/* <BaseText style={styles.apiDisclaimer}>
         The API executes only after POST /trade/execute with quoteId and PIN.
-      </BaseText>
+      </BaseText> */}
 
       <View style={styles.footer}>
         <BaseButton
@@ -235,7 +248,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     gap: 20,
-    marginVertical: 24,
+    marginTop: 24,
+    marginBottom: 34,
   },
   pinDot: {
     width: 24,
@@ -259,7 +273,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     flex: 1,
-    justifyContent: "flex-end",
     marginBottom: 20,
   },
   executeBtn: {

@@ -120,7 +120,8 @@ export interface IAssetDetailsResponse {
 
 export interface IMarketPrice {
   symbol: string;
-  price: string | number;
+  price?: string | number;
+  priceUsd?: string | number;
   change?: string | number;
 }
 

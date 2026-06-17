@@ -1,4 +1,5 @@
-import { BaseButton, BaseText } from "@/components";
+import { BaseButton } from "@/components/ui/BaseButton";
+import { BaseText } from "@/components/ui/BaseText";
 import { Colors } from "@/constants";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import React, { useEffect, useMemo, useRef } from "react";

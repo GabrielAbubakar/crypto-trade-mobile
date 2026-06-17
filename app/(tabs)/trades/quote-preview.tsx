@@ -8,14 +8,18 @@ import { Colors, FontFamily } from "@/constants";
 import { useGetQuoteDetailsQuery } from "@/store";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, ActivityIndicator } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 export default function QuotePreviewScreen() {
   const router = useRouter();
   const { quoteId } = useLocalSearchParams<{ quoteId: string }>();
 
   // Fetch live quote details
-  const { data: quote, isLoading, error } = useGetQuoteDetailsQuery(quoteId, {
+  const {
+    data: quote,
+    isLoading,
+    error,
+  } = useGetQuoteDetailsQuery(quoteId, {
     skip: !quoteId,
   });
 
@@ -85,8 +89,14 @@ export default function QuotePreviewScreen() {
   if (error || !quote) {
     return (
       <ScreenContainer style={styles.centerContainer}>
-        <BaseText style={styles.errorText}>Failed to retrieve quote details</BaseText>
-        <BaseButton title="Back to trade" onPress={handleGetNewQuote} style={{ marginTop: 16 }} />
+        <BaseText style={styles.errorText}>
+          Failed to retrieve quote details
+        </BaseText>
+        <BaseButton
+          title="Back to trade"
+          onPress={handleGetNewQuote}
+          style={{ marginTop: 16 }}
+        />
       </ScreenContainer>
     );
   }
@@ -100,15 +110,27 @@ export default function QuotePreviewScreen() {
       {isExpired ? (
         // EXPIRED STATE UI
         <View style={styles.expiredContainer}>
-          <View style={styles.exclamationCircle}>
-            <BaseText variant="bold" style={styles.exclamationText}>!</BaseText>
+          <View
+            style={{
+              alignItems: "center",
+              backgroundColor: "#141820",
+              paddingVertical: 20,
+              borderRadius: 22,
+              marginBottom: 40,
+            }}
+          >
+            <View style={styles.exclamationCircle}>
+              <BaseText variant="bold" style={styles.exclamationText}>
+                !
+              </BaseText>
+            </View>
+            <BaseText variant="bold" style={styles.expiredTitle}>
+              This quote is no longer valid
+            </BaseText>
+            <BaseText style={styles.expiredSubtitle}>
+              Get a new quote so the rate, fee, and receive amount are current.
+            </BaseText>
           </View>
-          <BaseText variant="bold" style={styles.expiredTitle}>
-            This quote is no longer valid
-          </BaseText>
-          <BaseText style={styles.expiredSubtitle}>
-            Get a new quote so the rate, fee, and receive amount are current.
-          </BaseText>
 
           <View style={styles.detailsCard}>
             <View style={styles.detailsRow}>
@@ -166,7 +188,11 @@ export default function QuotePreviewScreen() {
             <View style={styles.detailsRow}>
               <BaseText style={styles.detailLabel}>Rate</BaseText>
               <BaseText style={styles.detailValue}>
-                1 {quote.fromAsset} = {quote.rate.toLocaleString("en-US", { maximumFractionDigits: 5 })} {quote.toAsset}
+                1 {quote.fromAsset} ={" "}
+                {quote.rate.toLocaleString("en-US", {
+                  maximumFractionDigits: 5,
+                })}{" "}
+                {quote.toAsset}
               </BaseText>
             </View>
 
@@ -179,7 +205,10 @@ export default function QuotePreviewScreen() {
 
             <View style={styles.detailsRow}>
               <BaseText style={styles.detailLabel}>Estimated receive</BaseText>
-              <BaseText variant="bold" style={[styles.detailValue, { color: Colors.primary }]}>
+              <BaseText
+                variant="bold"
+                style={[styles.detailValue, { color: Colors.primary }]}
+              >
                 {estimatedReceive.toFixed(5)} {quote.toAsset}
               </BaseText>
             </View>
@@ -273,7 +302,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
   },
   expiredContainer: {
-    alignItems: "center",
     marginTop: 20,
   },
   exclamationCircle: {
@@ -302,7 +330,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 20,
     paddingHorizontal: 24,
-    marginBottom: 32,
   },
   yellowBtn: {
     height: 56,
