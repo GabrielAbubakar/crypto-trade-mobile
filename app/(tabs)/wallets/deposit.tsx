@@ -1,56 +1,68 @@
 import { BackHeader, BaseText, ScreenContainer } from "@/components";
 import { Colors } from "@/constants";
+import { useAssetIconUrl } from "@/hooks";
+import { useGetWalletBalancesQuery } from "@/store";
+import type { IWalletDepositAddress } from "@/types";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { SvgUri } from "react-native-svg";
 
-interface AssetOption {
-  symbol: string;
-  name: string;
-  network: string;
-  price: string;
-  status: string;
-  iconLetter: string;
-  iconBg: string;
-  iconColor: string;
+interface AssetOptionCardProps {
+  asset: IWalletDepositAddress;
+  isSelected: boolean;
+  onPress: () => void;
+}
+
+function AssetOptionCard({ asset, isSelected, onPress }: AssetOptionCardProps) {
+  const { iconUrl: resolvedUrl } = useAssetIconUrl(asset.assetSymbol);
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={onPress}
+      style={[styles.optionCard, isSelected && styles.optionCardSelected]}
+    >
+      <View style={styles.optionLeft}>
+        <View style={styles.iconContainer}>
+          {resolvedUrl && (
+            <SvgUri width={"100%"} height={"100%"} uri={resolvedUrl} />
+          )}
+        </View>
+        <View style={styles.assetDetails}>
+          <BaseText variant="bold" style={styles.assetName}>
+            {asset.network}
+          </BaseText>
+          <BaseText style={styles.assetNetwork}>
+            {asset.assetSymbol} · {asset.network}
+          </BaseText>
+        </View>
+      </View>
+      <View style={styles.optionRight}>
+        {/* <BaseText variant="bold" style={styles.assetPrice}>
+          {asset.}
+        </BaseText> */}
+        {/* <BaseText
+          style={[
+            styles.assetStatus,
+            isSelected
+              ? { color: Colors.primary }
+              : { color: "#777777" },
+          ]}
+        >
+          {asset.}
+        </BaseText> */}
+      </View>
+    </TouchableOpacity>
+  );
 }
 
 export default function DepositSelectScreen() {
   const router = useRouter();
-  const [selectedAsset, setSelectedAsset] = useState<string>("USDT");
-
-  const assets: AssetOption[] = [
-    {
-      symbol: "USDT",
-      name: "Tether",
-      network: "TRC20",
-      price: "$1.00",
-      status: "Recommended",
-      iconLetter: "U",
-      iconBg: "rgba(94, 213, 168, 0.15)",
-      iconColor: Colors.primary,
-    },
-    {
-      symbol: "BTC",
-      name: "Bitcoin",
-      network: "Testnet",
-      price: "$64,200.50",
-      status: "Available",
-      iconLetter: "B",
-      iconBg: "rgba(255, 178, 54, 0.15)",
-      iconColor: Colors.warning,
-    },
-    {
-      symbol: "ETH",
-      name: "Ethereum",
-      network: "Sepolia",
-      price: "$3,420.00",
-      status: "Available",
-      iconLetter: "E",
-      iconBg: "rgba(56, 97, 251, 0.15)",
-      iconColor: Colors.info,
-    },
-  ];
+  const { data: assets } = useGetWalletBalancesQuery();
+  const [selectedAsset, setSelectedAsset] = useState<string>(
+    assets?.wallet.depositAddresses?.[0].assetSymbol || "",
+  );
 
   const handleContinue = () => {
     router.push({
@@ -68,59 +80,14 @@ export default function DepositSelectScreen() {
         </BaseText>
 
         <View style={styles.listContainer}>
-          {assets.map((asset) => {
-            const isSelected = selectedAsset === asset.symbol;
-            return (
-              <TouchableOpacity
-                key={asset.symbol}
-                activeOpacity={0.8}
-                onPress={() => setSelectedAsset(asset.symbol)}
-                style={[
-                  styles.optionCard,
-                  isSelected && styles.optionCardSelected,
-                ]}
-              >
-                <View style={styles.optionLeft}>
-                  <View
-                    style={[
-                      styles.iconContainer,
-                      { backgroundColor: asset.iconBg },
-                    ]}
-                  >
-                    <BaseText
-                      variant="bold"
-                      style={{ color: asset.iconColor, fontSize: 16 }}
-                    >
-                      {asset.iconLetter}
-                    </BaseText>
-                  </View>
-                  <View style={styles.assetDetails}>
-                    <BaseText variant="bold" style={styles.assetName}>
-                      {asset.name}
-                    </BaseText>
-                    <BaseText style={styles.assetNetwork}>
-                      {asset.symbol} · {asset.network}
-                    </BaseText>
-                  </View>
-                </View>
-                <View style={styles.optionRight}>
-                  <BaseText variant="bold" style={styles.assetPrice}>
-                    {asset.price}
-                  </BaseText>
-                  <BaseText
-                    style={[
-                      styles.assetStatus,
-                      isSelected
-                        ? { color: Colors.primary }
-                        : { color: "#777777" },
-                    ]}
-                  >
-                    {asset.status}
-                  </BaseText>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
+          {assets?.wallet.depositAddresses.map((asset) => (
+            <AssetOptionCard
+              key={asset.assetSymbol}
+              asset={asset}
+              isSelected={selectedAsset === asset.assetSymbol}
+              onPress={() => setSelectedAsset(asset.assetSymbol)}
+            />
+          ))}
         </View>
 
         {/* Sandbox explanation box */}
@@ -221,7 +188,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.04)",
-    marginBottom: 100,
+    marginBottom: 20,
   },
   sandboxTitle: {
     color: Colors.white,

@@ -12,6 +12,8 @@ export default function SimulateDepositScreen() {
   const assetSymbol = symbol || "USDT";
 
   const [amount, setAmount] = useState<string>("250.00");
+  const [settlementDelaySeconds, setSettlementDelaySeconds] =
+    useState<number>(10);
   const [simulateDeposit, { isLoading }] = useSimulateDepositMutation();
 
   const handleCreateDeposit = async () => {
@@ -25,16 +27,18 @@ export default function SimulateDepositScreen() {
       const response = await simulateDeposit({
         amount: numAmount,
         symbol: assetSymbol,
+        settlementDelaySeconds,
       }).unwrap();
 
-      if (response.success) {
-        showSuccessToast(response.message || "Deposit simulation initiated!");
+      if (response && response.transaction) {
+        showSuccessToast("Deposit simulation initiated!");
         // Navigate to the transaction list screen
         router.push("/(tabs)/wallets/transactions");
       } else {
-        showErrorToast(response.message || "Failed to simulate deposit.");
+        showErrorToast("Failed to simulate deposit.");
       }
     } catch (err: any) {
+      console.log("err:", err);
       showErrorToast(
         err?.data?.message || "An error occurred during simulation.",
       );
@@ -79,7 +83,7 @@ export default function SimulateDepositScreen() {
           <View style={styles.inputGroup}>
             <BaseText style={styles.label}>Settlement delay</BaseText>
             <BaseInput
-              value="10 seconds"
+              value={settlementDelaySeconds.toLocaleString()}
               editable={false}
               containerStyle={styles.disabledInput}
               style={{ color: "#777777" }}

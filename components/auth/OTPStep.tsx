@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
-import { Dimensions, StyleSheet, TouchableOpacity, View, TextInput } from "react-native";
+import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
+import type { TextInput } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants";
 import { BaseButton, BaseInput, BaseText, ScreenContainer } from "../ui";

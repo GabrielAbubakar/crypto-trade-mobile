@@ -1,8 +1,6 @@
 import React from "react";
-import {
-  TouchableOpacity as RNTouchableOpacity,
-  TouchableOpacityProps,
-} from "react-native";
+import { TouchableOpacity as RNTouchableOpacity } from "react-native";
+import type { TouchableOpacityProps } from "react-native";
 
 /**
  * Base TouchableOpacity component with a default activeOpacity

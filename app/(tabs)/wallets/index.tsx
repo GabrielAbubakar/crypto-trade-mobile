@@ -165,11 +165,11 @@ export default function WalletsScreen() {
         </View>
 
         {/* Asset Balances Section */}
-        {/* <View style={styles.sectionHeader}>
+        <View style={styles.sectionHeader}>
           <BaseText variant="bold" style={styles.sectionTitle}>
             Assets
           </BaseText>
-        </View> */}
+        </View>
 
         {/* Render Asset rows */}
         <View style={styles.assetsList}>

@@ -35,18 +35,15 @@ function EmptyComponent({ searchQuery }: { searchQuery?: string }) {
 
 export default function MarketsScreen() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<(typeof MARKET_TABS)[number]>("Watchlist");
   const [searchQuery, setSearchQuery] = useState("");
   const [queryParams, setQueryParams] = useState<IGetMarketAssetsRequest>({
     include: "sparkline",
   });
 
-  const {
-    data: trendingData,
-    isLoading,
-    isFetching,
-    refetch,
-  } = useGetMarketAssetsQuery(queryParams, { pollingInterval: 5000 });
+  const { data: trendingData, isLoading } = useGetMarketAssetsQuery(
+    queryParams,
+    { pollingInterval: 5000 },
+  );
 
   useEffect(() => {
     setQueryParams((prev) => ({
@@ -189,7 +186,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingHorizontal: 20,
-    paddingBottom: 30, // ensure content isn't hidden behind the bottom tab bar
+    paddingBottom: 100, // ensure content isn't hidden behind the bottom tab bar
   },
   emptyContainer: {
     alignItems: "center",

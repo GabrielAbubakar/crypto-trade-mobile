@@ -48,6 +48,7 @@ export const walletApi = baseApi.injectEndpoints({
         url: `/wallet/deposit-addresses/${symbol}`,
         method: "GET",
       }),
+      transformResponse: (response: any) => response.data,
       providesTags: ["Wallet"],
     }),
     getWalletTransactions: builder.query<
@@ -78,6 +79,7 @@ export const walletApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
+      transformResponse: (response: any) => response.data,
       invalidatesTags: ["Wallet"],
     }),
     withdraw: builder.mutation<IWithdrawResponse, IWithdrawRequest>({

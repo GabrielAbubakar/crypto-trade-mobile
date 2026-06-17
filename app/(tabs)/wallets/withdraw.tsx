@@ -40,8 +40,8 @@ export default function WithdrawScreen() {
   // TanStack Form Setup
   const form = useForm({
     defaultValues: {
-      amount: "100.00",
-      address: "TXYZk81s72hBsbda8K21",
+      amount: "",
+      address: "",
     },
     onSubmit: async () => {
       setStep("confirm");
@@ -87,11 +87,11 @@ export default function WithdrawScreen() {
   }, [pin, withdraw, form]);
 
   // Trigger submission when PIN is complete
-  useEffect(() => {
-    if (pin.length === 4 && step === "confirm") {
-      handleSubmitWithdrawal();
-    }
-  }, [pin, step, handleSubmitWithdrawal]);
+  // useEffect(() => {
+  //   if (pin.length === 4 && step === "confirm") {
+  //     handleSubmitWithdrawal();
+  //   }
+  // }, [pin, step, handleSubmitWithdrawal]);
 
   const handleBack = () => {
     if (step === "confirm") {
@@ -338,7 +338,10 @@ export default function WithdrawScreen() {
             {/* Pin Code Input Block */}
             <View style={styles.pinSection}>
               <BaseInput
-                value="123"
+                value={pin}
+                onChangeText={(text) => setPin(text)}
+                maxLength={4}
+                keyboardType="number-pad"
                 containerStyle={{ backgroundColor: Colors.cardBg }}
                 placeholder="Transaction PIN"
               />

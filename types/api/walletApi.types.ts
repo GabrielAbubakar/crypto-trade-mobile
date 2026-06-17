@@ -21,7 +21,6 @@ export interface IWallet {
   balances: IWalletBalance[];
 }
 
-
 export interface IWalletVerification {
   status: string;
   tier: string;
@@ -77,9 +76,9 @@ export interface IDepositAddressItem {
 export type IDepositAddressesResponse = IDepositAddressItem[];
 
 export interface IDepositAddressDetails {
-  symbol: string;
-  address: string;
+  assetSymbol: string;
   network: string;
+  address: string;
   qrPayload: string;
 }
 
@@ -130,12 +129,14 @@ export interface ITransactionsResponse {
 export interface ISimulateDepositRequest {
   amount: number;
   symbol: string;
+  settlementDelaySeconds: number;
 }
 
 export interface ISimulateDepositResponse {
-  success: boolean;
-  message: string;
-  transactionId?: string;
+  transaction: ITransactionItem;
+  wallet: IWallet;
+  estimatedCompletionAt: string;
+  pollingUrl: string;
 }
 
 export interface IWithdrawRequest {

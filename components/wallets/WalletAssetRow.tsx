@@ -1,6 +1,7 @@
-import { Colors } from "@/constants";
+import { useAssetIconUrl } from "@/hooks";
 import React from "react";
 import { StyleSheet, View } from "react-native";
+import { SvgUri } from "react-native-svg";
 import { BaseText } from "../ui";
 
 interface WalletAssetRowProps {
@@ -14,71 +15,27 @@ export const WalletAssetRow: React.FC<WalletAssetRowProps> = ({
   available,
   balanceVisible,
 }) => {
-  const getAssetDetails = (symbol: string, balance: number) => {
-    switch (symbol.toUpperCase()) {
-      case "USDT":
-        return {
-          name: "Tether",
-          sub: "USDT",
-          iconLetter: "U",
-          iconBg: "rgba(94, 213, 168, 0.15)",
-          iconColor: Colors.primary,
-          valueUsd: balance * 2.45,
-        };
-      case "BTC":
-        return {
-          name: "Bitcoin",
-          sub: "BTC",
-          iconLetter: "B",
-          iconBg: "rgba(255, 178, 54, 0.15)",
-          iconColor: Colors.warning,
-          valueUsd: balance * 64200.5,
-        };
-      case "ETH":
-        return {
-          name: "Ethereum",
-          sub: "ETH",
-          iconLetter: "E",
-          iconBg: "rgba(56, 97, 251, 0.15)",
-          iconColor: Colors.info,
-          valueUsd: balance * 3420.0,
-        };
-      default:
-        return {
-          name: symbol,
-          sub: symbol,
-          iconLetter: symbol.charAt(0),
-          iconBg: "rgba(255, 255, 255, 0.1)",
-          iconColor: "#FFFFFF",
-          valueUsd: balance * 1.0,
-        };
-    }
-  };
-
-  const details = getAssetDetails(assetSymbol, available);
+  const { iconUrl: resolvedUrl } = useAssetIconUrl(assetSymbol);
 
   return (
     <View style={styles.assetRow}>
       <View style={styles.assetLeft}>
-        <View style={[styles.assetIcon, { backgroundColor: details.iconBg }]}>
-          <BaseText
-            variant="bold"
-            style={{ color: details.iconColor, fontSize: 16 }}
-          >
-            {details.iconLetter}
-          </BaseText>
+        <View style={[styles.assetIcon]}>
+          {resolvedUrl && (
+            <SvgUri width={"100%"} height={"100%"} uri={resolvedUrl} />
+          )}
         </View>
         <View style={styles.assetNameStack}>
           <BaseText variant="bold" style={styles.assetName}>
-            {details.name}
+            {assetSymbol}
           </BaseText>
-          <BaseText style={styles.assetSymbolText}>{details.sub}</BaseText>
+          <BaseText style={styles.assetSymbolText}>{assetSymbol}</BaseText>
         </View>
       </View>
       <View style={styles.assetRight}>
         <BaseText variant="bold" style={styles.assetValueText}>
           {balanceVisible
-            ? details.valueUsd.toLocaleString("en-US", {
+            ? available.toLocaleString("en-US", {
                 style: "currency",
                 currency: "USD",
               })

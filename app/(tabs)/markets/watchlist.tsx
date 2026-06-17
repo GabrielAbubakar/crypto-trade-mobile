@@ -1,5 +1,6 @@
 import {
   BackHeader,
+  BaseButton,
   BaseText,
   BaseTouchableOpacity,
   ScreenContainer,
@@ -10,7 +11,7 @@ import { Colors } from "@/constants";
 import { useGetWatchlistQuery } from "@/store";
 import { useRouter } from "expo-router";
 import React from "react";
-import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
+import { FlatList, StyleSheet, View } from "react-native";
 
 function EmptyComponent() {
   return <BaseText>Your watchlist is empty</BaseText>;
@@ -41,22 +42,21 @@ export default function WatchlistScreen() {
     );
 
   const renderFooter = () => (
-    <View style={styles.addMoreContainer}>
-      <BaseText size="lg" variant="bold" style={styles.addMoreTitle}>
-        Want to watch more?
-      </BaseText>
-      <BaseText style={styles.addMoreDesc}>
-        Tap the explore button to search and follow assets you like.
-      </BaseText>
-      <TouchableOpacity
-        activeOpacity={0.8}
-        style={styles.exploreButton}
-        onPress={() => router.replace("/markets")}
-      >
-        <BaseText variant="bold" style={styles.exploreButtonText}>
-          Explore markets
+    <View>
+      <View style={styles.addMoreContainer}>
+        <BaseText size="lg" variant="bold" style={styles.addMoreTitle}>
+          Want to watch more?
         </BaseText>
-      </TouchableOpacity>
+        <BaseText style={styles.addMoreDesc}>
+          Tap the explore button to search and follow assets you like.
+        </BaseText>
+      </View>
+      <BaseButton
+        onPress={() => router.replace("/markets")}
+        style={styles.exploreButton}
+        title="Explore markets"
+        variant="primary"
+      />
     </View>
   );
 
@@ -121,6 +121,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     marginTop: 24,
+    marginBottom: 100,
   },
   addMoreTitle: {
     color: Colors.white,
