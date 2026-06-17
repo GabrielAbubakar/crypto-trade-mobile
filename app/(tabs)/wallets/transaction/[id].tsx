@@ -70,6 +70,8 @@ export default function TransactionDetailsScreen() {
     }
   };
 
+  console.log(transaction)
+
   return (
     <ScreenContainer scrollable style={styles.container}>
       <View style={styles.content}>
@@ -137,11 +139,7 @@ export default function TransactionDetailsScreen() {
               <View style={styles.detailRow}>
                 <BaseText style={styles.detailLabel}>Network</BaseText>
                 <BaseText variant="bold" style={styles.detailValue}>
-                  {displayAsset === "BTC"
-                    ? "Testnet"
-                    : displayAsset === "ETH"
-                      ? "Sepolia"
-                      : "TRC20"}
+                  {transaction.toAsset}
                 </BaseText>
               </View>
               <View style={styles.detailRow}>
@@ -166,8 +164,8 @@ export default function TransactionDetailsScreen() {
                 <BaseText variant="bold" style={styles.detailValue}>
                   {isCompleted
                     ? formatDate(
-                        transaction.completedAt || transaction.createdAt,
-                      )
+                      transaction.completedAt || transaction.createdAt,
+                    )
                     : "Pending"}
                 </BaseText>
               </View>

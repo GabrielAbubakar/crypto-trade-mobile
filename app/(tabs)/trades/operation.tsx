@@ -37,6 +37,8 @@ export default function TradeOperationScreen() {
   const { data: marketPrices, isLoading: isPricesLoading } =
     useGetMarketPricesQuery();
 
+  console.log(balanceData)
+
   const [createQuote, { isLoading: isQuoteCreating }] =
     useCreateQuoteMutation();
 
@@ -126,8 +128,8 @@ export default function TradeOperationScreen() {
       } catch (err: any) {
         showErrorToast(
           err?.data?.error?.message ||
-            err?.data?.message ||
-            "Failed to create quote. Please complete identity verification.",
+          err?.data?.message ||
+          "Failed to create quote. Please complete identity verification.",
         );
       }
     },

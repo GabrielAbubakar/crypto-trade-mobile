@@ -3,7 +3,6 @@ import { Colors } from "@/constants";
 import { useGetWalletTransactionsQuery } from "@/store";
 import type { ITransactionItem } from "@/types";
 import { Feather } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   FlatList,
@@ -13,11 +12,24 @@ import {
   View,
 } from "react-native";
 
-type TxFilter = "all" | "deposit" | "withdrawal";
+type TxFilter = "all" | "deposit" | "withdrawal" | "buy" | "sell" | "swap" | "transfer";
 
+export interface FilterOption {
+  title: string;
+  value: TxFilter;
+}
+
+export const filterOptions: FilterOption[] = [
+  { title: "All", value: "all" },
+  { title: "Deposits", value: "deposit" },
+  { title: "Withdrawals", value: "withdrawal" },
+  { title: "Buy", value: "buy" },
+  { title: "Sell", value: "sell" },
+  { title: "Swap", value: "swap" },
+  { title: "Transfer", value: "transfer" },
+];
 
 export default function TransactionsScreen() {
-  const router = useRouter();
   const [filter, setFilter] = useState<TxFilter>("all");
 
   const apiParams = React.useMemo(() => {
@@ -79,35 +91,39 @@ export default function TransactionsScreen() {
     return <WalletTransactionRow transaction={item} />;
   };
 
-  const renderHeader = () => (
-    <View style={styles.header}>
-      <BackHeader title="Transactions" />
-      <BaseText style={styles.subtitle}>
-        Deposits, withdrawals, buys, sells, and swaps.
-      </BaseText>
-
-      {/* Filter Row */}
-      <View style={styles.filterRow}>
-        {renderFilterButton("All", "all")}
-        {renderFilterButton("Deposits", "deposit")}
-        {renderFilterButton("Withdrawals", "withdrawal")}
-      </View>
-    </View>
-  );
-
   return (
     <ScreenContainer withPadding={false} style={styles.container}>
       <FlatList
         data={
           isFetching
             ? (Array.from({ length: 5 }).map((_, index) => ({
-                id: `skeleton-${index}`,
-              })) as unknown as ITransactionItem[])
+              id: `skeleton-${index}`,
+            })) as unknown as ITransactionItem[])
             : filteredTransactions
         }
         keyExtractor={(item) => item.id}
         renderItem={renderTransactionItem}
-        ListHeaderComponent={renderHeader}
+        ListHeaderComponent={
+          <>
+            <View style={styles.header}>
+              <BackHeader title="Transactions" />
+              <BaseText style={styles.subtitle}>
+                Deposits, withdrawals, buys, sells, and swaps.
+              </BaseText>
+            </View>
+
+            {/* Filter Row */}
+            <FlatList
+              data={filterOptions}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item) => item.value}
+              renderItem={({ item }) => renderFilterButton(item.title, item.value)}
+              contentContainerStyle={styles.filterRowContainer}
+              style={styles.filterList}
+            />
+          </>
+        }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Feather
@@ -151,13 +167,14 @@ const styles = StyleSheet.create({
     marginTop: -8,
     marginBottom: 20,
   },
-  filterRow: {
-    flexDirection: "row",
+  filterRowContainer: {
+    paddingHorizontal: 20,
     gap: 8,
+  },
+  filterList: {
     marginBottom: 20,
   },
   filterBtn: {
-    flex: 1,
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 20,

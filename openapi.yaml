@@ -1,0 +1,2659 @@
+openapi: 3.0.3
+info:
+  title: Crypto Trade API
+  version: 1.0.0
+  description: Sandbox crypto trading API for students. Covers market data, wallets, buy, sell, swap, transactions, KYC, and admin operations.
+servers:
+  - url: /
+    description: Current API host
+  - url: http://localhost:4200
+    description: Local development
+security:
+  - bearerAuth: []
+tags:
+  - name: System
+    description: Health checks and service metadata.
+  - name: Auth
+    description: Registration, login, OTP, authenticator 2FA, and KYC submission.
+  - name: Market
+    description: Asset catalog, trending assets, and live market prices with simulator fallback.
+  - name: Profile
+    description: Customer profile, settings, watchlist, devices, and notifications.
+  - name: Wallet
+    description: Wallet balances, deposits, withdrawals, and transaction history.
+  - name: Trade
+    description: Quote preview and trade execution for buy, sell, and swap flows.
+  - name: Admin
+    description: Admin dashboard, users, KYC review, withdrawals, assets, and fees.
+paths:
+  /health:
+    get:
+      tags: [System]
+      security: []
+      summary: Check server health
+      responses:
+        "200":
+          description: API status
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/HealthResponse"
+  /assets/{fileName}:
+    get:
+      tags: [System]
+      security: []
+      summary: Get a backend-hosted crypto logo SVG
+      parameters:
+        - in: path
+          name: fileName
+          required: true
+          schema:
+            type: string
+          example: btc.svg
+      responses:
+        "200":
+          description: SVG logo file
+          content:
+            image/svg+xml:
+              schema:
+                type: string
+                format: binary
+  /auth/validate-signup:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Validate signup email and phone availability
+      description: Use this before registration to show field-level signup validation. Send email, phone, or both.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              minProperties: 1
+              properties:
+                email:
+                  type: string
+                  example: ada@example.com
+                phone:
+                  type: string
+                  description: International phone number in E.164 format.
+                  example: "+2348010000001"
+      responses:
+        "200":
+          description: Field-level validation and availability status
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/SignupValidationResponse"
+        "400":
+          description: Missing email and phone
+  /auth/register:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Register a customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fullName, email, phone, password]
+              properties:
+                fullName:
+                  type: string
+                email:
+                  type: string
+                  example: student@cryptoclass.test
+                phone:
+                  type: string
+                  description: International phone number in E.164 format.
+                  example: "+2348010000001"
+                password:
+                  type: string
+                  minLength: 8
+                  example: password123
+      responses:
+        "201":
+          description: Registered user. Email verification is required before tokens are issued.
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/RegisterResponse"
+  /auth/login:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Log in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [loginType, identifier, password]
+              properties:
+                loginType:
+                  type: string
+                  enum: [email, phone]
+                  description: Tells the API whether identifier should be matched against email or phone.
+                  example: email
+                identifier:
+                  type: string
+                  description: Email address when loginType is email, or phone number when loginType is phone.
+                  example: student@cryptoclass.test
+                password:
+                  type: string
+                  example: password123
+      responses:
+        "200":
+          description: User tokens, or a 2FA challenge
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/AuthResponse"
+                twoFactorRequired:
+                  $ref: "#/components/examples/TwoFactorChallengeResponse"
+  /auth/session:
+    get:
+      tags: [Auth]
+      summary: Check the current bearer token session
+      responses:
+        "200":
+          description: Current session
+          content:
+            application/json:
+              examples:
+                success:
+                  value:
+                    data:
+                      authenticated: true
+                      user:
+                        id: usr_student
+                        fullName: Ada Student
+                        email: student@cryptoclass.test
+                        role: customer
+                      accessToken: demo-user-token
+                      token: demo-user-token
+                      refreshToken: demo-user-refresh-token
+                      tokenType: Bearer
+                      expiresAt: "2099-01-01T00:00:00.000Z"
+                      expiresInSeconds: 2300000000
+                      refreshTokenExpiresAt: "2099-01-31T00:00:00.000Z"
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Revoke the current bearer token
+      responses:
+        "200":
+          description: Logout status
+          content:
+            application/json:
+              examples:
+                success:
+                  value:
+                    data:
+                      loggedOut: true
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Rotate tokens with a refresh token
+      description: Returns a new access token and a new refresh token. The previous refresh token is no longer valid after this call.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+                  example: demo-user-refresh-token
+      responses:
+        "200":
+          description: New tokens for the same user
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/AuthResponse"
+  /auth/2fa/setup:
+    post:
+      tags: [Auth]
+      summary: Start authenticator app setup
+      responses:
+        "200":
+          description: TOTP secret and QR URI
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/TwoFactorSetupResponse"
+  /auth/2fa/enable:
+    post:
+      tags: [Auth]
+      summary: Enable authenticator app 2FA
+      description: Returns one-time recovery codes. Store them on the client or show them once to the user; the API stores only hashed versions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+                  example: "123456"
+      responses:
+        "200":
+          description: 2FA enabled
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/TwoFactorEnabledResponse"
+  /auth/2fa/verify:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Verify a login 2FA challenge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [challengeId]
+              properties:
+                challengeId:
+                  type: string
+                  example: 2fa_abc123
+                code:
+                  type: string
+                  example: "123456"
+                recoveryCode:
+                  type: string
+                  description: Use one recovery code instead of an authenticator code when the user lost their authenticator app.
+                  example: "A1B2C-D3E4F"
+      responses:
+        "200":
+          description: User, access token, and refresh token
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/AuthResponse"
+  /auth/2fa/recovery-codes/regenerate:
+    post:
+      tags: [Auth]
+      summary: Regenerate 2FA recovery codes
+      description: Invalidates all old recovery codes and returns a fresh set. Requires password plus a current authenticator code.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password, code]
+              properties:
+                password:
+                  type: string
+                  example: password123
+                code:
+                  type: string
+                  example: "123456"
+      responses:
+        "200":
+          description: Fresh recovery codes
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/TwoFactorRecoveryCodesResponse"
+  /auth/2fa/disable:
+    post:
+      tags: [Auth]
+      summary: Disable authenticator app 2FA
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties:
+                password:
+                  type: string
+                  example: password123
+                code:
+                  type: string
+                  example: "123456"
+                recoveryCode:
+                  type: string
+                  example: "A1B2C-D3E4F"
+      responses:
+        "200":
+          description: 2FA disabled
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/TwoFactorDisabledResponse"
+  /auth/otp/request:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Request demo OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: student@cryptoclass.test
+      responses:
+        "200":
+          description: Demo OTP code
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/OtpRequestResponse"
+  /auth/otp/verify:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Verify demo OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, code]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: student@cryptoclass.test
+                code:
+                  type: string
+                  example: "123456"
+      responses:
+        "200":
+          description: Email verified, with user tokens
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/OtpVerifyResponse"
+  /auth/kyc:
+    post:
+      tags: [Auth]
+      summary: Submit KYC for review
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [legalName, country, documentType, documentNumber, selfieImageUrl, documentImageUrl]
+              properties:
+                legalName:
+                  type: string
+                  example: Ada Student
+                country:
+                  type: string
+                  example: Nigeria
+                documentType:
+                  type: string
+                  enum: [national_id, passport, drivers_license]
+                  example: national_id
+                documentNumber:
+                  type: string
+                  example: NIN-000-000
+                selfieImageUrl:
+                  type: string
+                  example: https://example.com/uploads/ada-selfie.jpg
+                documentImageUrl:
+                  type: string
+                  description: Front image URL for the identity document.
+                  example: https://example.com/uploads/ada-national-id-front.jpg
+                documentBackImageUrl:
+                  type: string
+                  nullable: true
+                  description: Optional back image URL for documents that have a reverse side.
+                  example: https://example.com/uploads/ada-national-id-back.jpg
+      responses:
+        "201":
+          description: KYC submission
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/KycResponse"
+  /auth/kyc/uploads:
+    post:
+      tags: [Auth]
+      summary: Create KYC upload instructions
+      description: Returns demo local upload instructions by default, or signed Cloudinary direct-upload instructions when Cloudinary environment variables are configured. Cloudinary uploads are grouped by user in kyc/{userId}/{documentKind}.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fileName, contentType]
+              properties:
+                fileName:
+                  type: string
+                  example: student-national-id.png
+                contentType:
+                  type: string
+                  example: image/png
+                documentKind:
+                  type: string
+                  enum: [selfie, document_front, document_back]
+                  example: document_front
+      responses:
+        "201":
+          description: Upload instructions
+          content:
+            application/json:
+              examples:
+                demoStorage:
+                  value:
+                    data:
+                      uploadId: upload_abc123
+                      provider: demo_local_storage
+                      storageKey: kyc/usr_student/document_front/upload_abc123-student-national-id.png
+                      uploadUrl: /storage/uploads/kyc/usr_student/document_front/upload_abc123-student-national-id.png
+                      publicUrl: /storage/files/kyc/usr_student/document_front/upload_abc123-student-national-id.png
+                      method: PUT
+                      headers:
+                        content-type: image/png
+                      expiresAt: "2026-05-20T13:10:00.000Z"
+                cloudinary:
+                  value:
+                    data:
+                      uploadId: upload_abc123
+                      provider: cloudinary
+                      cloudName: dbh1f4yce
+                      storageKey: kyc/usr_student/document_front/upload_abc123-student-national-id
+                      folder: kyc/usr_student/document_front
+                      publicId: kyc/usr_student/document_front/upload_abc123-student-national-id
+                      uploadUrl: https://api.cloudinary.com/v1_1/dbh1f4yce/auto/upload
+                      publicUrl: https://res.cloudinary.com/dbh1f4yce/image/upload/kyc/usr_student/document_front/upload_abc123-student-national-id
+                      method: POST
+                      headers: {}
+                      formFields:
+                        folder: kyc/usr_student/document_front
+                        overwrite: "false"
+                        public_id: upload_abc123-student-national-id
+                        timestamp: 1779282600
+                        api_key: "********"
+                        signature: "********"
+                      expiresAt: "2026-05-20T13:10:00.000Z"
+  /market/assets:
+    get:
+      tags: [Market]
+      security: []
+      summary: List supported crypto assets
+      parameters:
+        - in: query
+          name: q
+          required: false
+          description: Optional search text for asset name or symbol.
+          schema:
+            type: string
+          example: btc
+        - in: query
+          name: search
+          required: false
+          description: Alias for q, useful for search inputs.
+          schema:
+            type: string
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+          example: 1
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+          example: 10
+        - in: query
+          name: sort
+          required: false
+          schema:
+            type: string
+            enum: [symbol, priceUsd, change24h, minBuyUsd]
+          example: priceUsd
+        - in: query
+          name: order
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+          example: desc
+        - in: query
+          name: include
+          required: false
+          description: Include optional list-row extras. Use `sparkline` to render small charts without fetching each asset detail.
+          schema:
+            type: string
+            enum: [sparkline]
+          example: sparkline
+      responses:
+        "200":
+          description: Asset list
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/AssetListResponse"
+                withSparkline:
+                  $ref: "#/components/examples/AssetListWithSparklineResponse"
+  /market/assets/{symbol}:
+    get:
+      tags: [Market]
+      security: []
+      summary: Get asset details and demo chart data
+      parameters:
+        - $ref: "#/components/parameters/Symbol"
+      responses:
+        "200":
+          description: Asset details
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/AssetDetailResponse"
+  /market/assets/{symbol}/candles:
+    get:
+      tags: [Market]
+      security: []
+      summary: Get simulated candlestick chart data
+      parameters:
+        - $ref: "#/components/parameters/Symbol"
+        - in: query
+          name: interval
+          required: false
+          schema:
+            type: string
+            enum: [1m, 5m, 15m, 1h, 1d]
+          example: 1m
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+          example: 50
+      responses:
+        "200":
+          description: Candle list
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/MarketCandlesResponse"
+  /market/assets/{symbol}/order-book:
+    get:
+      tags: [Market]
+      security: []
+      summary: Get simulated order book levels
+      parameters:
+        - $ref: "#/components/parameters/Symbol"
+        - in: query
+          name: levels
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+          example: 12
+      responses:
+        "200":
+          description: Order book
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/MarketOrderBookResponse"
+  /market/assets/{symbol}/trades:
+    get:
+      tags: [Market]
+      security: []
+      summary: Get simulated recent market trades
+      parameters:
+        - $ref: "#/components/parameters/Symbol"
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+          example: 30
+      responses:
+        "200":
+          description: Recent market trades
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/MarketTradesResponse"
+  /market/trending:
+    get:
+      tags: [Market]
+      security: []
+      summary: List trending assets
+      parameters:
+        - in: query
+          name: include
+          required: false
+          description: Trending assets include `sparkline` by default. Use `none` for the lighter row response.
+          schema:
+            type: string
+            enum: [sparkline, none]
+          example: sparkline
+      responses:
+        "200":
+          description: Trending assets
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/TrendingAssetsResponse"
+  /market/prices:
+    get:
+      tags: [Market]
+      security: []
+      summary: List live market prices
+      responses:
+        "200":
+          description: Live price feed with provider metadata
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/PriceFeedResponse"
+  /market/stream:
+    get:
+      tags: [Market]
+      security: []
+      summary: Stream live market prices
+      description: Server-Sent Events stream for mobile list prices, sparklines, and lightweight chart refreshes. Events are named `prices`.
+      responses:
+        "200":
+          description: SSE stream of live price rows
+          content:
+            text/event-stream:
+              schema:
+                type: string
+              example: |
+                event: prices
+                data: {"data":[{"symbol":"BTC","name":"Bitcoin","priceUsd":64200.5,"change24h":2.1,"updatedAt":"2026-05-25T10:00:00.000Z"}],"meta":{"count":1,"market":{"mode":"live_market","source":"CoinGecko simple price API","lastUpdatedAt":"2026-05-25T10:00:00.000Z","tickIntervalMs":60000,"lastError":null}}}
+  /me:
+    get:
+      tags: [Profile]
+      summary: Get current profile
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/ProfileResponse"
+    patch:
+      tags: [Profile]
+      summary: Update current profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              minProperties: 1
+              properties:
+                fullName:
+                  type: string
+                  minLength: 2
+                  maxLength: 80
+                  example: Ada Student
+                phone:
+                  type: string
+                  pattern: '^\+[1-9]\d{7,14}$'
+                  description: International phone number in E.164 format.
+                  example: "+2348010000001"
+                avatarUrl:
+                  type: string
+                  nullable: true
+                  example: https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=240&h=240&fit=crop&crop=faces
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/ProfileResponse"
+  /me/settings:
+    get:
+      tags: [Profile]
+      summary: Get user settings
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/SettingsResponse"
+    patch:
+      tags: [Profile]
+      summary: Update user settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              minProperties: 1
+              properties:
+                theme:
+                  type: string
+                  enum: [light, dark, system]
+                  example: dark
+                pushNotifications:
+                  type: boolean
+                  example: true
+                biometricEnabled:
+                  type: boolean
+                  example: false
+                fiatCurrency:
+                  type: string
+                  enum: [USD, NGN, EUR, GBP, CAD, AUD, JPY, CHF]
+                  example: USD
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/SettingsResponse"
+  /me/pin:
+    patch:
+      tags: [Profile]
+      summary: Update transaction PIN
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPin, newPin]
+              properties:
+                currentPin:
+                  type: string
+                  example: "0000"
+                newPin:
+                  type: string
+                  minLength: 4
+                  maxLength: 6
+                  example: "1234"
+      responses:
+        "200":
+          description: PIN updated
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/UpdatedResponse"
+  /me/devices:
+    post:
+      tags: [Profile]
+      summary: Register an Expo push token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [expoPushToken, platform]
+              properties:
+                expoPushToken:
+                  type: string
+                  example: ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]
+                platform:
+                  type: string
+                  enum: [ios, android, web]
+                  example: ios
+      responses:
+        "200":
+          description: Registered device token
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/DeviceTokenResponse"
+  /me/watchlist:
+    get:
+      tags: [Profile]
+      summary: List watchlist assets
+      responses:
+        "200":
+          description: Watchlist assets
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/AssetListResponse"
+  /me/watchlist/{symbol}:
+    post:
+      tags: [Profile]
+      summary: Add asset to watchlist
+      parameters:
+        - $ref: "#/components/parameters/Symbol"
+      responses:
+        "200":
+          description: Updated watchlist symbols
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/WatchlistSymbolsResponse"
+    delete:
+      tags: [Profile]
+      summary: Remove asset from watchlist
+      parameters:
+        - $ref: "#/components/parameters/Symbol"
+      responses:
+        "200":
+          description: Updated watchlist symbols
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/WatchlistSymbolsResponse"
+  /me/price-alerts:
+    get:
+      tags: [Profile]
+      summary: List price alerts
+      responses:
+        "200":
+          description: Price alerts
+          content:
+            application/json:
+              examples:
+                success:
+                  value:
+                    data:
+                      - id: alert_btc_above
+                        userId: usr_student
+                        assetSymbol: BTC
+                        direction: above
+                        targetPriceUsd: 70000
+                        isActive: true
+                        triggeredAt: null
+                        createdAt: "2026-05-20T12:00:00.000Z"
+                        asset:
+                          symbol: BTC
+                          name: Bitcoin
+                    meta:
+                      count: 1
+                      active: 1
+    post:
+      tags: [Profile]
+      summary: Create a price alert
+      description: If the current simulated price already crosses the target, the alert triggers immediately and creates a notification. Otherwise, it is evaluated during market ticks.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [assetSymbol, direction, targetPriceUsd]
+              properties:
+                assetSymbol:
+                  type: string
+                  example: BTC
+                direction:
+                  type: string
+                  enum: [above, below]
+                  example: above
+                targetPriceUsd:
+                  type: number
+                  example: 72000
+      responses:
+        "201":
+          description: Created price alert
+          content:
+            application/json:
+              examples:
+                success:
+                  value:
+                    data:
+                      id: alert_abc123
+                      userId: usr_student
+                      assetSymbol: BTC
+                      direction: above
+                      targetPriceUsd: 72000
+                      isActive: true
+                      triggeredAt: null
+                      createdAt: "2026-05-20T12:00:00.000Z"
+  /me/price-alerts/{alertId}:
+    patch:
+      tags: [Profile]
+      summary: Update a price alert
+      parameters:
+        - in: path
+          name: alertId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                direction:
+                  type: string
+                  enum: [above, below]
+                targetPriceUsd:
+                  type: number
+                isActive:
+                  type: boolean
+      responses:
+        "200":
+          description: Updated price alert
+          content:
+            application/json:
+              examples:
+                success:
+                  value:
+                    data:
+                      id: alert_abc123
+                      assetSymbol: BTC
+                      direction: above
+                      targetPriceUsd: 73000
+                      isActive: false
+                      triggeredAt: "2026-05-20T12:00:00.000Z"
+    delete:
+      tags: [Profile]
+      summary: Delete a price alert
+      parameters:
+        - in: path
+          name: alertId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              examples:
+                success:
+                  value:
+                    data:
+                      deleted: true
+  /me/notifications:
+    get:
+      tags: [Profile]
+      summary: List user notifications
+      responses:
+        "200":
+          description: Notifications
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/NotificationsResponse"
+  /me/notifications/{notificationId}/read:
+    patch:
+      tags: [Profile]
+      summary: Mark one notification as read
+      parameters:
+        - in: path
+          name: notificationId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Updated notification
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/NotificationResponse"
+  /me/notifications/read-all:
+    patch:
+      tags: [Profile]
+      summary: Mark all notifications as read
+      responses:
+        "200":
+          description: Update status
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/UpdatedResponse"
+  /wallet:
+    get:
+      tags: [Wallet]
+      summary: Get wallet balances and portfolio value
+      responses:
+        "200":
+          description: Wallet
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/WalletResponse"
+  /wallet/portfolio/history:
+    get:
+      tags: [Wallet]
+      summary: Get portfolio chart history
+      parameters:
+        - in: query
+          name: range
+          required: false
+          schema:
+            type: string
+            enum: [1D, 1W, 1M, 1Y]
+          example: 1M
+      responses:
+        "200":
+          description: Portfolio chart points
+          content:
+            application/json:
+              examples:
+                success:
+                  value:
+                    data:
+                      - time: "2026-05-20T12:00:00.000Z"
+                        valueUsd: 8942.32
+                        value: 8279.93
+                        currency: EUR
+                    meta:
+                      count: 30
+                      range: 1M
+                      latestValueUsd: 9011.44
+                      latestValue: 8343.93
+                      currency: EUR
+  /wallet/deposit-addresses:
+    get:
+      tags: [Wallet]
+      summary: List deposit addresses
+      responses:
+        "200":
+          description: Deposit addresses
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/DepositAddressesResponse"
+  /wallet/deposit-addresses/{symbol}:
+    get:
+      tags: [Wallet]
+      summary: Get a deposit address and QR payload
+      parameters:
+        - $ref: "#/components/parameters/Symbol"
+      responses:
+        "200":
+          description: Deposit address
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/DepositAddressResponse"
+  /wallet/transactions:
+    get:
+      tags: [Wallet]
+      summary: List user transactions
+      parameters:
+        - in: query
+          name: status
+          required: false
+          description: Optional transaction status filter.
+          schema:
+            type: string
+            enum: [pending, completed, failed, cancelled]
+          example: completed
+        - in: query
+          name: type
+          required: false
+          description: Optional transaction type filter.
+          schema:
+            type: string
+            enum: [buy, sell, swap, deposit, withdrawal]
+          example: buy
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+          example: 1
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+          example: 20
+        - in: query
+          name: order
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+          example: desc
+      responses:
+        "200":
+          description: Transaction list
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/TransactionListResponse"
+  /wallet/transactions/{transactionId}:
+    get:
+      tags: [Wallet]
+      summary: Get transaction details
+      parameters:
+        - in: path
+          name: transactionId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Transaction detail
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/TransactionResponse"
+  /wallet/deposit/simulate:
+    post:
+      tags: [Wallet]
+      summary: Simulate a sandbox USDT deposit
+      description: Creates a pending deposit first. Students should poll the returned pollingUrl until the transaction status becomes completed.
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount]
+              properties:
+                amount:
+                  type: number
+                  example: 500
+                settlementDelaySeconds:
+                  type: number
+                  description: Demo settlement delay from 0 to 60 seconds.
+                  example: 5
+      responses:
+        "201":
+          description: Deposit transaction
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/DepositResponse"
+  /wallet/withdrawals:
+    post:
+      tags: [Wallet]
+      summary: Request a withdrawal
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [assetSymbol, amount, address, network]
+              properties:
+                assetSymbol:
+                  type: string
+                  example: ETH
+                amount:
+                  type: number
+                  example: 0.05
+                address:
+                  type: string
+                network:
+                  type: string
+      responses:
+        "201":
+          description: Withdrawal request
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/WithdrawalResponse"
+  /trade/quotes:
+    post:
+      tags: [Trade]
+      summary: Create a buy, sell, or swap quote
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, fromAsset, toAsset, fromAmount]
+              properties:
+                type:
+                  type: string
+                  enum: [buy, sell, swap]
+                  example: swap
+                fromAsset:
+                  type: string
+                  example: ETH
+                toAsset:
+                  type: string
+                  example: USDC
+                fromAmount:
+                  type: number
+                  example: 0.1
+      responses:
+        "201":
+          description: Quote
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/QuoteResponse"
+  /trade/quotes/{quoteId}:
+    get:
+      tags: [Trade]
+      summary: Get quote details and expiry status
+      parameters:
+        - in: path
+          name: quoteId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Quote with countdown metadata
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/QuoteResponse"
+  /trade/execute:
+    post:
+      tags: [Trade]
+      summary: Execute a quote with transaction PIN
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [quoteId, pin]
+              properties:
+                quoteId:
+                  type: string
+                pin:
+                  type: string
+                  example: "1234"
+      responses:
+        "201":
+          description: Completed sandbox trade
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/TradeExecutionResponse"
+  /admin/dashboard:
+    get:
+      tags: [Admin]
+      summary: Admin metrics
+      responses:
+        "200":
+          description: Dashboard metrics
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/AdminDashboardResponse"
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: List customers
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Search by name, email, phone, or user ID.
+        - in: query
+          name: kycStatus
+          schema:
+            type: string
+            enum: [not_started, pending, approved, rejected]
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: Customers
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/AdminUsersResponse"
+  /admin/users/{userId}:
+    get:
+      tags: [Admin]
+      summary: Get customer detail, wallet, and transactions
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Customer detail
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/AdminUserDetailResponse"
+  /admin/kyc:
+    get:
+      tags: [Admin]
+      summary: List KYC submissions
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [not_started, pending, approved, rejected]
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: KYC submissions
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/KycListResponse"
+  /admin/kyc/{kycId}:
+    patch:
+      tags: [Admin]
+      summary: Approve or reject KYC
+      parameters:
+        - in: path
+          name: kycId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [approved, rejected]
+                  example: approved
+                reviewerNote:
+                  type: string
+                  example: Approved for classroom demo.
+      responses:
+        "200":
+          description: Reviewed KYC
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/KycResponse"
+  /admin/transactions:
+    get:
+      tags: [Admin]
+      summary: List all transactions
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [buy, sell, swap, deposit, withdrawal]
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, completed, failed, cancelled, requires_review]
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: Transactions
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/TransactionListResponse"
+  /admin/withdrawals:
+    get:
+      tags: [Admin]
+      summary: List withdrawal requests
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, approved, rejected]
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: Withdrawals
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/WithdrawalListResponse"
+  /admin/withdrawals/{withdrawalId}:
+    patch:
+      tags: [Admin]
+      summary: Approve or reject a withdrawal
+      parameters:
+        - in: path
+          name: withdrawalId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [approved, rejected]
+                  example: approved
+                reviewerNote:
+                  type: string
+                  example: Approved after review.
+      responses:
+        "200":
+          description: Reviewed withdrawal
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/WithdrawalResponse"
+  /admin/assets:
+    get:
+      tags: [Admin]
+      summary: List managed assets
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: isActive
+          schema:
+            type: boolean
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: Assets
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/AssetListResponse"
+    post:
+      tags: [Admin]
+      summary: Add a managed asset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [symbol, name, network, priceUsd]
+              properties:
+                symbol:
+                  type: string
+                  example: SOL
+                name:
+                  type: string
+                  example: Solana
+                network:
+                  type: string
+                  example: Solana Devnet
+                priceUsd:
+                  type: number
+                  example: 142.25
+                change24h:
+                  type: number
+                  example: 2.4
+                isActive:
+                  type: boolean
+                  example: true
+                minBuyUsd:
+                  type: number
+                  example: 10
+                minSellUsd:
+                  type: number
+                  example: 10
+                iconUrl:
+                  type: string
+                  example: /assets/sol.svg
+      responses:
+        "201":
+          description: Created asset
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/AssetResponse"
+  /admin/assets/{symbol}:
+    patch:
+      tags: [Admin]
+      summary: Pause or allow an asset
+      parameters:
+        - $ref: "#/components/parameters/Symbol"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [isActive]
+              properties:
+                isActive:
+                  type: boolean
+                  example: false
+      responses:
+        "200":
+          description: Updated asset availability
+          content:
+            application/json:
+              examples:
+                paused:
+                  $ref: "#/components/examples/AssetPausedResponse"
+                allowed:
+                  $ref: "#/components/examples/AssetResponse"
+  /admin/fees:
+    get:
+      tags: [Admin]
+      summary: Get trading fee settings
+      responses:
+        "200":
+          description: Fee settings
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/FeeSettingsResponse"
+    patch:
+      tags: [Admin]
+      summary: Update trading fee settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                buyFeePercent:
+                  type: number
+                  example: 1
+                sellFeePercent:
+                  type: number
+                  example: 1.2
+                swapFeePercent:
+                  type: number
+                  example: 0.8
+                withdrawalFlatUsd:
+                  type: number
+                  example: 2
+                spreadPercent:
+                  type: number
+                  example: 0.4
+      responses:
+        "200":
+          description: Fee settings
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/FeeSettingsResponse"
+  /admin/audit-logs:
+    get:
+      tags: [Admin]
+      summary: List immutable admin audit logs
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: action
+          schema:
+            type: string
+          example: kyc.review
+        - in: query
+          name: entityType
+          schema:
+            type: string
+          example: kyc_submission
+        - in: query
+          name: actorUserId
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: Audit logs
+          content:
+            application/json:
+              examples:
+                success:
+                  $ref: "#/components/examples/AuditLogListResponse"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  parameters:
+    Symbol:
+      in: path
+      name: symbol
+      required: true
+      schema:
+        type: string
+      example: BTC
+    IdempotencyKey:
+      in: header
+      name: Idempotency-Key
+      required: false
+      description: Optional retry-safety key for sensitive POST requests. Reusing the same key with the same body replays the original successful response; using it with a different body returns 409.
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 128
+        pattern: "^[A-Za-z0-9._:-]+$"
+      example: class-demo-quote-001
+  examples:
+    HealthResponse:
+      summary: Healthy API
+      value:
+        status: ok
+        service: crypto-trade-api
+        timestamp: "2026-05-03T14:50:00.000Z"
+    SignupValidationResponse:
+      summary: Signup field validation
+      value:
+        data:
+          email:
+            value: ada@example.com
+            normalized: ada@example.com
+            valid: true
+            available: true
+            code: AVAILABLE
+            message: Email is available.
+          phone:
+            value: "+2348010000001"
+            normalized: "+2348010000001"
+            valid: true
+            available: false
+            code: PHONE_EXISTS
+            message: A user with this phone number already exists.
+          canRegister: false
+    RegisterResponse:
+      summary: Registered user awaiting email verification
+      value:
+        data:
+          user:
+            id: usr_new
+            role: customer
+            fullName: Ada Student
+            email: ada@example.com
+            emailVerified: false
+            phone: "+2348010000001"
+            twoFactorEnabled: false
+            kycStatus: not_started
+            verification:
+              status: not_started
+              tier: starter
+              level: 0
+              label: Starter
+              limits:
+                depositPerTransactionUsd: 100
+                tradePerTransactionUsd: 0
+                withdrawalPerTransactionUsd: 0
+                dailyWithdrawalUsd: 0
+              canTrade: false
+              canWithdraw: false
+              canUseSandboxDeposits: true
+            avatarUrl: null
+            watchlist: [BTC, ETH]
+            settings:
+              language: en
+              fiatCurrency: USD
+              theme: system
+              pushNotifications: true
+              biometricEnabled: false
+            createdAt: "2026-05-27T10:00:00.000Z"
+          emailVerificationRequired: true
+          nextStep: verify_email
+          otp:
+            requestPath: /auth/otp/request
+            verifyPath: /auth/otp/verify
+            expiresInSeconds: 300
+    AuthResponse:
+      summary: Authenticated user
+      value:
+        data:
+          user:
+            id: usr_student
+            role: customer
+            fullName: Ada Student
+            email: student@cryptoclass.test
+            emailVerified: true
+            phone: "+2348010000001"
+            twoFactorEnabled: false
+            kycStatus: approved
+            verification:
+              status: approved
+              tier: verified
+              level: 2
+              label: Verified
+              limits:
+                depositPerTransactionUsd: 10000
+                tradePerTransactionUsd: 5000
+                withdrawalPerTransactionUsd: 2500
+                dailyWithdrawalUsd: 10000
+              canTrade: true
+              canWithdraw: true
+              canUseSandboxDeposits: true
+            avatarUrl: null
+            watchlist: [BTC, ETH]
+            settings:
+              language: en
+              fiatCurrency: USD
+              theme: system
+              pushNotifications: true
+              biometricEnabled: false
+            createdAt: "2026-05-03T14:00:00.000Z"
+          token: demo-user-token
+          accessToken: demo-user-token
+          refreshToken: demo-user-refresh-token
+          tokenType: Bearer
+          expiresAt: "2099-01-01T00:00:00.000Z"
+          expiresInSeconds: 2300000000
+          refreshTokenExpiresAt: "2099-01-31T00:00:00.000Z"
+    TwoFactorChallengeResponse:
+      summary: 2FA challenge required
+      value:
+        data:
+          requiresTwoFactor: true
+          challengeId: 2fa_abc123
+          attemptsRemaining: 5
+          expiresAt: "2026-05-03T14:55:00.000Z"
+    TwoFactorSetupResponse:
+      summary: Authenticator setup
+      value:
+        data:
+          secret: JBSWY3DPEHPK3PXP
+          otpauthUri: otpauth://totp/CryptoClass%3Astudent%40cryptoclass.test?secret=JBSWY3DPEHPK3PXP&issuer=CryptoClass&algorithm=SHA1&digits=6&period=30
+          enabled: false
+    TwoFactorEnabledResponse:
+      summary: 2FA enabled
+      value:
+        data:
+          enabled: true
+          recoveryCodes:
+            - "A1B2C-D3E4F"
+            - "8A9B0-C1D2E"
+          recoveryCodeCount: 8
+    TwoFactorRecoveryCodesResponse:
+      summary: Fresh 2FA recovery codes
+      value:
+        data:
+          recoveryCodes:
+            - "A1B2C-D3E4F"
+            - "8A9B0-C1D2E"
+          recoveryCodeCount: 8
+    TwoFactorDisabledResponse:
+      summary: 2FA disabled
+      value:
+        data:
+          enabled: false
+          recoveryCodeCount: 0
+    OtpRequestResponse:
+      summary: Demo OTP sent
+      value:
+        data:
+          message: Demo OTP sent.
+          demoCode: "123456"
+          expiresInSeconds: 300
+    OtpVerifyResponse:
+      summary: OTP verified and authenticated
+      value:
+        data:
+          verified: true
+          user:
+            id: usr_student
+            role: customer
+            fullName: Ada Student
+            email: student@cryptoclass.test
+            emailVerified: true
+            phone: "+2348010000001"
+          token: demo-user-token
+          accessToken: demo-user-token
+          refreshToken: demo-user-refresh-token
+          tokenType: Bearer
+          expiresAt: "2099-01-01T00:00:00.000Z"
+          expiresInSeconds: 2300000000
+          refreshTokenExpiresAt: "2099-01-31T00:00:00.000Z"
+    KycResponse:
+      summary: KYC submission
+      value:
+        data:
+          id: kyc_student
+          userId: usr_student
+          legalName: Ada Student
+          country: Nigeria
+          documentType: national_id
+          documentNumber: NIN-000-000
+          selfieImageUrl: https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=240&h=240&fit=crop&crop=faces
+          documentImageUrl: https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=480&h=300&fit=crop
+          documentBackImageUrl: null
+          status: pending
+          submittedAt: "2026-05-03T14:05:00.000Z"
+          reviewedAt: null
+          reviewerNote: null
+    AssetResponse:
+      summary: Crypto asset
+      value:
+        data:
+          id: asset_btc
+          symbol: BTC
+          name: Bitcoin
+          network: Bitcoin Testnet
+          priceUsd: 64200.5
+          change24h: 2.1
+          isActive: true
+          minBuyUsd: 10
+          minSellUsd: 10
+          iconUrl: /assets/btc.svg
+    AssetPausedResponse:
+      summary: Paused asset
+      value:
+        data:
+          id: asset_btc
+          symbol: BTC
+          name: Bitcoin
+          network: Bitcoin Testnet
+          priceUsd: 64200.5
+          change24h: 2.1
+          isActive: false
+          minBuyUsd: 10
+          minSellUsd: 10
+          iconUrl: /assets/btc.svg
+    AssetListResponse:
+      summary: Asset list
+      value:
+        data:
+          - id: asset_btc
+            symbol: BTC
+            name: Bitcoin
+            network: Bitcoin Testnet
+            priceUsd: 64200.5
+            change24h: 2.1
+            isActive: true
+            minBuyUsd: 10
+            minSellUsd: 10
+            iconUrl: /assets/btc.svg
+          - id: asset_eth
+            symbol: ETH
+            name: Ethereum
+            network: Ethereum Sepolia
+            priceUsd: 3100.25
+            change24h: -0.8
+            isActive: true
+            minBuyUsd: 10
+            minSellUsd: 10
+            iconUrl: /assets/eth.svg
+        meta:
+          count: 2
+    AssetListWithSparklineResponse:
+      summary: Asset list with row chart data
+      value:
+        data:
+          - id: asset_btc
+            symbol: BTC
+            name: Bitcoin
+            network: Bitcoin Testnet
+            priceUsd: 64200.5
+            change24h: 2.1
+            isActive: true
+            minBuyUsd: 10
+            minSellUsd: 10
+            iconUrl: /assets/btc.svg
+            sparkline:
+              - time: "2026-05-25T08:00:00.000Z"
+                priceUsd: 62916.49
+              - time: "2026-05-25T09:00:00.000Z"
+                priceUsd: 63879.5
+              - time: "2026-05-25T10:00:00.000Z"
+                priceUsd: 64200.5
+          - id: asset_eth
+            symbol: ETH
+            name: Ethereum
+            network: Ethereum Sepolia
+            priceUsd: 3100.25
+            change24h: -0.8
+            isActive: true
+            minBuyUsd: 10
+            minSellUsd: 10
+            iconUrl: /assets/eth.svg
+            sparkline:
+              - time: "2026-05-25T08:00:00.000Z"
+                priceUsd: 3125.26
+              - time: "2026-05-25T09:00:00.000Z"
+                priceUsd: 3112.43
+              - time: "2026-05-25T10:00:00.000Z"
+                priceUsd: 3100.25
+        meta:
+          count: 2
+          include: [sparkline]
+    TrendingAssetsResponse:
+      summary: Trending assets with hero metadata
+      value:
+        data:
+          - id: asset_sol
+            symbol: SOL
+            name: Solana
+            network: Solana Devnet
+            priceUsd: 152
+            change24h: 4.2
+            isActive: true
+            minBuyUsd: 10
+            minSellUsd: 10
+            iconUrl: /assets/sol.svg
+            sparkline:
+              - time: "2026-05-25T08:00:00.000Z"
+                priceUsd: 145.88
+              - time: "2026-05-25T09:00:00.000Z"
+                priceUsd: 149.31
+              - time: "2026-05-25T10:00:00.000Z"
+                priceUsd: 152
+          - id: asset_btc
+            symbol: BTC
+            name: Bitcoin
+            network: Bitcoin Testnet
+            priceUsd: 64200.5
+            change24h: 2.1
+            isActive: true
+            minBuyUsd: 10
+            minSellUsd: 10
+            iconUrl: /assets/btc.svg
+            sparkline:
+              - time: "2026-05-25T08:00:00.000Z"
+                priceUsd: 62916.49
+              - time: "2026-05-25T09:00:00.000Z"
+                priceUsd: 63879.5
+              - time: "2026-05-25T10:00:00.000Z"
+                priceUsd: 64200.5
+        meta:
+          count: 2
+          include: [sparkline]
+          featured:
+            type: top_gainer
+            symbol: SOL
+            name: Solana
+            priceUsd: 152
+            change24h: 4.2
+            reason: Highest 24h percentage gain among active assets
+    AssetDetailResponse:
+      summary: Asset details with chart
+      value:
+        data:
+          id: asset_btc
+          symbol: BTC
+          name: Bitcoin
+          network: Bitcoin Testnet
+          priceUsd: 64200.5
+          change24h: 2.1
+          isActive: true
+          minBuyUsd: 10
+          minSellUsd: 10
+          iconUrl: /assets/btc.svg
+          stats:
+            marketCapUsd: 1264749850000
+            volume24hUsd: 47048644420
+            circulatingSupply: 19700000
+            maxSupply: 21000000
+            allTimeHighUsd: 108000
+            high24hUsd: 65742.71
+            low24hUsd: 62596.1
+            volumeToMarketCapRatio: 0.0372
+            about: Bitcoin is the first decentralized digital asset, designed as peer-to-peer money secured by proof of work.
+            websiteUrl: https://bitcoin.org
+            explorerUrl: https://mempool.space
+          chart:
+            - time: "09:00"
+              priceUsd: 62916.49
+            - time: "10:00"
+              priceUsd: 64842.51
+            - time: "11:00"
+              priceUsd: 63879.5
+            - time: "12:00"
+              priceUsd: 64200.5
+    MarketCandlesResponse:
+      summary: Simulated candlestick data
+      value:
+        data:
+          - time: "2026-05-27T09:00:00.000Z"
+            openUsd: 63980.2
+            highUsd: 64220.15
+            lowUsd: 63840.05
+            closeUsd: 64110.4
+            volume: 0.0345
+          - time: "2026-05-27T09:01:00.000Z"
+            openUsd: 64110.4
+            highUsd: 64301.75
+            lowUsd: 64020.8
+            closeUsd: 64200.5
+            volume: 0.0361
+        meta:
+          count: 2
+          symbol: BTC
+          interval: 1m
+    MarketOrderBookResponse:
+      summary: Simulated order book
+      value:
+        data:
+          midPriceUsd: 64200.5
+          spreadUsd: 13.86
+          bids:
+            - priceUsd: 64193.57
+              amount: 0.03
+              total: 0.03
+            - priceUsd: 64186.64
+              amount: 0.0354
+              total: 0.0654
+          asks:
+            - priceUsd: 64207.43
+              amount: 0.03
+              total: 0.03
+            - priceUsd: 64214.36
+              amount: 0.0354
+              total: 0.0654
+        meta:
+          symbol: BTC
+          levels: 2
+    MarketTradesResponse:
+      summary: Simulated recent market trades
+      value:
+        data:
+          - id: mtrade_btc_1779872400000
+            side: buy
+            priceUsd: 64206.1
+            amount: 0.015
+            totalUsd: 963.09
+            createdAt: "2026-05-27T09:00:00.000Z"
+          - id: mtrade_btc_1779872388000
+            side: sell
+            priceUsd: 64194.2
+            amount: 0.0201
+            totalUsd: 1290.3
+            createdAt: "2026-05-27T08:59:48.000Z"
+        meta:
+          count: 2
+          symbol: BTC
+    PriceFeedResponse:
+      summary: Live price feed
+      value:
+        data:
+          - symbol: BTC
+            name: Bitcoin
+            priceUsd: 68471.32
+            change24h: 2.47
+            updatedAt: "2026-05-03T14:20:10.000Z"
+          - symbol: ETH
+            name: Ethereum
+            priceUsd: 3416.82
+            change24h: -1.18
+            updatedAt: "2026-05-03T14:20:10.000Z"
+        meta:
+          count: 2
+          market:
+            mode: live_market
+            source: CoinGecko simple price API
+            lastUpdatedAt: "2026-05-03T14:20:10.000Z"
+            tickIntervalMs: 60000
+            lastError: null
+    ProfileResponse:
+      summary: Current profile
+      value:
+        data:
+          id: usr_student
+          role: customer
+          fullName: Ada Student
+          email: student@cryptoclass.test
+          phone: "+2348010000001"
+          twoFactorEnabled: false
+          kycStatus: approved
+          verification:
+            status: approved
+            tier: verified
+            level: 2
+            label: Verified
+            limits:
+              depositPerTransactionUsd: 10000
+              tradePerTransactionUsd: 5000
+              withdrawalPerTransactionUsd: 2500
+              dailyWithdrawalUsd: 10000
+            canTrade: true
+            canWithdraw: true
+            canUseSandboxDeposits: true
+          avatarUrl: null
+          watchlist: [BTC, ETH]
+          settings:
+            language: en
+            fiatCurrency: USD
+            theme: system
+            pushNotifications: true
+            biometricEnabled: false
+          createdAt: "2026-05-03T14:00:00.000Z"
+    SettingsResponse:
+      summary: User settings
+      value:
+        data:
+          language: en
+          fiatCurrency: USD
+          theme: system
+          pushNotifications: true
+          biometricEnabled: false
+    WatchlistSymbolsResponse:
+      summary: Watchlist symbols
+      value:
+        data: [BTC, ETH, SOL]
+    NotificationsResponse:
+      summary: Notifications
+      value:
+        data:
+          - id: ntf_kyc
+            userId: usr_student
+            title: KYC approved
+            body: Your account is ready for sandbox trading.
+            type: kyc
+            isRead: false
+            createdAt: "2026-05-03T14:08:00.000Z"
+        meta:
+          count: 1
+          unread: 1
+    NotificationResponse:
+      summary: Updated notification
+      value:
+        data:
+          id: ntf_kyc
+          userId: usr_student
+          title: KYC approved
+          body: Your account is ready for sandbox trading.
+          type: kyc
+          isRead: true
+          createdAt: "2026-05-03T14:08:00.000Z"
+    UpdatedResponse:
+      summary: Update result
+      value:
+        data:
+          updated: true
+    DeviceTokenResponse:
+      summary: Registered Expo push token
+      value:
+        data:
+          id: device_abc123
+          userId: usr_student
+          expoPushToken: ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]
+          platform: ios
+          createdAt: "2026-05-03T14:30:00.000Z"
+          lastSeenAt: "2026-05-03T14:30:00.000Z"
+    WalletResponse:
+      summary: Wallet with balances
+      value:
+        data:
+          wallet:
+            id: wallet_student
+            userId: usr_student
+            fiatCurrency: USD
+            depositAddresses:
+              - assetSymbol: USDC
+                network: Base Sepolia
+                address: "0x3333333333333333333333333333333333333333"
+                qrPayload: "ethereum:0x3333333333333333333333333333333333333333@84532"
+            balances:
+              - assetSymbol: USD
+                available: 1000
+                locked: 0
+              - assetSymbol: ETH
+                available: 0.25
+                locked: 0
+          portfolioValueUsd: 1775.06
+          portfolioValue: 1643.57
+          portfolioCurrency: EUR
+          verification:
+            status: approved
+            tier: verified
+            level: 2
+            label: Verified
+            limits:
+              depositPerTransactionUsd: 10000
+              tradePerTransactionUsd: 5000
+              withdrawalPerTransactionUsd: 2500
+              dailyWithdrawalUsd: 10000
+            canTrade: true
+            canWithdraw: true
+            canUseSandboxDeposits: true
+    DepositAddressesResponse:
+      summary: Deposit addresses
+      value:
+        data:
+          - assetSymbol: USDC
+            network: Base Sepolia
+            address: "0x3333333333333333333333333333333333333333"
+            qrPayload: "ethereum:0x3333333333333333333333333333333333333333@84532"
+        meta:
+          count: 1
+    DepositAddressResponse:
+      summary: Deposit address
+      value:
+        data:
+          assetSymbol: USDC
+          network: Base Sepolia
+          address: "0x3333333333333333333333333333333333333333"
+          qrPayload: "ethereum:0x3333333333333333333333333333333333333333@84532"
+    TransactionResponse:
+      summary: Transaction detail
+      value:
+        data:
+          id: txn_swap_001
+          userId: usr_student
+          type: swap
+          status: completed
+          fromAsset: ETH
+          toAsset: USDC
+          fromAmount: 0.1
+          toAmount: 306.12
+          feeAmount: 2.48
+          rate: 3100.25
+          reference: CRT-SWAP-1780000000000
+          note: Sandbox trade execution
+          createdAt: "2026-05-03T14:12:00.000Z"
+          completedAt: "2026-05-03T14:12:00.000Z"
+    TransactionListResponse:
+      summary: Transaction list
+      value:
+        data:
+          - id: txn_swap_001
+            userId: usr_student
+            type: swap
+            status: completed
+            fromAsset: ETH
+            toAsset: USDC
+            fromAmount: 0.1
+            toAmount: 306.12
+            feeAmount: 2.48
+            rate: 3100.25
+            reference: CRT-SWAP-1780000000000
+            note: Sandbox trade execution
+            createdAt: "2026-05-03T14:12:00.000Z"
+            completedAt: "2026-05-03T14:12:00.000Z"
+        meta:
+          count: 1
+    DepositResponse:
+      summary: Sandbox deposit
+      value:
+        data:
+          transaction:
+            id: txn_deposit_001
+            userId: usr_student
+            type: deposit
+            status: pending
+            fromAsset: USDT
+            toAsset: USDT
+            fromAmount: 500
+            toAmount: 500
+            feeAmount: 0
+            rate: 1
+            reference: CRT-DEP-1780000000000
+            note: Sandbox USDT deposit pending settlement
+            createdAt: "2026-05-03T14:10:00.000Z"
+            completedAt: null
+          wallet:
+            id: wallet_student
+            userId: usr_student
+            fiatCurrency: USD
+            depositAddresses: []
+            balances:
+              - assetSymbol: USDT
+                available: 500
+                locked: 0
+          estimatedCompletionAt: "2026-05-03T14:10:05.000Z"
+          pollingUrl: /wallet/transactions/txn_deposit_001
+    WithdrawalResponse:
+      summary: Withdrawal request
+      value:
+        data:
+          id: wd_001
+          userId: usr_student
+          assetSymbol: ETH
+          amount: 0.05
+          feeAssetAmount: 0.00064511
+          address: "0xabc123abc123abc123abc123abc123abc123abcd"
+          network: Ethereum Sepolia
+          status: pending
+          createdAt: "2026-05-03T14:20:00.000Z"
+          reviewedAt: null
+          reviewerNote: null
+    WithdrawalListResponse:
+      summary: Withdrawal requests
+      value:
+        data:
+          - id: wd_001
+            userId: usr_student
+            assetSymbol: ETH
+            amount: 0.05
+            feeAssetAmount: 0.00064511
+            address: "0xabc123abc123abc123abc123abc123abc123abcd"
+            network: Ethereum Sepolia
+            status: pending
+            createdAt: "2026-05-03T14:20:00.000Z"
+            reviewedAt: null
+            reviewerNote: null
+        meta:
+          count: 1
+    QuoteResponse:
+      summary: Trade quote
+      value:
+        data:
+          id: quote_001
+          type: swap
+          fromAsset: ETH
+          toAsset: USDC
+          fromAmount: 0.1
+          toAmount: 306.12
+          rate: 3100.25
+          feeAmount: 2.48
+          expiresAt: "2026-05-03T14:15:30.000Z"
+          expiresInSeconds: 30
+          isExpired: false
+    TradeExecutionResponse:
+      summary: Executed trade
+      value:
+        data:
+          transaction:
+            id: txn_swap_001
+            userId: usr_student
+            type: swap
+            status: completed
+            fromAsset: ETH
+            toAsset: USDC
+            fromAmount: 0.1
+            toAmount: 306.12
+            feeAmount: 2.48
+            rate: 3100.25
+            reference: CRT-SWAP-1780000000000
+            note: Sandbox trade execution
+            createdAt: "2026-05-03T14:12:00.000Z"
+            completedAt: "2026-05-03T14:12:00.000Z"
+          wallet:
+            id: wallet_student
+            userId: usr_student
+            fiatCurrency: USD
+            depositAddresses: []
+            balances:
+              - assetSymbol: ETH
+                available: 0.15
+                locked: 0
+              - assetSymbol: USDC
+                available: 306.12
+                locked: 0
+    AdminDashboardResponse:
+      summary: Admin dashboard metrics
+      value:
+        data:
+          users: 12
+          pendingKyc: 3
+          pendingWithdrawals: 2
+          assets: 5
+          completedVolumeUsd: 48250.75
+    AdminUsersResponse:
+      summary: Customers
+      value:
+        data:
+          - id: usr_student
+            role: customer
+            fullName: Ada Student
+            email: student@cryptoclass.test
+            phone: "+2348010000001"
+            twoFactorEnabled: false
+            kycStatus: approved
+            avatarUrl: null
+            watchlist: [BTC, ETH]
+            settings:
+              language: en
+              fiatCurrency: USD
+              theme: system
+              pushNotifications: true
+              biometricEnabled: false
+            createdAt: "2026-05-03T14:00:00.000Z"
+        meta:
+          count: 1
+    AdminUserDetailResponse:
+      summary: Customer detail
+      value:
+        data:
+          user:
+            id: usr_student
+            role: customer
+            fullName: Ada Student
+            email: student@cryptoclass.test
+            phone: "+2348010000001"
+            twoFactorEnabled: false
+            kycStatus: approved
+            avatarUrl: null
+            watchlist: [BTC, ETH]
+            settings:
+              language: en
+              fiatCurrency: USD
+              theme: system
+              pushNotifications: true
+              biometricEnabled: false
+            createdAt: "2026-05-03T14:00:00.000Z"
+          wallet:
+            id: wallet_student
+            userId: usr_student
+            fiatCurrency: USD
+            depositAddresses: []
+            balances:
+              - assetSymbol: USD
+                available: 1000
+                locked: 0
+          portfolioValueUsd: 1000
+          transactions: []
+    KycListResponse:
+      summary: KYC submissions
+      value:
+        data:
+          - id: kyc_student
+            userId: usr_student
+            legalName: Ada Student
+            country: Nigeria
+            documentType: national_id
+            documentNumber: NIN-000-000
+            selfieImageUrl: https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=240&h=240&fit=crop&crop=faces
+            documentImageUrl: https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=480&h=300&fit=crop
+            documentBackImageUrl: null
+            status: pending
+            submittedAt: "2026-05-03T14:05:00.000Z"
+            reviewedAt: null
+            reviewerNote: null
+        meta:
+          count: 1
+    FeeSettingsResponse:
+      summary: Fee settings
+      value:
+        data:
+          buyFeePercent: 1
+          sellFeePercent: 1.2
+          swapFeePercent: 0.8
+          withdrawalFlatUsd: 2
+          spreadPercent: 0.4
+    AuditLogListResponse:
+      summary: Admin audit logs
+      value:
+        data:
+          - id: audit_abc123
+            actorUserId: usr_admin
+            actorEmail: admin@cryptoclass.test
+            actorRole: admin
+            action: kyc.review
+            entityType: kyc_submission
+            entityId: kyc_student
+            before:
+              submission:
+                status: pending
+            after:
+              submission:
+                status: approved
+            metadata:
+              status: approved
+              targetUserId: usr_student
+            ipAddress: "::ffff:127.0.0.1"
+            userAgent: "Expo/1.0"
+            requestId: 2eb23e65-7c23-4c51-bcbf-7bb2ad2a815e
+            createdAt: "2026-05-20T12:30:00.000Z"
+        meta:
+          requestId: 2eb23e65-7c23-4c51-bcbf-7bb2ad2a815e
+          count: 1
+          total: 1
+          page: 1
+          limit: 20
+          totalPages: 1
+          hasNextPage: false
+          hasPreviousPage: false
