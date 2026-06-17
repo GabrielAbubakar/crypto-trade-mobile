@@ -88,6 +88,8 @@ export default function HomeScreen() {
               Hello, {user?.fullName}
             </BaseText>
 
+            {/* <Button onPress={() => router.push("/kyc")} title="Complete KYC" /> */}
+
             {!user?.verification?.canTrade && (
               <BaseText color="#8594A6">
                 Your portfolio is growing. Complete verification to unlock

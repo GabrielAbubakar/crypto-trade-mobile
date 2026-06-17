@@ -140,20 +140,32 @@ export default function KYCIndex() {
 
             <View style={styles.infoRow}>
               <BaseText style={styles.infoLabel}>Trade per quote</BaseText>
-              <BaseText style={styles.infoValue}>$5,000</BaseText>
+              <BaseText style={styles.infoValue}>
+                {formatCurrency(
+                  profileData?.verification.limits.tradePerTransactionUsd,
+                )}
+              </BaseText>
             </View>
             <View style={styles.infoRow}>
               <BaseText style={styles.infoLabel}>Withdrawal request</BaseText>
-              <BaseText style={styles.infoValue}>$2,500</BaseText>
+              <BaseText style={styles.infoValue}>
+                {formatCurrency(
+                  profileData?.verification.limits.withdrawalPerTransactionUsd,
+                )}
+              </BaseText>
             </View>
             <View style={styles.infoRow}>
               <BaseText style={styles.infoLabel}>Daily withdrawal</BaseText>
-              <BaseText style={styles.infoValue}>$10,000</BaseText>
+              <BaseText style={styles.infoValue}>
+                {formatCurrency(
+                  profileData?.verification.limits.dailyWithdrawalUsd,
+                )}
+              </BaseText>
             </View>
 
             <BaseButton
               title="Start trading"
-              onPress={() => router.replace("/(tabs)/home")}
+              onPress={() => router.replace("/(tabs)/trades")}
               style={styles.actionButton}
             />
           </View>
@@ -187,7 +199,9 @@ export default function KYCIndex() {
 
             <View style={styles.infoRow}>
               <BaseText style={styles.infoLabel}>Current level</BaseText>
-              <BaseText style={styles.infoValue}>Starter</BaseText>
+              <BaseText style={styles.infoValue}>
+                {profileData?.verification.status}
+              </BaseText>
             </View>
 
             <BaseButton
@@ -354,7 +368,6 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     lineHeight: 18,
   },
-
 
   bottomText: {
     fontSize: 14,

@@ -52,14 +52,17 @@ export default function NotificationsScreen() {
     }
   };
 
-  const getIcon = (type: "kyc" | "wallet" | "alert", isRead: boolean) => {
+  const getIcon = (
+    type: "kyc" | "transaction" | "price_alert",
+    isRead: boolean,
+  ) => {
     const color = isRead ? Colors.textSecondary : Colors.primary;
     switch (type) {
       case "kyc":
         return <Ionicons name="card-outline" size={20} color={color} />;
-      case "wallet":
+      case "transaction":
         return <Ionicons name="wallet-outline" size={20} color={color} />;
-      case "alert":
+      case "price_alert":
         return <Ionicons name="trending-up-outline" size={20} color={color} />;
     }
   };
@@ -136,7 +139,8 @@ export default function NotificationsScreen() {
       );
     }
 
-    const type = (item.type as "kyc" | "wallet" | "alert") || "alert";
+    const type =
+      (item.type as "kyc" | "transaction" | "price_alert") || "price_alert";
     return (
       <View style={styles.cardWrapper}>
         <ProfileOptionCard

@@ -338,6 +338,7 @@ export default function WithdrawScreen() {
             {/* Pin Code Input Block */}
             <View style={styles.pinSection}>
               <BaseInput
+                value="123"
                 containerStyle={{ backgroundColor: Colors.cardBg }}
                 placeholder="Transaction PIN"
               />
