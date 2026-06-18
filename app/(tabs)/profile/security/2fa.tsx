@@ -58,7 +58,15 @@ export default function TwoFactorScreen() {
   useEffect(() => {
     if (profile) {
       if (profile.twoFactorEnabled) {
-        setStep("active");
+        setStep((currentStep) => {
+          if (
+            currentStep === "intro" ||
+            currentStep === "setup_qr"
+          ) {
+            return "active";
+          }
+          return currentStep;
+        });
       } else {
         setStep((currentStep) => {
           if (
@@ -150,7 +158,7 @@ export default function TwoFactorScreen() {
   }
 
   return (
-    <ScreenContainer style={styles.container} withPadding={true}>
+    <ScreenContainer style={styles.container} withPadding={true} avoidKeyboard={true} >
       {/* View: Introduction to setup 2FA */}
       {step === "intro" && (
         <>
