@@ -13,16 +13,16 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
-type KYCStatus = "starter" | "pending" | "approved" | "rejected";
+type KYCStatus = "not_started" | "pending" | "approved" | "rejected";
 
 export default function KYCIndex() {
   const router = useRouter();
   const { data: profileData, isLoading } = useGetProfileQuery();
-  const [status, setStatus] = useState<KYCStatus>();
+  const [status, setStatus] = useState<KYCStatus>("not_started");
 
   const renderContent = () => {
     switch (status) {
-      case "starter":
+      case "not_started":
         return (
           <View style={styles.contentCard}>
             <View style={styles.badgeContainer}>
@@ -217,7 +217,7 @@ export default function KYCIndex() {
 
   const getHeaderTitle = (): string => {
     switch (status) {
-      case "starter":
+      case "not_started":
         return "Verify to unlock limits";
       case "pending":
         return "Review in progress";
@@ -256,7 +256,7 @@ export default function KYCIndex() {
       </BaseText>
 
       {/* Progress Indicator */}
-      <KycProgressSteps currentStep={status === "starter" ? 0 : 3} />
+      <KycProgressSteps currentStep={status === "not_started" ? 0 : 3} />
 
       {/* Dynamic Content */}
       <View style={styles.content}>{renderContent()}</View>

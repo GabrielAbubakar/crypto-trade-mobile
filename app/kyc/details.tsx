@@ -7,8 +7,8 @@ import {
   ScreenContainer,
 } from "@/components/ui";
 import { Colors, FontFamily } from "@/constants";
-import { setKycDetails, useAppDispatch, useAppSelector } from "@/store";
 import { kycDetailsSchema } from "@/schema";
+import { setKycDetails, useAppDispatch, useAppSelector } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useForm, useStore } from "@tanstack/react-form";
@@ -58,7 +58,9 @@ export default function KYCDetails() {
   const isFormValid =
     formValues.legalName.trim().length >= 2 &&
     formValues.country.trim().length >= 1 &&
-    ["passport", "national_id", "drivers_license"].includes(formValues.documentType) &&
+    ["passport", "national_id", "drivers_license"].includes(
+      formValues.documentType,
+    ) &&
     formValues.documentNumber.trim().length >= 3;
 
   const handleOpenSheet = () => {
@@ -77,7 +79,7 @@ export default function KYCDetails() {
   };
 
   return (
-    <ScreenContainer scrollable>
+    <ScreenContainer avoidKeyboard keyboardVerticalOffset={20} scrollable>
       <BackHeader title="Identity details" />
 
       <BaseText style={styles.headerSubtitle}>
@@ -98,7 +100,8 @@ export default function KYCDetails() {
                 onChangeText={field.handleChange}
                 containerStyle={styles.inputStyle}
                 error={
-                  field.state.meta.isTouched && field.state.meta.errors.length > 0
+                  field.state.meta.isTouched &&
+                  field.state.meta.errors.length > 0
                     ? field.state.meta.errors
                         .map((err: any) =>
                           typeof err === "string" ? err : err.message,
@@ -147,7 +150,8 @@ export default function KYCDetails() {
                       />
                     }
                     error={
-                      field.state.meta.isTouched && field.state.meta.errors.length > 0
+                      field.state.meta.isTouched &&
+                      field.state.meta.errors.length > 0
                         ? field.state.meta.errors
                             .map((err: any) =>
                               typeof err === "string" ? err : err.message,
@@ -173,7 +177,8 @@ export default function KYCDetails() {
                 onChangeText={field.handleChange}
                 containerStyle={styles.inputStyle}
                 error={
-                  field.state.meta.isTouched && field.state.meta.errors.length > 0
+                  field.state.meta.isTouched &&
+                  field.state.meta.errors.length > 0
                     ? field.state.meta.errors
                         .map((err: any) =>
                           typeof err === "string" ? err : err.message,

@@ -189,8 +189,7 @@ export default function NotificationsScreen() {
           color={Colors.textSecondary}
           style={styles.emptyText}
         >
-          When the list is empty, show this calm state instead of a blank
-          screen.
+          Someone hasn&apos;t been busy. Get Trading.
         </BaseText>
       </View>
     );

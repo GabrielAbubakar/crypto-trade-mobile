@@ -1,5 +1,6 @@
 import {
   BackHeader,
+  BaseButton,
   BaseInput,
   BaseText,
   ItemBgContainer,
@@ -332,15 +333,11 @@ export default function WithdrawScreen() {
           </View>
 
           <View style={styles.footer}>
-            <TouchableOpacity
-              activeOpacity={0.8}
+            <BaseButton
+              title="Preview withdrawal"
+              disabled={!profileData?.verification.canTrade}
               onPress={() => form.handleSubmit()}
-              style={styles.actionBtn}
-            >
-              <BaseText variant="bold" style={styles.actionBtnText}>
-                Preview withdrawal
-              </BaseText>
-            </TouchableOpacity>
+            />
           </View>
         </>
       )}
