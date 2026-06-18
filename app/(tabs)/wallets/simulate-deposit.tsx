@@ -9,9 +9,9 @@ import { StyleSheet, TouchableOpacity, View } from "react-native";
 export default function SimulateDepositScreen() {
   const router = useRouter();
   const { symbol } = useLocalSearchParams<{ symbol: string }>();
-  const assetSymbol = symbol || "USDT";
+  const assetSymbol = symbol;
 
-  const [amount, setAmount] = useState<string>("250.00");
+  const [amount, setAmount] = useState<string>("");
   const [settlementDelaySeconds, setSettlementDelaySeconds] =
     useState<number>(10);
   const [simulateDeposit, { isLoading }] = useSimulateDepositMutation();

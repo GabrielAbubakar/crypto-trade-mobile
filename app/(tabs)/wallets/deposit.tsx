@@ -120,6 +120,7 @@ export default function DepositSelectScreen() {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.secondary,
+    paddingBottom: 60,
   },
   content: {
     marginTop: 20,
@@ -141,6 +142,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#161C22",
     borderRadius: 16,
     padding: 16,
+    paddingVertical: 10,
     borderWidth: 1.5,
     borderColor: "transparent",
   },

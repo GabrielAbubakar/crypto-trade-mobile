@@ -88,6 +88,7 @@ export const walletApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
+      transformResponse: (response: { data: IWithdrawResponse }) => response.data,
       invalidatesTags: ["Wallet"],
     }),
   }),

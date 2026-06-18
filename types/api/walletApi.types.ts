@@ -141,13 +141,21 @@ export interface ISimulateDepositResponse {
 
 export interface IWithdrawRequest {
   amount: number;
-  symbol: string;
+  assetSymbol: string;
   address: string;
   network: string;
 }
 
 export interface IWithdrawResponse {
-  success: boolean;
-  message: string;
-  transactionId?: string;
+  id: string;
+  userId: string;
+  assetSymbol: string;
+  amount: number;
+  feeAssetAmount: number;
+  address: string;
+  network: string;
+  status: string;
+  createdAt: string;
+  reviewedAt?: string | null;
+  reviewerNote?: string | null;
 }

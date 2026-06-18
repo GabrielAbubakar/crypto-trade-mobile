@@ -4,16 +4,28 @@ import {
   BaseText,
   ItemBgContainer,
   ScreenContainer,
+  SelectOptionsSheet,
 } from "@/components";
 import { Colors } from "@/constants";
-import { useGetWalletBalancesQuery, useWithdrawMutation } from "@/store";
-import { showErrorToast, showSuccessToast } from "@/utils";
+import {
+  useGetProfileQuery,
+  useGetWalletBalancesQuery,
+  useWithdrawMutation,
+} from "@/store";
+import { formatCurrency, showErrorToast, showSuccessToast } from "@/utils";
 import { Feather } from "@expo/vector-icons";
+import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useForm } from "@tanstack/react-form";
 import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { TextInput } from "react-native";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { BackHandler, StyleSheet, TouchableOpacity, View } from "react-native";
 
 type WithdrawStep = "form" | "confirm" | "submitted";
 
@@ -22,18 +34,36 @@ export default function WithdrawScreen() {
   const [step, setStep] = useState<WithdrawStep>("form");
 
   // Form State
-  const [network, setNetwork] = useState<string>("TRC20 sandbox network");
-  const [pin, setPin] = useState<string>("");
+  const [network, setNetwork] = useState<string>("");
+  const [selectedSymbol, setSelectedSymbol] = useState<string>("USDT");
+  const assetSheetRef = useRef<BottomSheetModal>(null);
 
   // API Integration
   const { data: balanceData } = useGetWalletBalancesQuery();
+  const { data: profileData } = useGetProfileQuery();
   const [withdraw, { isLoading: isSubmitting }] = useWithdrawMutation();
   const [txId, setTxId] = useState<string>("wd_8392");
 
-  const usdtBalance =
-    balanceData?.wallet.balances.find(
-      (b) => b.assetSymbol.toUpperCase() === "USDT",
-    )?.available ?? 1000.0;
+  const assetOptions = useMemo(() => {
+    if (!balanceData?.wallet?.balances) return [];
+    return balanceData.wallet.balances.map((b) => ({
+      value: b.assetSymbol.toUpperCase(),
+      label: `Available: ${b.available.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 6,
+      })}`,
+    }));
+  }, [balanceData]);
+
+  const selectedBalance = useMemo(() => {
+    const balanceObj = balanceData?.wallet?.balances.find(
+      (b) => b.assetSymbol.toUpperCase() === selectedSymbol.toUpperCase(),
+    );
+    return (
+      balanceObj?.available ??
+      (selectedSymbol.toUpperCase() === "USDT" ? 1000.0 : 0.0)
+    );
+  }, [balanceData, selectedSymbol]);
 
   const pinRef = useRef<TextInput>(null);
 
@@ -56,58 +86,57 @@ export default function WithdrawScreen() {
   }, [step]);
 
   const handleSubmitWithdrawal = useCallback(async () => {
-    if (pin.length < 4) {
-      showErrorToast("Please enter your 4-digit PIN.");
-      return;
-    }
-
     try {
       const response = await withdraw({
-        amount: parseFloat(form.state.values.amount),
-        symbol: "USDT",
+        amount: Number(form.state.values.amount),
+        assetSymbol: selectedSymbol,
         address: form.state.values.address,
-        network: "TRC20",
+        network: network,
       }).unwrap();
 
-      if (response.success) {
-        setTxId(
-          response.transactionId ||
-            `wd_${Math.floor(1000 + Math.random() * 9000)}`,
-        );
+      if (response && response.id) {
+        setTxId(response.id);
         showSuccessToast("Withdrawal request submitted!");
         setStep("submitted");
       } else {
-        showErrorToast(response.message || "Withdrawal failed.");
+        showErrorToast("Withdrawal failed.");
       }
     } catch (err: any) {
       showErrorToast(
         err?.data?.message || "An error occurred during withdrawal.",
       );
     }
-  }, [pin, withdraw, form]);
+  }, [withdraw, form, selectedSymbol, network]);
 
-  // Trigger submission when PIN is complete
-  // useEffect(() => {
-  //   if (pin.length === 4 && step === "confirm") {
-  //     handleSubmitWithdrawal();
-  //   }
-  // }, [pin, step, handleSubmitWithdrawal]);
-
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (step === "confirm") {
       setStep("form");
-      setPin("");
     } else if (step === "submitted") {
       router.replace("/(tabs)/wallets");
     } else {
       router.back();
     }
-  };
+  }, [step, router]);
+
+  // Handle hardware / system back buttons
+  useEffect(() => {
+    const onBackPress = () => {
+      handleBack();
+      return true; // Prevent default action (bubbling/exiting)
+    };
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress,
+    );
+
+    return () => subscription.remove();
+  }, [handleBack]);
 
   // Custom Step Header
   const renderHeader = (title: string, subtitle: string) => (
     <View style={styles.header}>
-      <BackHeader title={title} />
+      <BackHeader title={title} onBack={handleBack} />
 
       <BaseText style={styles.headerSubtitle}>{subtitle}</BaseText>
     </View>
@@ -153,15 +182,28 @@ export default function WithdrawScreen() {
             {/* Asset Display */}
             <View style={styles.inputGroup}>
               <BaseText style={styles.label}>Asset</BaseText>
-              <BaseInput
-                value={`USDT · Available ${usdtBalance.toLocaleString("en-US", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}`}
-                editable={false}
-                containerStyle={styles.disabledInput}
-                style={{ color: "#777777" }}
-              />
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => assetSheetRef.current?.present()}
+              >
+                <View pointerEvents="none">
+                  <BaseInput
+                    value={`${selectedSymbol} · Available ${selectedBalance.toLocaleString(
+                      "en-US",
+                      {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 6,
+                      },
+                    )}`}
+                    editable={false}
+                    containerStyle={styles.activeInput}
+                    style={{ color: "#FFFFFF" }}
+                    rightIcon={
+                      <Feather name="chevron-down" size={20} color="#777777" />
+                    }
+                  />
+                </View>
+              </TouchableOpacity>
             </View>
 
             {/* Amount Input */}
@@ -175,8 +217,14 @@ export default function WithdrawScreen() {
                     if (isNaN(num) || num <= 0) {
                       return "Please enter a valid amount.";
                     }
-                    if (num > usdtBalance) {
-                      return `Insufficient balance. Available: ${usdtBalance} USDT`;
+                    if (num > selectedBalance) {
+                      return `Insufficient balance. Available: ${selectedBalance.toLocaleString(
+                        "en-US",
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 6,
+                        },
+                      )} ${selectedSymbol}`;
                     }
                     return undefined;
                   },
@@ -246,21 +294,41 @@ export default function WithdrawScreen() {
               <BaseText style={styles.label}>Network</BaseText>
               <BaseInput
                 value={network}
-                editable={false}
-                containerStyle={styles.disabledInput}
-                style={{ color: "#777777" }}
+                onChangeText={setNetwork}
+                containerStyle={styles.activeInput}
+                style={{ color: "#FFFFFF" }}
+                placeholder="Enter network"
               />
             </View>
 
             {/* Verified limit label */}
-            {/* <View style={styles.limitInfo}>
-                <BaseText variant="bold" style={styles.limitTitle}>
-                  Verified limit
-                </BaseText>
-                <BaseText style={styles.limitDescription}>
-                  $2,500 per request · $10,000 daily
-                </BaseText>
-              </View> */}
+            <View style={styles.limitInfo}>
+              <BaseText variant="bold" style={styles.limitTitle}>
+                Verified limit
+              </BaseText>
+              <BaseText style={styles.limitDescription}>
+                {formatCurrency(
+                  profileData?.verification.limits.withdrawalPerTransactionUsd!,
+                  {
+                    style: "currency",
+                    currency: "USD",
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  },
+                )}{" "}
+                per request ·{" "}
+                {formatCurrency(
+                  profileData?.verification.limits.dailyWithdrawalUsd!,
+                  {
+                    style: "currency",
+                    currency: "USD",
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  },
+                )}{" "}
+                daily
+              </BaseText>
+            </View>
           </View>
 
           <View style={styles.footer}>
@@ -287,7 +355,8 @@ export default function WithdrawScreen() {
           <View style={styles.formContent}>
             <View style={styles.summaryContainer}>
               <BaseText variant="bold" style={styles.summaryAmount}>
-                {parseFloat(form.state.values.amount).toFixed(2)} USDT
+                {parseFloat(form.state.values.amount).toFixed(2)}{" "}
+                {selectedSymbol}
               </BaseText>
             </View>
 
@@ -296,13 +365,13 @@ export default function WithdrawScreen() {
               <View style={styles.detailsRow}>
                 <BaseText style={styles.detailsLabel}>Asset</BaseText>
                 <BaseText variant="bold" style={styles.detailsValue}>
-                  USDT
+                  {selectedSymbol}
                 </BaseText>
               </View>
               <View style={styles.detailsRow}>
                 <BaseText style={styles.detailsLabel}>Network</BaseText>
                 <BaseText variant="bold" style={styles.detailsValue}>
-                  TRC20
+                  {network || "TRC20"}
                 </BaseText>
               </View>
               <View style={styles.detailsRow}>
@@ -316,7 +385,7 @@ export default function WithdrawScreen() {
               <View style={styles.detailsRow}>
                 <BaseText style={styles.detailsLabel}>Fee</BaseText>
                 <BaseText variant="bold" style={styles.detailsValue}>
-                  1.00 USDT
+                  1.00 {selectedSymbol}
                 </BaseText>
               </View>
               <View
@@ -330,13 +399,14 @@ export default function WithdrawScreen() {
                   variant="bold"
                   style={[styles.detailsValue, { color: Colors.primary }]}
                 >
-                  {(parseFloat(form.state.values.amount) - 1.0).toFixed(2)} USDT
+                  {(parseFloat(form.state.values.amount) - 1.0).toFixed(2)}{" "}
+                  {selectedSymbol}
                 </BaseText>
               </View>
             </View>
 
             {/* Pin Code Input Block */}
-            <View style={styles.pinSection}>
+            {/* <View style={styles.pinSection}>
               <BaseInput
                 value={pin}
                 onChangeText={(text) => setPin(text)}
@@ -345,18 +415,15 @@ export default function WithdrawScreen() {
                 containerStyle={{ backgroundColor: Colors.cardBg }}
                 placeholder="Transaction PIN"
               />
-            </View>
+            </View> */}
           </View>
 
           <View style={styles.footer}>
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={handleSubmitWithdrawal}
-              disabled={isSubmitting || pin.length < 4}
-              style={[
-                styles.actionBtn,
-                (isSubmitting || pin.length < 4) && styles.disabledBtn,
-              ]}
+              disabled={isSubmitting}
+              style={[styles.actionBtn, isSubmitting && styles.disabledBtn]}
             >
               <BaseText variant="bold" style={styles.actionBtnText}>
                 {isSubmitting ? "Submitting..." : "Submit withdrawal"}
@@ -392,13 +459,14 @@ export default function WithdrawScreen() {
               <View style={styles.detailsRow}>
                 <BaseText style={styles.detailsLabel}>Amount</BaseText>
                 <BaseText variant="bold" style={styles.detailsValue}>
-                  {parseFloat(form.state.values.amount).toFixed(2)} USDT
+                  {parseFloat(form.state.values.amount).toFixed(2)}{" "}
+                  {selectedSymbol}
                 </BaseText>
               </View>
               <View style={styles.detailsRow}>
                 <BaseText style={styles.detailsLabel}>Fee</BaseText>
                 <BaseText variant="bold" style={styles.detailsValue}>
-                  1.00 USDT
+                  1.00 {selectedSymbol}
                 </BaseText>
               </View>
               <View style={styles.detailsRow}>
@@ -443,7 +511,19 @@ export default function WithdrawScreen() {
           </View>
         </>
       )}
+
       {/* </View> */}
+      <SelectOptionsSheet
+        ref={assetSheetRef}
+        title="Select Asset"
+        options={assetOptions}
+        selectedValue={selectedSymbol}
+        onSelect={(value) => {
+          setSelectedSymbol(value);
+          form.setFieldValue("amount", "");
+          assetSheetRef.current?.dismiss();
+        }}
+      />
     </ScreenContainer>
   );
 }

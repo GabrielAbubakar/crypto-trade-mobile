@@ -9,15 +9,16 @@ import { BaseTouchableOpacity } from "./BaseTouchableOpacity";
 interface BackHeaderProps {
   title: string;
   subtitle?: string;
+  onBack?: () => void;
 }
 
-export const BackHeader: React.FC<BackHeaderProps> = ({ title, subtitle }) => {
+export const BackHeader: React.FC<BackHeaderProps> = ({ title, subtitle, onBack }) => {
   const router = useRouter();
 
   return (
     <View style={styles.container}>
       <BaseTouchableOpacity
-        onPress={() => router.back()}
+        onPress={onBack ? onBack : () => router.back()}
         style={styles.backButton}
       >
         <Ionicons name="arrow-back" size={24} color={Colors.textSecondary} />

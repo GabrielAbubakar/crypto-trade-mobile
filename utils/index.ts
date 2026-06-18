@@ -71,10 +71,11 @@ export function capitalize(str: string) {
  */
 export function formatCurrency(
   amount: number | string | undefined,
-  currency: string = "USD",
+  options?: Intl.NumberFormatOptions,
 ) {
   return amount?.toLocaleString("en-US", {
     style: "currency",
-    currency,
+    currency: "USD",
+    ...options,
   });
 }
