@@ -14,23 +14,18 @@ import {
 } from "@/store";
 import { showErrorToast, showSuccessToast } from "@/utils";
 import { Ionicons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Clipboard,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 
-type Step =
-  | "intro"
-  | "setup_qr"
-  | "success_recovery"
-  | "active"
-  | "disable_form";
+type Step = "intro" | "setup_qr" | "active" | "disable_form";
 
 export default function TwoFactorScreen() {
   const router = useRouter();
@@ -45,7 +40,6 @@ export default function TwoFactorScreen() {
     secret: string;
     otpauthUri: string;
   } | null>(null);
-  const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
 
   // Inputs
   const [code, setCode] = useState("");
@@ -53,45 +47,10 @@ export default function TwoFactorScreen() {
   const [recoveryCode, setRecoveryCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  console.log(recoveryCodes);
-
-  useEffect(() => {
-    if (profile) {
-      if (profile.twoFactorEnabled) {
-        setStep((currentStep) => {
-          if (
-            currentStep === "intro" ||
-            currentStep === "setup_qr"
-          ) {
-            return "active";
-          }
-          return currentStep;
-        });
-      } else {
-        setStep((currentStep) => {
-          if (
-            currentStep !== "setup_qr" &&
-            currentStep !== "success_recovery"
-          ) {
-            return "intro";
-          }
-          return currentStep;
-        });
-      }
-    }
-  }, [profile]);
-
-  const handleCopySecret = () => {
+  const handleCopySecret = async () => {
     if (setupData?.secret) {
-      Clipboard.setString(setupData.secret);
+      await Clipboard.setStringAsync(setupData.secret);
       showSuccessToast("Secret key copied to clipboard!");
-    }
-  };
-
-  const handleCopyRecoveryCodes = () => {
-    if (recoveryCodes.length > 0) {
-      Clipboard.setString(recoveryCodes.join("\n"));
-      showSuccessToast("Recovery codes copied to clipboard!");
     }
   };
 
@@ -114,9 +73,11 @@ export default function TwoFactorScreen() {
 
     try {
       const res = await enable2FA({ code }).unwrap();
-      setRecoveryCodes(res.recoveryCodes || []);
-      setStep("success_recovery");
       showSuccessToast("Two-Factor Authentication enabled successfully!");
+      router.push({
+        pathname: "/profile/security/recovery-codes",
+        params: { codes: JSON.stringify(res.recoveryCodes || []) },
+      });
     } catch (err: any) {
       showErrorToast(err?.data?.message || "Failed to enable 2FA");
     }
@@ -146,6 +107,26 @@ export default function TwoFactorScreen() {
     }
   };
 
+  useEffect(() => {
+    if (profile) {
+      if (profile.twoFactorEnabled) {
+        setStep((currentStep) => {
+          if (currentStep === "intro" || currentStep === "setup_qr") {
+            return "active";
+          }
+          return currentStep;
+        });
+      } else {
+        setStep((currentStep) => {
+          if (currentStep !== "setup_qr") {
+            return "intro";
+          }
+          return currentStep;
+        });
+      }
+    }
+  }, [profile]);
+
   if (isProfileLoading) {
     return (
       <ScreenContainer style={styles.container} withPadding={true}>
@@ -158,7 +139,13 @@ export default function TwoFactorScreen() {
   }
 
   return (
-    <ScreenContainer style={styles.container} withPadding={true} avoidKeyboard={true} >
+    <ScreenContainer
+      style={styles.container}
+      scrollable
+      keyboardVerticalOffset={10}
+      withPadding={true}
+      avoidKeyboard={true}
+    >
       {/* View: Introduction to setup 2FA */}
       {step === "intro" && (
         <>
@@ -262,72 +249,6 @@ export default function TwoFactorScreen() {
             isLoading={isEnabling}
             style={styles.actionButton}
           />
-        </>
-      )}
-
-      {/* View: Success & Recovery Codes */}
-      {step === "success_recovery" && (
-        <>
-          <BackHeader title="Save Recovery Codes" />
-          <View style={styles.successContent}>
-            <View style={styles.iconContainer}>
-              <Ionicons
-                name="checkmark-circle-outline"
-                size={80}
-                color="#5ED5A8"
-              />
-            </View>
-            <BaseText
-              variant="bold"
-              color="#FFFFFF"
-              style={styles.successTitle}
-            >
-              2FA Enabled Successfully!
-            </BaseText>
-
-            <View style={styles.warningBox}>
-              <Ionicons name="warning-outline" size={20} color="#FFD166" />
-              <BaseText size="sm" color="#FFD166" style={styles.warningText}>
-                Keep these recovery codes secure. If you lose your authenticator
-                app, these codes are the only way to log back in. Each code can
-                only be used once.
-              </BaseText>
-            </View>
-
-            {/* Recovery Codes list */}
-            <View style={styles.codesContainer}>
-              <View style={styles.codesGrid}>
-                {recoveryCodes.map((codeStr, idx) => (
-                  <View key={idx} style={styles.codeItem}>
-                    <BaseText variant="bold" color="#FFFFFF">
-                      {codeStr}
-                    </BaseText>
-                  </View>
-                ))}
-              </View>
-            </View>
-
-            <TouchableOpacity
-              onPress={handleCopyRecoveryCodes}
-              style={styles.copyCodesLink}
-            >
-              <Ionicons
-                name="copy-outline"
-                size={16}
-                color={Colors.primary}
-                style={{ marginRight: 6 }}
-              />
-              <BaseText color={Colors.primary} variant="bold">
-                Copy all codes
-              </BaseText>
-            </TouchableOpacity>
-
-            <BaseButton
-              title="Done"
-              onPress={() => router.back()}
-              style={styles.actionButton}
-            />
-          </View>
         </>
       )}
 
@@ -536,61 +457,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     marginBottom: 40,
   },
-  successContent: {
-    flex: 1,
-    alignItems: "center",
-    marginTop: 20,
-  },
-  successTitle: {
-    fontSize: 22,
-    marginTop: 20,
-    marginBottom: 24,
-    textAlign: "center",
-  },
-  warningBox: {
-    flexDirection: "row",
-    backgroundColor: "rgba(255, 209, 102, 0.08)",
-    borderWidth: 1,
-    borderColor: "rgba(255, 209, 102, 0.2)",
-    padding: 14,
-    borderRadius: 12,
-    gap: 10,
-    marginBottom: 24,
-    alignItems: "flex-start",
-  },
-  warningText: {
-    flex: 1,
-    lineHeight: 18,
-  },
-  codesContainer: {
-    width: "100%",
-    backgroundColor: "#141820",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.05)",
-    padding: 20,
-    marginBottom: 20,
-  },
-  codesGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    rowGap: 16,
-  },
-  codeItem: {
-    width: "48%",
-    backgroundColor: "rgba(255, 255, 255, 0.02)",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.05)",
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  copyCodesLink: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 30,
-  },
+
   activeContent: {
     flex: 1,
     alignItems: "center",

@@ -1,7 +1,7 @@
 import { BackHeader, ProfileOptionCard, ScreenContainer } from "@/components";
 import { BaseText } from "@/components/ui/BaseText";
 import { Colors } from "@/constants";
-import { useGetProfileQuery } from "@/store";
+import { useGet2FAStatusQuery, useGetProfileQuery } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -10,8 +10,14 @@ import { StyleSheet, View } from "react-native";
 export default function SecurityScreen() {
   const router = useRouter();
   const { data: profile } = useGetProfileQuery();
+  const { data: twoFactorStatus } = useGet2FAStatusQuery();
 
-  console.log(profile);
+  const is2faEnabled = profile?.twoFactorEnabled;
+  const remainingCodes =
+    twoFactorStatus !== undefined ? twoFactorStatus.recoveryCodesRemaining : 8;
+  const recoveryCodesDescription = `${
+    is2faEnabled ? "" : "2FA not setup yet and "
+  }${remainingCodes} backup codes remaining`;
 
   return (
     <ScreenContainer style={styles.container} withPadding={true}>
@@ -50,11 +56,10 @@ export default function SecurityScreen() {
         />
         <ProfileOptionCard
           title="Recovery codes"
-          description="8 backup codes remaining"
+          description={recoveryCodesDescription}
           icon={
             <Ionicons name="document-text-outline" size={20} color="#5ED5A8" />
           }
-          value="View"
           onPress={() => router.push("/profile/security/recovery-codes")}
         />
         <ProfileOptionCard
@@ -102,6 +107,7 @@ const styles = StyleSheet.create({
   },
   menuList: {
     marginBottom: 24,
+    gap: 12,
   },
   noticeBox: {
     backgroundColor: "#2B2416",

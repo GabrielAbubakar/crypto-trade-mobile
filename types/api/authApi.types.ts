@@ -176,3 +176,12 @@ export interface IDisable2FAResponse {
     recoveryCodeCount: number;
   };
 }
+
+export interface I2FAStatusResponse {
+  data: {
+    twoFactorEnabled: boolean;
+    twoFactorSetupStarted: boolean;
+    recoveryCodesConfigured: boolean;
+    recoveryCodesRemaining: number;
+  };
+}

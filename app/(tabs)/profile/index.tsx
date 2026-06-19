@@ -207,6 +207,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingHorizontal: 24,
     paddingBottom: 40,
+    gap: 12,
   },
   gradientBox: {
     paddingTop: 16,

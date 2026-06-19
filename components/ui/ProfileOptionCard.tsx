@@ -83,7 +83,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.cardBg,
     borderRadius: 20,
     padding: 16,
-    marginBottom: 12,
   },
   leftSection: {
     flexDirection: "row",

@@ -14,6 +14,7 @@ import type {
   IRegenerateRecoveryCodesResponse,
   IDisable2FARequest,
   IDisable2FAResponse,
+  I2FAStatusResponse,
 } from "@/types";
 import { logout, setCredentials } from "../slices/authSlice";
 import { baseApi } from "./baseApi";
@@ -109,6 +110,14 @@ export const authApi = baseApi.injectEndpoints({
       }),
       transformResponse: (response: ILoginResponse) => response.data,
     }),
+    get2FAStatus: builder.query<I2FAStatusResponse["data"], void>({
+      query: () => ({
+        url: "/auth/2fa/status",
+        method: "GET",
+      }),
+      transformResponse: (response: I2FAStatusResponse) => response.data,
+      providesTags: ["User"],
+    }),
     regenerate2FARecoveryCodes: builder.mutation<
       IRegenerateRecoveryCodesResponse["data"],
       IRegenerateRecoveryCodesRequest
@@ -120,6 +129,7 @@ export const authApi = baseApi.injectEndpoints({
       }),
       transformResponse: (response: IRegenerateRecoveryCodesResponse) =>
         response.data,
+      invalidatesTags: ["User"],
     }),
     disable2FA: builder.mutation<
       IDisable2FAResponse["data"],
@@ -166,4 +176,5 @@ export const {
   useVerify2FAMutation,
   useRegenerate2FARecoveryCodesMutation,
   useDisable2FAMutation,
+  useGet2FAStatusQuery,
 } = authApi;

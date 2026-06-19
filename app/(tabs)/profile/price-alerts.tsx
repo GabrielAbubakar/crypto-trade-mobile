@@ -40,8 +40,8 @@ export default function PriceAlertsScreen() {
       showSuccessToast(
         `Alert for ${alert.assetSymbol} ${!alert.isActive ? "activated" : "paused"}`,
       );
-    } catch (err) {
-      console.error("Failed to update price alert:", err);
+    } catch {
+      // console.error("Failed to update price alert:", err);
       showErrorToast("Failed to update price alert");
     }
   };
@@ -51,8 +51,8 @@ export default function PriceAlertsScreen() {
       try {
         await deletePriceAlert(selectedAlert.id).unwrap();
         showSuccessToast(`Alert for ${selectedAlert.assetSymbol} removed`);
-      } catch (err) {
-        console.error("Failed to delete price alert:", err);
+      } catch {
+        // console.error("Failed to delete price alert:", err);
         showErrorToast("Failed to delete price alert");
       }
     }
@@ -187,6 +187,7 @@ const styles = StyleSheet.create({
   },
   scrollList: {
     paddingBottom: 40,
+    gap: 12,
   },
   list: {
     maxHeight: 400,

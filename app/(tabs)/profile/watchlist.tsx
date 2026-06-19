@@ -4,7 +4,7 @@ import { Colors } from "@/constants";
 import { useGetProfileQuery } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { StyleSheet, View, ScrollView } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 
 export default function WatchlistScreen() {
   const { data: profile, isLoading } = useGetProfileQuery();
@@ -39,7 +39,12 @@ export default function WatchlistScreen() {
       ) : (
         /* Empty State */
         <View style={styles.emptyContainer}>
-          <Ionicons name="star-outline" size={60} color="#8594A6" style={styles.emptyIcon} />
+          <Ionicons
+            name="star-outline"
+            size={60}
+            color="#8594A6"
+            style={styles.emptyIcon}
+          />
           <BaseText variant="bold" color="#FFFFFF" style={styles.emptyTitle}>
             Empty Watchlist
           </BaseText>
@@ -67,6 +72,7 @@ const styles = StyleSheet.create({
   },
   scrollList: {
     paddingBottom: 40,
+    gap: 12,
   },
   emptyContainer: {
     flex: 1,

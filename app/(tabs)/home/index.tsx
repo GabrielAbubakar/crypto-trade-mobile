@@ -75,7 +75,7 @@ export default function HomeScreen() {
       <ScrollView
         refreshControl={
           <RefreshControl
-            refreshing={trendingIsLoading}
+            refreshing={trendingIsLoading || userIsLoading || walletIsLoading}
             onRefresh={handleRefresh}
           />
         }
