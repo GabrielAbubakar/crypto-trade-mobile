@@ -92,7 +92,7 @@ export default function AuthIndexScreen() {
   );
 
   return (
-    <ScreenContainer withPadding={false} style={styles.container}>
+    <ScreenContainer withPadding={false} avoidKeyboard style={styles.container}>
       <Image
         source={Background}
         style={{
@@ -104,9 +104,7 @@ export default function AuthIndexScreen() {
         }}
       />
 
-      <View
-        style={{ flex: 1 }}
-      >
+      <View style={{ flex: 1 }}>
         {renderHeader()}
         <ScrollView
           ref={listRef}

@@ -1,20 +1,20 @@
 import type {
-  IKycVerificationRequest,
+  I2FAStatusResponse,
+  IDisable2FARequest,
+  IDisable2FAResponse,
+  IEnable2FARequest,
+  IEnable2FAResponse,
   IKycUploadRequest,
   IKycUploadResponse,
+  IKycVerificationRequest,
   ILoginRequest,
   ILoginResponse,
+  IRegenerateRecoveryCodesRequest,
+  IRegenerateRecoveryCodesResponse,
   IRegisterRequest,
   IRegisterResponse,
   ISetup2FAResponse,
-  IEnable2FARequest,
-  IEnable2FAResponse,
   IVerify2FARequest,
-  IRegenerateRecoveryCodesRequest,
-  IRegenerateRecoveryCodesResponse,
-  IDisable2FARequest,
-  IDisable2FAResponse,
-  I2FAStatusResponse,
 } from "@/types";
 import { logout, setCredentials } from "../slices/authSlice";
 import { baseApi } from "./baseApi";
@@ -153,7 +153,7 @@ export const authApi = baseApi.injectEndpoints({
         try {
           await queryFulfilled;
           dispatch(logout());
-        } catch (err) {
+        } catch {
           // Even if backend logout fails, log the user out locally
           dispatch(logout());
         }

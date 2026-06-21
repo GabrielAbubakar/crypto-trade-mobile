@@ -29,7 +29,7 @@ export default function KYCSelfie() {
   const dispatch = useAppDispatch();
   const kycState = useAppSelector((state) => state.kyc);
 
-  const [kycUpload, { isLoading: isUploadingApi }] = useKycUploadMutation();
+  const [kycUpload] = useKycUploadMutation();
   const [isUploading, setIsUploading] = useState(false);
 
   const handleCapture = async () => {
@@ -55,57 +55,38 @@ export default function KYCSelfie() {
         contentType,
         documentKind: "selfie",
       }).unwrap();
-
-      const { uploadUrl, publicUrl, imageUrl, method, formFields } = uploadInstructions.data;
-      const finalImageUrl = publicUrl || imageUrl || "";
+      const { uploadUrl, publicUrl, formFields } = uploadInstructions.data;
+      const finalImageUrl = publicUrl || "";
 
       // 2. Upload the file
-      if (method === "POST" || method === "post") {
-        const formData = new FormData();
-        if (formFields) {
-          Object.entries(formFields).forEach(([key, value]) => {
-            formData.append(key, String(value));
-          });
-        }
-        formData.append("file", {
-          uri: file.uri,
-          type: contentType,
-          name: fileName,
-        } as any);
-
-        const uploadResponse = await fetch(uploadUrl, {
-          method: "POST",
-          body: formData,
+      const formData = new FormData();
+      if (formFields) {
+        Object.entries(formFields).forEach(([key, value]) => {
+          formData.append(key, String(value));
         });
+      }
+      formData.append("file", {
+        uri: file.uri,
+        type: contentType,
+        name: fileName,
+      } as any);
 
-        if (!uploadResponse.ok) {
-          const errorText = await uploadResponse.text().catch(() => "");
-          console.error("Cloudinary upload failed:", errorText);
-          throw new Error("Failed to upload selfie file to Cloudinary");
-        }
-      } else {
-        // 2. Fetch local file blob and PUT upload
-        const response = await fetch(file.uri);
-        const blob = await response.blob();
+      const uploadResponse = await fetch(uploadUrl, {
+        method: "POST",
+        body: formData,
+      });
 
-        const uploadResponse = await fetch(uploadUrl, {
-          method: "PUT",
-          body: blob,
-          headers: {
-            "Content-Type": contentType,
-          },
-        });
-
-        if (!uploadResponse.ok) {
-          throw new Error("Failed to upload selfie file to S3");
-        }
+      if (!uploadResponse.ok) {
+        // const errorText = await uploadResponse.text().catch(() => "");
+        // console.error("Cloudinary upload failed:", errorText);
+        throw new Error("Failed to upload selfie file to Cloudinary");
       }
 
       // 3. Update Redux store state
       dispatch(setSelfieImageUrl(finalImageUrl));
       showSuccessToast("Selfie image uploaded successfully!");
     } catch (err: any) {
-      console.error(err);
+      // console.error(err);
       showErrorToast(err?.message || "An error occurred during selfie upload.");
     } finally {
       setIsUploading(false);

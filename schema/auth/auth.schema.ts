@@ -3,9 +3,9 @@ import { z } from "zod";
 export const signInSchema = z.discriminatedUnion("method", [
   z.object({
     method: z.literal("email"),
-    email: z.email("Invalid email address"),
+    email: z.string().email("Invalid email address"),
     phone: z.string(),
-    password: z.string().min(4, "Password must be at least 8 characters"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
   }),
   z.object({
     method: z.literal("phone"),
@@ -19,7 +19,7 @@ export const signUpSchema = z.discriminatedUnion("method", [
   z.object({
     method: z.literal("email"),
     fullName: z.string().min(6, "Full Name must be at least 6 characters"),
-    email: z.email("Invalid email address"),
+    email: z.string().email("Invalid email address"),
     phone: z
       .string()
       .regex(/^(?:\+?234|0)?[789]\d{9}$/, "Invalid Nigerian phone number"),
