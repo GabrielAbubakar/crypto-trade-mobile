@@ -20,6 +20,8 @@ export default function AuthLayout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="register-mobile" />
       <Stack.Screen name="otp" />
+      <Stack.Screen name="2fa" />
+      <Stack.Screen name="recovery" />
     </Stack>
   );
 }

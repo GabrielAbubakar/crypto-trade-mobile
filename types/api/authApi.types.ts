@@ -33,6 +33,20 @@ export interface ILoginResponse {
   };
 }
 
+export interface ILogin2FAResponse {
+  data: {
+    requiresTwoFactor: boolean;
+    challengeId: string;
+    attemptsRemaining: number;
+    expiresAt: string;
+  };
+  meta: {
+    requestId: string;
+  };
+}
+
+export type ILoginResponseUnion = ILoginResponse | ILogin2FAResponse;
+
 export interface IUserSettings {
   language: string;
   fiatCurrency: string;
@@ -148,7 +162,7 @@ export interface IEnable2FAResponse {
 
 export interface IVerify2FARequest {
   challengeId?: string;
-  code: string;
+  code?: string;
   recoveryCode?: string;
 }
 

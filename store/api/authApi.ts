@@ -9,6 +9,7 @@ import type {
   IKycVerificationRequest,
   ILoginRequest,
   ILoginResponse,
+  ILoginResponseUnion,
   IRegenerateRecoveryCodesRequest,
   IRegenerateRecoveryCodesResponse,
   IRegisterRequest,
@@ -21,23 +22,25 @@ import { baseApi } from "./baseApi";
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    login: builder.mutation<ILoginResponse["data"], ILoginRequest>({
+    login: builder.mutation<ILoginResponseUnion["data"], ILoginRequest>({
       query: (credentials) => ({
         url: "/auth/login",
         method: "POST",
         body: credentials,
       }),
-      transformResponse: (response: ILoginResponse) => response.data,
+      transformResponse: (response: ILoginResponseUnion) => response.data,
       async onQueryStarted(_args, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          dispatch(
-            setCredentials({
-              user: data.user,
-              accessToken: data.accessToken,
-              refreshToken: data.refreshToken,
-            }),
-          );
+          if ("accessToken" in data) {
+            dispatch(
+              setCredentials({
+                user: data.user,
+                accessToken: data.accessToken,
+                refreshToken: data.refreshToken,
+              }),
+            );
+          }
         } catch {
           // Handle error if needed
         }

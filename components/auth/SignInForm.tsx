@@ -1,7 +1,7 @@
 import Fingerprint from "@/assets/icons/auth/Fingerprint.svg";
 import { Colors } from "@/constants";
 import { signInSchema } from "@/schema";
-import { setCredentials, useAppDispatch, useLoginMutation } from "@/store";
+import { useLoginMutation } from "@/store";
 import { showToast } from "@/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useForm } from "@tanstack/react-form";
@@ -13,10 +13,49 @@ import { SocialLoginSection } from "./SocialLoginSection";
 import type { AuthMethod } from "./types";
 
 export const SignInForm: React.FC = () => {
-  const dispatch = useAppDispatch();
   const [method, setMethod] = useState<AuthMethod>("email");
   const [showPassword, setShowPassword] = useState(false);
   const [signIn, { isLoading, error }] = useLoginMutation();
+
+  async function handleSignIn({
+    value,
+  }: {
+    value: {
+      method: AuthMethod;
+      email: string;
+      phone: string;
+      password: string;
+    };
+  }) {
+    try {
+      const res = await signIn({
+        loginType: method,
+        identifier: method === "email" ? value.email : value.phone,
+        password: value.password,
+      }).unwrap();
+
+      if ("accessToken" in res) {
+        showToast("success", "Signed in successfully.");
+        router.replace("/(tabs)/home");
+      } else {
+        showToast("info", "Two-factor authentication required.");
+        router.push({
+          pathname: "/(auth)/2fa",
+          params: {
+            challengeId: res.challengeId,
+            identifier: method === "email" ? value.email : value.phone,
+          },
+        });
+      }
+    } catch (error) {
+      const message =
+        (error as any)?.data?.message ||
+        (error as any)?.message ||
+        "Unable to sign in";
+      showToast("error", message);
+      console.error("Error signing in:", error);
+    }
+  }
 
   const form = useForm({
     defaultValues: {
@@ -28,26 +67,8 @@ export const SignInForm: React.FC = () => {
     validators: {
       onChange: signInSchema,
     },
-    onSubmit: async ({ value, meta }) => {
-      // console.log("Signing in...");
-      try {
-        const res = await signIn({
-          loginType: method,
-          identifier: method === "email" ? value.email : value.phone,
-          password: value.password,
-        }).unwrap();
-
-        dispatch(setCredentials(res));
-        showToast("success", "Signed in successfully.");
-        router.replace("/(tabs)/home");
-      } catch (error) {
-        const message =
-          (error as any)?.data?.message ||
-          (error as any)?.message ||
-          "Unable to sign in";
-        showToast("error", message);
-        console.error("Error signing in:", error);
-      }
+    onSubmit: async ({ value }) => {
+      handleSignIn({ value });
     },
   });
 

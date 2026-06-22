@@ -56,6 +56,10 @@ export default function TransactionPinScreen() {
         Update the PIN used for trade and withdrawal confirmations.
       </BaseText>
 
+      <BaseText color="#8594A6" size="xs">
+        Default PIN is 0000.
+      </BaseText>
+
       <View style={styles.form}>
         {/* Current PIN */}
         <View style={styles.inputGroup}>
