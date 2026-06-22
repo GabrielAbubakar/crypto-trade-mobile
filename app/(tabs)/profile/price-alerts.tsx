@@ -1,8 +1,10 @@
 import {
   BackHeader,
   ConfirmationModal,
+  EditPriceAlertModal,
   ProfileOptionCard,
   ScreenContainer,
+  SwipeableRow,
 } from "@/components";
 import { BaseText } from "@/components/ui/BaseText";
 import { Colors } from "@/constants";
@@ -21,10 +23,14 @@ export default function PriceAlertsScreen() {
   const { data: alerts = [], isLoading } = useGetPriceAlertsQuery();
   const [deletePriceAlert, { isLoading: isDeleting }] =
     useDeletePriceAlertMutation();
-  const [updatePriceAlert] = useUpdatePriceAlertMutation();
+  const [updatePriceAlert, { isLoading: isUpdating }] =
+    useUpdatePriceAlertMutation();
 
   const [selectedAlert, setSelectedAlert] = useState<IPriceAlert | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [alertToEdit, setAlertToEdit] = useState<IPriceAlert | null>(null);
+
 
   const handleAlertPress = (alert: IPriceAlert) => {
     setSelectedAlert(alert);
@@ -59,6 +65,32 @@ export default function PriceAlertsScreen() {
     setModalVisible(false);
     setSelectedAlert(null);
   };
+
+  const handleEditPress = (alert: IPriceAlert) => {
+    setAlertToEdit(alert);
+    setEditModalVisible(true);
+  };
+
+  const handleEditConfirm = async (updatedFields: {
+    targetPriceUsd: number;
+    direction: "above" | "below" | string;
+    isActive: boolean;
+  }) => {
+    if (alertToEdit) {
+      try {
+        await updatePriceAlert({
+          alertId: alertToEdit.id,
+          body: updatedFields,
+        }).unwrap();
+        showSuccessToast(`Alert for ${alertToEdit.assetSymbol} updated`);
+      } catch {
+        showErrorToast("Failed to update price alert");
+      }
+    }
+    setEditModalVisible(false);
+    setAlertToEdit(null);
+  };
+
 
   const formatPrice = (price: number) => {
     return price.toLocaleString("en-US", {
@@ -133,25 +165,29 @@ export default function PriceAlertsScreen() {
           const formattedPrice = formatPrice(alert.targetPriceUsd);
 
           return (
-            <ProfileOptionCard
-              title={`${alert.assetSymbol} ${alert.direction} ${formattedPrice}`}
-              description={description}
-              onPress={() => handleToggleAlert(alert)}
-              icon={
-                <Ionicons
-                  name="trending-up-outline"
-                  size={20}
-                  color={
-                    status === "off" ? Colors.textSecondary : Colors.primary
-                  }
-                />
-              }
-              iconBgColor={
-                status === "off" ? Colors.iconBgInactive : Colors.iconBgActive
-              }
-              rightElement={getStatusBadge(status)}
-              onLongPress={() => handleAlertPress(alert)}
-            />
+            <SwipeableRow
+              onEdit={() => handleEditPress(alert)}
+              onDelete={() => handleAlertPress(alert)}
+            >
+              <ProfileOptionCard
+                title={`${alert.assetSymbol} ${alert.direction} ${formattedPrice}`}
+                description={description}
+                onPress={() => handleToggleAlert(alert)}
+                icon={
+                  <Ionicons
+                    name="trending-up-outline"
+                    size={20}
+                    color={
+                      status === "off" ? Colors.textSecondary : Colors.primary
+                    }
+                  />
+                }
+                iconBgColor={
+                  status === "off" ? Colors.iconBgInactive : Colors.iconBgActive
+                }
+                rightElement={getStatusBadge(status)}
+              />
+            </SwipeableRow>
           );
         }}
       />
@@ -172,6 +208,19 @@ export default function PriceAlertsScreen() {
         onConfirm={handleDeleteConfirm}
         onCancel={() => setModalVisible(false)}
       />
+
+      {/* Edit Price Alert Modal */}
+      <EditPriceAlertModal
+        visible={editModalVisible}
+        alert={alertToEdit}
+        onClose={() => {
+          setEditModalVisible(false);
+          setAlertToEdit(null);
+        }}
+        onConfirm={handleEditConfirm}
+        isLoading={isUpdating}
+      />
+
     </ScreenContainer>
   );
 }
