@@ -145,6 +145,7 @@ export const profileApi = baseApi.injectEndpoints({
                 (n) => n.id === notificationId,
               );
               if (notification) {
+                // update that specific item to read true
                 notification.isRead = true;
               }
             },
@@ -153,6 +154,7 @@ export const profileApi = baseApi.injectEndpoints({
         try {
           await queryFulfilled;
         } catch {
+          // if an error happens, undo the optimistic update. norification.isRead: true --> false
           patchResult.undo();
         }
       },
