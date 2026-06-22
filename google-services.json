@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "982316883290",
+    "project_id": "tminus-mobile",
+    "storage_bucket": "tminus-mobile.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:982316883290:android:d4718ecdbdce9123262763",
+        "android_client_info": {
+          "package_name": "com.gabrielabubakar.cryptotrademobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEy2DdkfFhBaNUhNc_9zEno-eDek5GEyY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
