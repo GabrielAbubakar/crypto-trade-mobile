@@ -134,6 +134,28 @@ export const profileApi = baseApi.injectEndpoints({
         url: `/me/notifications/${notificationId}/read`,
         method: "PATCH",
       }),
+      // Handle for optimistic updates in the component
+      async onQueryStarted(notificationId, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          profileApi.util.updateQueryData(
+            "getNotifications",
+            undefined,
+            (draft) => {
+              const notification = draft.data.find(
+                (n) => n.id === notificationId,
+              );
+              if (notification) {
+                notification.isRead = true;
+              }
+            },
+          ),
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
+      },
       invalidatesTags: ["Notification"],
     }),
     markAllNotificationsAsRead: builder.mutation<{ success: boolean }, void>({
@@ -141,6 +163,25 @@ export const profileApi = baseApi.injectEndpoints({
         url: "/me/notifications/read-all",
         method: "PATCH",
       }),
+      // Handle for optimistic updates in the component
+      async onQueryStarted(_args, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          profileApi.util.updateQueryData(
+            "getNotifications",
+            undefined,
+            (draft) => {
+              draft.data.forEach((notification) => {
+                notification.isRead = true;
+              });
+            },
+          ),
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
+      },
       invalidatesTags: ["Notification"],
     }),
   }),

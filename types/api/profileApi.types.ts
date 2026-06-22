@@ -42,7 +42,7 @@ export interface IUpdateSettingsRequest {
 }
 
 export interface IRegisterDeviceRequest {
-  token: string;
+  expoPushToken: string;
   platform?: "ios" | "android" | string;
 }
 

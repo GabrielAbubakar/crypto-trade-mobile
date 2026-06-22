@@ -29,6 +29,7 @@ export default function RootLayout() {
   if (!loaded && !error) {
     return null;
   }
+
   return (
     // Redux Provider with persisted state rehydration
     <GestureHandlerRootView style={{ flex: 1 }}>

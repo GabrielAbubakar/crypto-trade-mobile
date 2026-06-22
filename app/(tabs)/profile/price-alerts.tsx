@@ -189,9 +189,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     gap: 12,
   },
-  list: {
-    maxHeight: 400,
-  },
+  list: {},
   badgeOn: {
     backgroundColor: "rgba(94, 213, 168, 0.12)",
     paddingHorizontal: 12,

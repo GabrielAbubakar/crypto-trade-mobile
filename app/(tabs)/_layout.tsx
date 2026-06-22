@@ -1,5 +1,6 @@
 import { BaseText } from "@/components";
 import { Colors, tabs } from "@/constants";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useAppSelector } from "@/store";
 import { Tabs, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -9,6 +10,9 @@ import { View } from "react-native";
 export default function TabsLayout() {
   const router = useRouter();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+
+  // Initialize push notifications
+  usePushNotifications(isAuthenticated);
 
   const screenOptions = {
     headerShown: false,

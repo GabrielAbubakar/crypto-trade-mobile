@@ -20,11 +20,18 @@ const persistConfig = {
   whitelist: ["auth"],
 };
 
-const rootReducer = combineReducers({
+const appReducer = combineReducers({
   auth: authReducer,
   kyc: kycReducer,
   [baseApi.reducerPath]: baseApi.reducer,
 });
+
+const rootReducer = (state: ReturnType<typeof appReducer> | undefined, action: any) => {
+  if (action.type === "auth/logout") {
+    state = undefined;
+  }
+  return appReducer(state, action);
+};
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
