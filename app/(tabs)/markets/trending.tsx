@@ -10,12 +10,14 @@ import { Sparkline } from "@/components/ui/Sparkline";
 import { Colors } from "@/constants";
 import { useGetTrendingAssetsQuery } from "@/store";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useCallback } from "react";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 
 function EmptyComponent() {
   return <BaseText>No trending data available</BaseText>;
 }
+
+const SKELETON_DATA = Array.from({ length: 5 }).map((_, index) => ({ id: index.toString() }));
 
 export default function TrendingScreen() {
   const router = useRouter();
@@ -30,8 +32,8 @@ export default function TrendingScreen() {
     { pollingInterval: 15000 },
   );
 
-  const renderCoinItem = ({ item }: { item: any }) =>
-    isFetching ? (
+  const renderCoinItem = useCallback(({ item }: { item: any }) => {
+    return isFetching ? (
       <MarketCoinRowSkeleton key={item.id} />
     ) : (
       <BaseTouchableOpacity
@@ -40,8 +42,9 @@ export default function TrendingScreen() {
         <MarketCoinRow key={item.id} {...item} />
       </BaseTouchableOpacity>
     );
+  }, [isFetching, router]);
 
-  const renderHeader = () => (
+  const renderHeader = useCallback(() => (
     <View style={styles.listHeader}>
       {/* Top Gainer Banner */}
       <View style={styles.topGainerBanner}>
@@ -156,7 +159,7 @@ export default function TrendingScreen() {
         </View>
       </View>
     </View>
-  );
+  ), [trendingData, router]);
 
   return (
     <ScreenContainer withPadding={false} style={styles.container}>
@@ -172,7 +175,7 @@ export default function TrendingScreen() {
         <FlatList
           data={
             isFetching
-              ? Array.from({ length: 5 }).map((_, index) => ({ id: index }))
+              ? SKELETON_DATA
               : trendingData?.data
           }
           keyExtractor={(item) => item.id}

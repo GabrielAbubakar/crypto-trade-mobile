@@ -10,12 +10,14 @@ import { MarketCoinRowSkeleton } from "@/components/markets/MarketCoinRowSkeleto
 import { Colors } from "@/constants";
 import { useGetWatchlistQuery } from "@/store";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useCallback } from "react";
 import { FlatList, StyleSheet, View } from "react-native";
 
 function EmptyComponent() {
   return <BaseText>Your watchlist is empty</BaseText>;
 }
+
+const SKELETON_DATA = Array.from({ length: 3 }).map((_, index) => ({ id: index.toString() }));
 
 export default function WatchlistScreen() {
   const router = useRouter();
@@ -29,8 +31,8 @@ export default function WatchlistScreen() {
     refetch,
   } = useGetWatchlistQuery({ include: "sparkline" });
 
-  const renderCoinItem = ({ item }: { item: any }) =>
-    isLoading ? (
+  const renderCoinItem = useCallback(({ item }: { item: any }) => {
+    return isLoading ? (
       <MarketCoinRowSkeleton key={item.id} />
     ) : (
       <BaseTouchableOpacity
@@ -40,8 +42,9 @@ export default function WatchlistScreen() {
         <MarketCoinRow {...item} />
       </BaseTouchableOpacity>
     );
+  }, [isLoading, router]);
 
-  const renderFooter = () => (
+  const renderFooter = useCallback(() => (
     <View>
       <View style={styles.addMoreContainer}>
         <BaseText size="lg" variant="bold" style={styles.addMoreTitle}>
@@ -58,7 +61,7 @@ export default function WatchlistScreen() {
         variant="primary"
       />
     </View>
-  );
+  ), [router]);
 
   return (
     <ScreenContainer withPadding={true} style={styles.container}>
@@ -72,7 +75,7 @@ export default function WatchlistScreen() {
         <FlatList
           data={
             isLoading
-              ? Array.from({ length: 3 }).map((_, index) => ({ id: index }))
+              ? SKELETON_DATA
               : marketData
           }
           keyExtractor={(item) => item.id}

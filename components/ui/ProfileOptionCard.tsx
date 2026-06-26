@@ -1,9 +1,12 @@
 import { Colors } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, StyleProp, ViewStyle } from "react-native";
+import Animated from "react-native-reanimated";
 import { BaseText } from "./BaseText";
 import { BaseTouchableOpacity } from "./BaseTouchableOpacity";
+
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(BaseTouchableOpacity);
 
 interface ProfileOptionCardProps {
   title: string;
@@ -15,6 +18,7 @@ interface ProfileOptionCardProps {
   valueColor?: string;
   onPress?: () => void;
   onLongPress?: () => void;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const ProfileOptionCard: React.FC<ProfileOptionCardProps> = ({
@@ -27,12 +31,13 @@ export const ProfileOptionCard: React.FC<ProfileOptionCardProps> = ({
   valueColor = Colors.textSecondary,
   onPress,
   onLongPress,
+  style,
 }) => {
   return (
-    <BaseTouchableOpacity
+    <AnimatedTouchableOpacity
       onPress={onPress}
       onLongPress={onLongPress}
-      style={styles.container}
+      style={[styles.container, style]}
     >
       <View style={styles.leftSection}>
         {icon ? (
@@ -71,7 +76,7 @@ export const ProfileOptionCard: React.FC<ProfileOptionCardProps> = ({
           />
         )}
       </View>
-    </BaseTouchableOpacity>
+    </AnimatedTouchableOpacity>
   );
 };
 

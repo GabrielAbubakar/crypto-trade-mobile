@@ -10,7 +10,7 @@ interface WalletAssetRowProps {
   balanceVisible: boolean;
 }
 
-export const WalletAssetRow: React.FC<WalletAssetRowProps> = ({
+export const WalletAssetRow: React.FC<WalletAssetRowProps> = React.memo(({
   assetSymbol,
   available,
   balanceVisible,
@@ -36,22 +36,24 @@ export const WalletAssetRow: React.FC<WalletAssetRowProps> = ({
         <BaseText variant="bold" style={styles.assetValueText}>
           {balanceVisible
             ? available.toLocaleString("en-US", {
-                style: "currency",
-                currency: "USD",
-              })
+              style: "currency",
+              currency: "USD",
+            })
             : "••••••"}
         </BaseText>
         <BaseText style={styles.assetAmountText}>
           {balanceVisible
             ? `${available.toLocaleString("en-US", {
-                maximumFractionDigits: 6,
-              })} ${assetSymbol}`
+              maximumFractionDigits: 6,
+            })} ${assetSymbol}`
             : "••••••"}
         </BaseText>
       </View>
     </View>
   );
-};
+});
+
+WalletAssetRow.displayName = "WalletAssetRow";
 
 const styles = StyleSheet.create({
   assetRow: {

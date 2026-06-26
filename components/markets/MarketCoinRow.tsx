@@ -4,7 +4,7 @@ import { StyleSheet, View } from "react-native";
 import { SvgUri } from "react-native-svg";
 import { BaseText, ItemBgContainer, Sparkline } from "../ui";
 
-export const MarketCoinRow: React.FC<IMarketAsset> = ({
+export const MarketCoinRow: React.FC<IMarketAsset> = React.memo(({
   priceUsd,
   iconUrl,
   change24h,
@@ -60,7 +60,9 @@ export const MarketCoinRow: React.FC<IMarketAsset> = ({
       </View>
     </ItemBgContainer>
   );
-};
+});
+
+MarketCoinRow.displayName = "MarketCoinRow";
 
 const styles = StyleSheet.create({
   coinRow: {

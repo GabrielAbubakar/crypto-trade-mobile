@@ -1,5 +1,5 @@
-import React from "react";
-import { TouchableOpacity as RNTouchableOpacity } from "react-native";
+import React, { forwardRef } from "react";
+import { TouchableOpacity } from "react-native";
 import type { TouchableOpacityProps } from "react-native";
 
 /**
@@ -10,21 +10,21 @@ export interface BaseTouchableOpacityProps extends TouchableOpacityProps {
   children?: React.ReactNode;
 }
 
-export const BaseTouchableOpacity: React.FC<BaseTouchableOpacityProps> = ({
-  activeOpacity = 0.7,
-  style,
-  children,
-  ...props
-}) => {
-  return (
-    <RNTouchableOpacity 
-      activeOpacity={activeOpacity} 
-      style={style} 
-      {...props}
-    >
-      {children}
-    </RNTouchableOpacity>
-  );
-};
+export const BaseTouchableOpacity = forwardRef<any, BaseTouchableOpacityProps>(
+  ({ activeOpacity = 0.7, style, children, ...props }, ref) => {
+    return (
+      <TouchableOpacity 
+        ref={ref}
+        activeOpacity={activeOpacity} 
+        style={style} 
+        {...props}
+      >
+        {children}
+      </TouchableOpacity>
+    );
+  }
+);
+
+BaseTouchableOpacity.displayName = "BaseTouchableOpacity";
 
 export type { TouchableOpacityProps as CustomTouchableOpacityProps };

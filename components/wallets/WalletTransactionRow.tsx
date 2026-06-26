@@ -10,7 +10,7 @@ interface WalletTransactionRowProps {
   transaction: ITransactionItem;
 }
 
-export const WalletTransactionRow: React.FC<WalletTransactionRowProps> = ({
+export const WalletTransactionRow: React.FC<WalletTransactionRowProps> = React.memo(({
   transaction,
 }) => {
   const router = useRouter();
@@ -95,7 +95,9 @@ export const WalletTransactionRow: React.FC<WalletTransactionRowProps> = ({
       </View>
     </TouchableOpacity>
   );
-};
+});
+
+WalletTransactionRow.displayName = "WalletTransactionRow";
 
 const styles = StyleSheet.create({
   transactionRow: {

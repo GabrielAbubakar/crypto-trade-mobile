@@ -145,6 +145,7 @@ export default function PriceAlertsScreen() {
         data={alerts}
         keyExtractor={(item) => item.id}
         style={styles.list}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollList}
         ListEmptyComponent={
           <View style={styles.emptyState}>
@@ -235,7 +236,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   scrollList: {
-    paddingBottom: 40,
+    paddingBottom: 120,
     gap: 12,
   },
   list: {},

@@ -12,7 +12,7 @@ import { useGetMarketAssetsQuery } from "@/store";
 import type { IGetMarketAssetsRequest } from "@/types";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
 
 function EmptyComponent({ searchQuery }: { searchQuery?: string }) {
@@ -32,6 +32,8 @@ function EmptyComponent({ searchQuery }: { searchQuery?: string }) {
     </View>
   );
 }
+
+const SKELETON_DATA = Array.from({ length: 5 }).map((_, index) => ({ id: index.toString() }));
 
 export default function MarketsScreen() {
   const router = useRouter();
@@ -60,8 +62,8 @@ export default function MarketsScreen() {
     }
   };
 
-  const renderCoinItem = ({ item }: { item: any }) =>
-    isLoading ? (
+  const renderCoinItem = useCallback(({ item }: { item: any }) => {
+    return isLoading ? (
       <MarketCoinRowSkeleton key={item.id} />
     ) : (
       <BaseTouchableOpacity
@@ -71,6 +73,7 @@ export default function MarketsScreen() {
         <MarketCoinRow {...item} />
       </BaseTouchableOpacity>
     );
+  }, [isLoading, router]);
 
   return (
     <ScreenContainer withPadding={false} style={styles.container}>
@@ -117,7 +120,7 @@ export default function MarketsScreen() {
         <FlatList
           data={
             isLoading
-              ? Array.from({ length: 5 }).map((_, index) => ({ id: index }))
+              ? SKELETON_DATA
               : trendingData?.data
           }
           keyExtractor={(item) => item.id}

@@ -39,13 +39,8 @@ export const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: {
-        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-        warnAfter: 128, // Increase threshold to ignore large data arrays
-      },
-      immutableCheck: {
-        warnAfter: 128,
-      },
+      serializableCheck: false,
+      immutableCheck: false,
     }).concat(baseApi.middleware),
 });
 

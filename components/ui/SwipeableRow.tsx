@@ -25,6 +25,12 @@ export const SwipeableRow: React.FC<SwipeableRowProps> = ({
   const translateX = useSharedValue(0);
   const BUTTON_WIDTH = 80;
 
+  const SPRING_CONFIG = {
+    damping: 20,
+    stiffness: 100,
+    overshootClamping: true,
+  };
+
   const panGesture = Gesture.Pan()
     .activeOffsetX([-10, 10])
     .failOffsetY([-10, 10]) // Cancel gesture if moving vertically
@@ -35,17 +41,25 @@ export const SwipeableRow: React.FC<SwipeableRowProps> = ({
     })
     .onEnd(() => {
       if (translateX.value < -BUTTON_WIDTH / 2) {
-        translateX.value = withSpring(-BUTTON_WIDTH, { damping: 18, stiffness: 120 });
+        translateX.value = withSpring(-BUTTON_WIDTH, SPRING_CONFIG);
       } else if (translateX.value > BUTTON_WIDTH / 2) {
-        translateX.value = withSpring(BUTTON_WIDTH, { damping: 18, stiffness: 120 });
+        translateX.value = withSpring(BUTTON_WIDTH, SPRING_CONFIG);
       } else {
-        translateX.value = withSpring(0, { damping: 18, stiffness: 120 });
+        translateX.value = withSpring(0, SPRING_CONFIG);
       }
     });
 
   const rStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
   }));
+
+  const rCardStyle = useAnimatedStyle(() => {
+    const progress = Math.min(1, Math.abs(translateX.value) / BUTTON_WIDTH);
+    const borderRadius = 20 * (1 - progress);
+    return {
+      borderRadius,
+    };
+  });
 
   const rLeftBtnStyle = useAnimatedStyle(() => {
     const opacity = translateX.value > 0 ? translateX.value / BUTTON_WIDTH : 0;
@@ -67,7 +81,7 @@ export const SwipeableRow: React.FC<SwipeableRowProps> = ({
 
   const closeRow = () => {
     "worklet";
-    translateX.value = withSpring(0, { damping: 18, stiffness: 120 });
+    translateX.value = withSpring(0, SPRING_CONFIG);
   };
 
   const handleEditPress = () => {
@@ -79,6 +93,16 @@ export const SwipeableRow: React.FC<SwipeableRowProps> = ({
     closeRow();
     onDelete();
   };
+
+  const animatedChildren = React.Children.map(children, (child) => {
+    if (React.isValidElement(child)) {
+      const element = child as React.ReactElement<any>;
+      return React.cloneElement(element, {
+        style: [element.props.style, rCardStyle],
+      });
+    }
+    return child;
+  });
 
   return (
     <View style={styles.container}>
@@ -118,7 +142,7 @@ export const SwipeableRow: React.FC<SwipeableRowProps> = ({
       {/* Foreground view with the gesture detector and the option card */}
       <GestureDetector gesture={panGesture}>
         <Animated.View style={[styles.foreground, rStyle]}>
-          {children}
+          {animatedChildren}
         </Animated.View>
       </GestureDetector>
     </View>

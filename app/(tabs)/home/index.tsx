@@ -73,6 +73,7 @@ export default function HomeScreen() {
 
       {/* Main light background containing actions and listings */}
       <ScrollView
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={trendingIsLoading || userIsLoading || walletIsLoading}
@@ -159,11 +160,11 @@ export default function HomeScreen() {
           >
             {trendingIsLoading
               ? Array.from({ length: 3 }).map((_, index) => (
-                  <CoinCardSkeleton key={`skeleton-${index}`} />
-                ))
+                <CoinCardSkeleton key={`skeleton-${index}`} />
+              ))
               : trendingData?.data.map((coin) => (
-                  <CoinCard key={coin.id} {...coin} />
-                ))}
+                <CoinCard key={coin.id} {...coin} />
+              ))}
           </ScrollView>
         </View>
       </ScrollView>
