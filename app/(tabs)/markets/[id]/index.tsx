@@ -1,8 +1,14 @@
-import { BaseText, ScreenContainer } from "@/components";
+import { BaseButton, BaseText, ScreenContainer } from "@/components";
 import { Colors } from "@/constants";
-import { useGetAssetCandlesQuery, useGetAssetDetailsQuery } from "@/store";
+import {
+  useAddToWatchlistMutation,
+  useGetAssetCandlesQuery,
+  useGetAssetDetailsQuery,
+  useGetProfileQuery,
+  useRemoveFromWatchlistMutation,
+} from "@/store";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -11,9 +17,9 @@ import {
   View,
 } from "react-native";
 import { SvgUri } from "react-native-svg";
-import { CandlestickChart } from "react-native-wagmi-charts";
 
-import { formatCompact } from "@/utils";
+import { formatCompact, showErrorToast, showSuccessToast } from "@/utils";
+import { CandlestickChart } from "react-native-wagmi-charts";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -63,12 +69,38 @@ export default function CoinDetailsScreen() {
     },
   );
 
-  const handleRefresh = React.useCallback(async () => {
+  // Watchlist integration
+  const { data: profile } = useGetProfileQuery();
+  const [addToWatchlist, { isLoading: isAdding }] = useAddToWatchlistMutation();
+  const [removeFromWatchlist, { isLoading: isRemoving }] =
+    useRemoveFromWatchlistMutation();
+
+  const watchlist = profile?.watchlist ?? [];
+  const symbol = coin?.symbol || id || "";
+  const isInWatchlist = symbol ? watchlist.includes(symbol) : false;
+
+  const handleWatchlistToggle = useCallback(async () => {
+    if (!symbol) return;
+    try {
+      if (isInWatchlist) {
+        await removeFromWatchlist(symbol).unwrap();
+        showSuccessToast(`${symbol} removed from watchlist`);
+      } else {
+        await addToWatchlist(symbol).unwrap();
+        showSuccessToast(`${symbol} added to watchlist`);
+      }
+    } catch (error: any) {
+      console.error("Watchlist action error:", error);
+      showErrorToast(error?.data?.message || "Failed to update watchlist");
+    }
+  }, [symbol, isInWatchlist, addToWatchlist, removeFromWatchlist]);
+
+  const handleRefresh = useCallback(async () => {
     refetch();
     refetchCandles();
   }, [refetch, refetchCandles]);
 
-  const candlestickData = React.useMemo(() => {
+  const candlestickData = useMemo(() => {
     if (!candlesResponse?.data) return [];
     return candlesResponse.data.map((point) => ({
       timestamp: new Date(point.time).getTime(),
@@ -227,15 +259,22 @@ export default function CoinDetailsScreen() {
         </View>
 
         {/* Action Buttons */}
-        <TouchableOpacity
-          activeOpacity={0.8}
-          style={styles.buyBtn}
-          onPress={() =>
-            router.push(`/markets/${coin.symbol}/orderbook` as any)
-          }
-        >
-          <BaseText style={styles.buyBtnText}>Buy</BaseText>
-        </TouchableOpacity>
+
+        <View style={{ marginBottom: 20, gap: 10 }}>
+          <BaseButton
+            title="Buy"
+            onPress={() =>
+              router.push(`/markets/${coin.symbol}/orderbook` as any)
+            }
+          />
+
+          <BaseButton
+            title={isInWatchlist ? "Remove from Watchlist" : "Add to Watchlist"}
+            variant="outline"
+            isLoading={isAdding || isRemoving}
+            onPress={handleWatchlistToggle}
+          />
+        </View>
 
         <View style={styles.secondaryActions}>
           <TouchableOpacity activeOpacity={0.8} style={styles.actionBtn}>
