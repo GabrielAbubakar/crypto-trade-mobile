@@ -15,9 +15,8 @@ export default function SecurityScreen() {
   const is2faEnabled = profile?.twoFactorEnabled;
   const remainingCodes =
     twoFactorStatus !== undefined ? twoFactorStatus.recoveryCodesRemaining : 8;
-  const recoveryCodesDescription = `${
-    is2faEnabled ? "" : "2FA not setup yet and "
-  }${remainingCodes} backup codes remaining`;
+  const recoveryCodesDescription = `${is2faEnabled ? "" : "2FA not setup yet and "
+    }${remainingCodes} backup codes remaining`;
 
   return (
     <ScreenContainer style={styles.container} withPadding={true}>
@@ -79,18 +78,8 @@ export default function SecurityScreen() {
           }
           value="On"
           valueColor={Colors.primary}
-          onPress={() => {}}
+          onPress={() => { }}
         />
-      </View>
-
-      {/* Admin Notice Box */}
-      <View style={styles.noticeBox}>
-        <BaseText variant="bold" style={styles.noticeTitle}>
-          Admin will never ask for codes
-        </BaseText>
-        <BaseText size="sm" color="#8594A6" style={styles.noticeText}>
-          Keep recovery codes private and regenerate them if exposed.
-        </BaseText>
       </View>
     </ScreenContainer>
   );

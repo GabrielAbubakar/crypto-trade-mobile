@@ -14,7 +14,7 @@ import {
 } from "@/store";
 import { showErrorToast, showSuccessToast } from "@/utils";
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import React, { useMemo } from "react";
 import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native";
 
 export default function NotificationsScreen() {
@@ -195,12 +195,15 @@ export default function NotificationsScreen() {
     );
   };
 
-  const listData = isLoading
-    ? Array.from({ length: 4 }).map((_, index) => ({
+  const listData = useMemo(() => {
+    if (isLoading) {
+      return Array.from({ length: 4 }).map((_, index) => ({
         id: `skeleton-${index}`,
         isSkeleton: true,
-      }))
-    : notifications;
+      }));
+    }
+    return notifications;
+  }, [isLoading, notifications]);
 
   return (
     <ScreenContainer
@@ -211,7 +214,7 @@ export default function NotificationsScreen() {
       {renderHeader()}
       <FlatList
         data={listData}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: any) => item.id}
         renderItem={renderItem}
         // ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}

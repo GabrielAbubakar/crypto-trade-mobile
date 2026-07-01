@@ -46,6 +46,23 @@ export interface IRegisterDeviceRequest {
   platform?: "ios" | "android" | string;
 }
 
+export interface IDevice {
+  id: string;
+  userId: string;
+  expoPushToken: string;
+  platform: string;
+  createdAt: string;
+  lastSeenAt: string;
+}
+
+export interface IGetDevicesResponse {
+  data: IDevice[];
+  meta: {
+    count: number;
+    pushNotificationsEnabled: boolean;
+  };
+}
+
 export interface IPriceAlert {
   id: string;
   userId: string;

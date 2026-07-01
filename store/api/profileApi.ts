@@ -10,6 +10,8 @@ import type {
   IUpdateSettingsRequest,
   IUser,
   IUserSettings,
+  IDevice,
+  IGetDevicesResponse,
 } from "@/types";
 import { baseApi } from "./baseApi";
 
@@ -65,6 +67,16 @@ export const profileApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
+    }),
+    getDevices: builder.query<
+      IDevice[],
+      void
+    >({
+      query: () => ({
+        url: "/me/devices",
+        method: "GET",
+      }),
+      transformResponse: (response: IGetDevicesResponse) => response.data,
     }),
     getWatchlist: builder.query<IMarketAsset[], { include?: string } | void>({
       query: (params) => ({
@@ -197,6 +209,7 @@ export const {
   useUpdateSettingsMutation,
   useUpdateTransactionPinMutation,
   useRegisterDeviceMutation,
+  useGetDevicesQuery,
   useGetWatchlistQuery,
   useAddToWatchlistMutation,
   useRemoveFromWatchlistMutation,
