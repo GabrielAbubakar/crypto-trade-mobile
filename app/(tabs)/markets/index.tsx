@@ -5,8 +5,8 @@ import {
   ScreenContainer,
   ScreenHeader,
 } from "@/components";
-import { MarketCoinRow } from "@/components/markets/MarketCoinRow";
 import { MarketCoinRowSkeleton } from "@/components/markets/MarketCoinRowSkeleton";
+import { MarketListItem } from "@/components/markets/MarketListItem";
 import { Colors, MARKET_TABS } from "@/constants";
 import { useGetMarketAssetsQuery } from "@/store";
 import type { IGetMarketAssetsRequest } from "@/types";
@@ -66,14 +66,9 @@ export default function MarketsScreen() {
     return isLoading ? (
       <MarketCoinRowSkeleton key={item.id} />
     ) : (
-      <BaseTouchableOpacity
-        key={item.id}
-        onPress={() => router.push(`/markets/${item.symbol}` as any)}
-      >
-        <MarketCoinRow {...item} />
-      </BaseTouchableOpacity>
+      <MarketListItem key={item.id} item={item} />
     );
-  }, [isLoading, router]);
+  }, [isLoading]);
 
   return (
     <ScreenContainer withPadding={false} style={styles.container}>
