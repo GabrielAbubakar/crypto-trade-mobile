@@ -154,8 +154,7 @@ export default function HomeScreen() {
             Trending Assets
           </BaseText>
           <ScrollView
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.horizontalScrollContent}
+            contentContainerStyle={styles.verticalScrollContent}
             style={styles.scrollView}
           >
             {trendingIsLoading
@@ -190,7 +189,7 @@ const styles = StyleSheet.create({
   scrollView: {
     overflow: "visible",
   },
-  horizontalScrollContent: {
+  verticalScrollContent: {
     gap: 12,
     paddingHorizontal: 20,
     paddingTop: 8,

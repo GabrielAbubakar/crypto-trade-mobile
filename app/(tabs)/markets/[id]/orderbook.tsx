@@ -2,14 +2,46 @@ import { BaseText, ScreenContainer } from "@/components";
 import { Colors } from "@/constants";
 import { useGetOrderBookQuery } from "@/store";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import {
   ActivityIndicator,
-  ScrollView,
+  FlatList,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
+
+const OrderBookRow = React.memo(({ bid, ask }: { bid: any; ask: any }) => {
+  return (
+    <View style={styles.gridRow}>
+      {/* Bids Column */}
+      <View style={styles.bidCell}>
+        <BaseText style={[styles.priceText, { color: Colors.success }]}>
+          {bid.priceUsd.toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+        </BaseText>
+        <BaseText style={styles.amountText}>{bid.amount.toFixed(4)}</BaseText>
+      </View>
+
+      {/* Asks Column */}
+      {ask && (
+        <View style={styles.askCell}>
+          <BaseText style={[styles.priceText, { color: Colors.error }]}>
+            {ask.priceUsd.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </BaseText>
+          <BaseText style={styles.amountText}>{ask.amount.toFixed(4)}</BaseText>
+        </View>
+      )}
+    </View>
+  );
+});
+
+OrderBookRow.displayName = "OrderBookRow";
 
 export default function OrderBookScreen() {
   const router = useRouter();
@@ -23,20 +55,19 @@ export default function OrderBookScreen() {
 
   const orderBook = response?.data;
 
-  if (isLoading && !orderBook) {
-    return (
-      <ScreenContainer style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" color={Colors.primary} />
-      </ScreenContainer>
-    );
-  }
+  const renderItem = useCallback(
+    ({ item, index }: { item: any; index: number }) => {
+      const ask = orderBook?.asks?.[index];
+      return <OrderBookRow bid={item} ask={ask} />;
+    },
+    [orderBook?.asks],
+  );
 
-  return (
-    <View style={styles.container}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
+  const keyExtractor = useCallback((item: any, index: number) => index.toString(), []);
+
+  const ListHeaderComponent = useMemo(() => {
+    return (
+      <View>
         {/* Header */}
         <View style={styles.header}>
           <BaseText size="3xl" variant="bold" style={styles.headerTitle}>
@@ -88,69 +119,50 @@ export default function OrderBookScreen() {
           </View>
         )}
 
-        {/* Order Book Grid */}
-        <View style={styles.gridContainer}>
-          {/* Table Headers */}
-          <View style={styles.gridHeaderRow}>
-            <View style={styles.columnLeft}>
-              <BaseText
-                variant="bold"
-                style={[styles.columnTitle, { color: Colors.success }]}
-              >
-                Bids
-              </BaseText>
-            </View>
-            <View style={styles.columnRight}>
-              <BaseText
-                variant="bold"
-                style={[styles.columnTitle, { color: Colors.error }]}
-              >
-                Asks
-              </BaseText>
-            </View>
+        {/* Table Headers */}
+        <View style={styles.gridHeaderRow}>
+          <View style={styles.columnLeft}>
+            <BaseText
+              variant="bold"
+              style={[styles.columnTitle, { color: Colors.success }]}
+            >
+              Bids
+            </BaseText>
           </View>
-
-          {/* Table Rows */}
-          {orderBook?.bids?.map((bid, index) => {
-            const ask = orderBook.asks[index];
-            return (
-              <View key={index} style={styles.gridRow}>
-                {/* Bids Column */}
-                <View style={styles.bidCell}>
-                  <BaseText
-                    style={[styles.priceText, { color: Colors.success }]}
-                  >
-                    {bid.priceUsd.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </BaseText>
-                  <BaseText style={styles.amountText}>
-                    {bid.amount.toFixed(4)}
-                  </BaseText>
-                </View>
-
-                {/* Asks Column */}
-                {ask && (
-                  <View style={styles.askCell}>
-                    <BaseText
-                      style={[styles.priceText, { color: Colors.error }]}
-                    >
-                      {ask.priceUsd.toLocaleString("en-US", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </BaseText>
-                    <BaseText style={styles.amountText}>
-                      {ask.amount.toFixed(4)}
-                    </BaseText>
-                  </View>
-                )}
-              </View>
-            );
-          })}
+          <View style={styles.columnRight}>
+            <BaseText
+              variant="bold"
+              style={[styles.columnTitle, { color: Colors.error }]}
+            >
+              Asks
+            </BaseText>
+          </View>
         </View>
-      </ScrollView>
+      </View>
+    );
+  }, [symbol, id, orderBook, router]);
+
+  if (isLoading && !orderBook) {
+    return (
+      <ScreenContainer style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </ScreenContainer>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={orderBook?.bids || []}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        ListHeaderComponent={ListHeaderComponent}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        initialNumToRender={15}
+        maxToRenderPerBatch={15}
+        windowSize={5}
+      />
 
       {/* Sticky Bottom CTA */}
       <View style={styles.ctaContainer}>

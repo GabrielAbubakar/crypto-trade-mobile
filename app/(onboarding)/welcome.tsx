@@ -3,12 +3,13 @@ import { BaseButton, OnboardingItem, Paginator } from "@/components";
 import { Colors, onboarding } from "@/constants";
 import { router } from "expo-router";
 import React, { useRef, useState } from "react";
-import { Animated, FlatList, Image, StyleSheet, View } from "react-native";
+import Animated, { useAnimatedScrollHandler, useSharedValue } from "react-native-reanimated";
+import { FlatList, Image, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function WelcomeScreen() {
-  const scrollX = useRef(new Animated.Value(0)).current;
-  const flatListRef = useRef<FlatList>(null);
+  const scrollX = useSharedValue(0);
+  const flatListRef = useRef<Animated.FlatList<any>>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const insets = useSafeAreaInsets();
 
@@ -30,6 +31,12 @@ export default function WelcomeScreen() {
       router.replace("/(auth)");
     }
   };
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollX.value = event.contentOffset.x;
+    },
+  });
 
   return (
     // <ScreenContainer style={{ justifyContent: "center" }} withPadding={false}>
@@ -53,17 +60,14 @@ export default function WelcomeScreen() {
         }}
       />
 
-      <FlatList
+      <Animated.FlatList
         style={{ flexGrow: 0, marginBottom: 30, marginTop: 50 }}
         horizontal
         pagingEnabled
         bounces={false}
         showsHorizontalScrollIndicator={false}
         data={onboarding}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-          { useNativeDriver: false },
-        )}
+        onScroll={scrollHandler}
         scrollEventThrottle={16}
         renderItem={({ item }) => (
           <OnboardingItem item={item} key={item.title} />

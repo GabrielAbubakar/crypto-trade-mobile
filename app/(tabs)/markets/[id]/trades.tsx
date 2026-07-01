@@ -2,14 +2,53 @@ import { BaseText, ScreenContainer } from "@/components";
 import { Colors } from "@/constants";
 import { useGetTradesQuery } from "@/store";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import {
   ActivityIndicator,
-  ScrollView,
+  FlatList,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
+
+const TradeRow = React.memo(({ trade }: { trade: any }) => {
+  const isBuy = trade.side === "buy";
+  const color = isBuy ? "#5CD6A5" : Colors.error;
+  const label = isBuy ? "Buy" : "Sell";
+
+  return (
+    <View style={styles.tradeCard}>
+      <View style={styles.tradeCol1}>
+        <BaseText variant="bold" style={[styles.sideText, { color }]}>
+          {label}
+        </BaseText>
+      </View>
+      <View style={styles.tradeCol2}>
+        <BaseText variant="bold" style={styles.priceText}>
+          {trade.priceUsd.toLocaleString("en-US", {
+            style: "currency",
+            currency: "USD",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+        </BaseText>
+      </View>
+      <View style={styles.tradeCol3}>
+        <BaseText style={styles.amountText}>{trade.amount.toFixed(4)}</BaseText>
+      </View>
+      <View style={styles.tradeCol4}>
+        <BaseText style={styles.totalText}>
+          {trade.totalUsd.toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+        </BaseText>
+      </View>
+    </View>
+  );
+});
+
+TradeRow.displayName = "TradeRow";
 
 export default function TradesScreen() {
   const router = useRouter();
@@ -22,20 +61,15 @@ export default function TradesScreen() {
 
   const trades = response?.data;
 
-  if (isLoading && !trades) {
-    return (
-      <ScreenContainer style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" color={Colors.primary} />
-      </ScreenContainer>
-    );
-  }
+  const renderItem = useCallback(({ item }: { item: any }) => {
+    return <TradeRow trade={item} />;
+  }, []);
 
-  return (
-    <View style={styles.container}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
+  const keyExtractor = useCallback((item: any) => item.id, []);
+
+  const ListHeaderComponent = useMemo(() => {
+    return (
+      <View>
         {/* Header */}
         <View style={styles.header}>
           <BaseText size="3xl" variant="bold" style={styles.headerTitle}>
@@ -62,50 +96,36 @@ export default function TradesScreen() {
             </BaseText>
           </TouchableOpacity>
         </View>
+      </View>
+    );
+  }, [id, router]);
 
-        {/* Trades List */}
-        <View style={styles.listContainer}>
-          {trades?.map((trade) => {
-            const isBuy = trade.side === "buy";
-            const color = isBuy ? "#5CD6A5" : Colors.error;
-            const label = isBuy ? "Buy" : "Sell";
+  const ItemSeparatorComponent = useCallback(() => {
+    return <View style={{ height: 12 }} />;
+  }, []);
 
-            return (
-              <View key={trade.id} style={styles.tradeCard}>
-                <View style={styles.tradeCol1}>
-                  <BaseText variant="bold" style={[styles.sideText, { color }]}>
-                    {label}
-                  </BaseText>
-                </View>
-                <View style={styles.tradeCol2}>
-                  <BaseText variant="bold" style={styles.priceText}>
-                    {trade.priceUsd.toLocaleString("en-US", {
-                      style: "currency",
-                      currency: "USD",
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </BaseText>
-                </View>
-                <View style={styles.tradeCol3}>
-                  <BaseText style={styles.amountText}>
-                    {trade.amount.toFixed(4)}
-                  </BaseText>
-                </View>
-                <View style={styles.tradeCol4}>
-                  <BaseText style={styles.totalText}>
-                    {trade.totalUsd.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </BaseText>
-                </View>
-              </View>
-            );
-          })}
-        </View>
-      </ScrollView>
+  if (isLoading && !trades) {
+    return (
+      <ScreenContainer style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </ScreenContainer>
+    );
+  }
 
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={trades || []}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        ListHeaderComponent={ListHeaderComponent}
+        ItemSeparatorComponent={ItemSeparatorComponent}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        initialNumToRender={15}
+        maxToRenderPerBatch={15}
+        windowSize={5}
+      />
       {/* Bottom fade gradient or shadow could go here */}
     </View>
   );
