@@ -10,11 +10,10 @@ import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Image,
-  Platform,
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 export default function OTPScreen() {
@@ -73,7 +72,6 @@ export default function OTPScreen() {
       setIsSuccess(true);
     } catch (err: any) {
       setError(err?.data?.message || "Verification failed");
-      console.log(err);
     }
   };
 
@@ -118,7 +116,6 @@ export default function OTPScreen() {
 
   useEffect(() => {
     showInfoToast(`OTP code: ${code}`);
-    console.log(code, "codeee");
   }, [code]);
 
   // SUCCESSFUL REGISTRATION VIEW

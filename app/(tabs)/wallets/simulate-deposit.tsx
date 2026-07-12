@@ -38,7 +38,6 @@ export default function SimulateDepositScreen() {
         showErrorToast("Failed to simulate deposit.");
       }
     } catch (err: any) {
-      console.log("err:", err);
       showErrorToast(
         err?.data?.message || "An error occurred during simulation.",
       );

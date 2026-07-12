@@ -1,7 +1,8 @@
 import { Colors } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { StyleSheet, View, StyleProp, ViewStyle } from "react-native";
+import type { StyleProp, ViewStyle } from "react-native";
+import { StyleSheet, View } from "react-native";
 import Animated from "react-native-reanimated";
 import { BaseText } from "./BaseText";
 import { BaseTouchableOpacity } from "./BaseTouchableOpacity";

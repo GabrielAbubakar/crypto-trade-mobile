@@ -70,8 +70,6 @@ export default function TransactionDetailsScreen() {
     }
   };
 
-  console.log(transaction)
-
   return (
     <ScreenContainer scrollable style={styles.container}>
       <View style={styles.content}>

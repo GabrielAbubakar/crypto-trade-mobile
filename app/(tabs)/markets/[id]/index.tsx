@@ -90,7 +90,6 @@ export default function CoinDetailsScreen() {
         showSuccessToast(`${symbol} added to watchlist`);
       }
     } catch (error: any) {
-      console.error("Watchlist action error:", error);
       showErrorToast(error?.data?.message || "Failed to update watchlist");
     }
   }, [symbol, isInWatchlist, addToWatchlist, removeFromWatchlist]);

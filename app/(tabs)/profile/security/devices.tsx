@@ -2,7 +2,7 @@ import { BackHeader, ProfileOptionCard, ScreenContainer, Skeleton } from "@/comp
 import { BaseText } from "@/components/ui/BaseText";
 import { Colors } from "@/constants";
 import { useGetDevicesQuery } from "@/store/api/profileApi";
-import { IDevice } from "@/types";
+import type { IDevice } from "@/types";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useMemo } from "react";
 import { FlatList, StyleSheet, View } from "react-native";

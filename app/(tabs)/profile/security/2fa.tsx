@@ -11,6 +11,8 @@ import {
   useEnable2FAMutation,
   useGetProfileQuery,
   useSetup2FAMutation,
+  useAppDispatch,
+  setRecoveryCodes,
 } from "@/store";
 import { showErrorToast, showSuccessToast } from "@/utils";
 import { Ionicons } from "@expo/vector-icons";
@@ -29,6 +31,7 @@ type Step = "intro" | "setup_qr" | "active" | "disable_form";
 
 export default function TwoFactorScreen() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const { data: profile, isLoading: isProfileLoading } = useGetProfileQuery();
 
   const [setup2FA, { isLoading: isSettingUp }] = useSetup2FAMutation();
@@ -74,10 +77,8 @@ export default function TwoFactorScreen() {
     try {
       const res = await enable2FA({ code }).unwrap();
       showSuccessToast("Two-Factor Authentication enabled successfully!");
-      router.push({
-        pathname: "/profile/security/recovery-codes",
-        params: { codes: JSON.stringify(res.recoveryCodes || []) },
-      });
+      dispatch(setRecoveryCodes(res.recoveryCodes || []));
+      router.push("/profile/security/recovery-codes");
     } catch (err: any) {
       showErrorToast(err?.data?.message || "Failed to enable 2FA");
     }

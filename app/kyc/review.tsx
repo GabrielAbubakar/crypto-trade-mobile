@@ -1,4 +1,4 @@
-import { KycProgressSteps, ImagePreviewModal } from "@/components/kyc";
+import { ImagePreviewModal, KycProgressSteps } from "@/components/kyc";
 import {
   BackHeader,
   BaseButton,
@@ -12,10 +12,10 @@ import {
   useAppSelector,
   useKycVerificationMutation,
 } from "@/store";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
 export default function KYCReview() {
   const router = useRouter();
@@ -52,22 +52,18 @@ export default function KYCReview() {
       const payload = {
         legalName: name,
         country: country,
-        documentType: kycState.documentType || "national_id",
-        documentNumber: kycState.documentNumber || "NIN-000-000",
-        selfieImageUrl:
-          kycState.selfieImageUrl ||
-          "https://example.com/uploads/ada-selfie.jpg",
-        documentImageUrl:
-          kycState.documentImageUrl ||
-          "https://example.com/uploads/ada-national-id.jpg",
+        documentType: kycState.documentType,
+        documentNumber: kycState.documentNumber,
+        selfieImageUrl: kycState.selfieImageUrl,
+        documentImageUrl: kycState.documentImageUrl,
         documentBackImageUrl: kycState.documentBackImageUrl || undefined,
       };
       await submitKyc(payload).unwrap();
       dispatch(resetKyc());
       // Navigate back to the main KYC dashboard
       router.replace("/home");
-    } catch (error) {
-      console.error("KYC submission failed:", error);
+    } catch {
+
     }
   };
 

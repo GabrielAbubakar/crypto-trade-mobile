@@ -42,7 +42,6 @@ export default function ProfileScreen() {
       showToast("success", "Logged out successfully");
       router.replace("/(auth)");
     } catch (error) {
-      console.log(error);
       showToast("error", "Unable to logout. Please try again.");
     }
   }

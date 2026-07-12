@@ -53,7 +53,6 @@ export const SignInForm: React.FC = () => {
         (error as any)?.message ||
         "Unable to sign in";
       showToast("error", message);
-      console.error("Error signing in:", error);
     }
   }
 
@@ -114,10 +113,10 @@ export const SignInForm: React.FC = () => {
               error={
                 field.state.meta.isTouched && field.state.meta.errors.length > 0
                   ? field.state.meta.errors
-                      .map((err: any) =>
-                        typeof err === "string" ? err : err.message,
-                      )
-                      .join(", ")
+                    .map((err: any) =>
+                      typeof err === "string" ? err : err.message,
+                    )
+                    .join(", ")
                   : undefined
               }
             />
@@ -131,7 +130,7 @@ export const SignInForm: React.FC = () => {
           {(field) => (
             <BaseInput
               placeholder="Enter your password"
-              // secureTextEntry={!showPassword}
+              secureTextEntry={!showPassword}
               value={field.state.value}
               onChangeText={field.handleChange}
               containerStyle={styles.authInput}
@@ -149,10 +148,10 @@ export const SignInForm: React.FC = () => {
               error={
                 field.state.meta.isTouched && field.state.meta.errors.length > 0
                   ? field.state.meta.errors
-                      .map((err: any) =>
-                        typeof err === "string" ? err : err.message,
-                      )
-                      .join(", ")
+                    .map((err: any) =>
+                      typeof err === "string" ? err : err.message,
+                    )
+                    .join(", ")
                   : undefined
               }
             />

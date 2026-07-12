@@ -20,7 +20,7 @@ import PreferenceIcon from "@/assets/icons/settings/preference.svg";
 // Additional asset SVG icons
 import FingerprintIcon from "@/assets/icons/auth/Fingerprint.svg";
 import NotificationIcon from "@/assets/icons/main/notification.svg";
-import { useLogOutMutation } from "@/store";
+import { logout, useAppDispatch, useLogOutMutation } from "@/store";
 import { showToast } from "@/utils";
 import { router } from "expo-router";
 
@@ -72,15 +72,16 @@ const settingsItems = [
 export default function SettingsScreen() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [logOut, { isLoading }] = useLogOutMutation();
+  const dispatch = useAppDispatch()
 
   async function handleConfirmLogout() {
     try {
       await logOut("").unwrap();
       setShowLogoutModal(false);
+      dispatch(logout());
       showToast("success", "Logged out successfully");
       router.replace("/(auth)");
-    } catch (error) {
-      console.log(error);
+    } catch {
       showToast("error", "Unable to logout. Please try again.");
     }
   }
@@ -95,7 +96,7 @@ export default function SettingsScreen() {
             label={item.label}
             value={item.value}
             icon={item.icon}
-            onPress={() => {}}
+            onPress={() => { }}
           />
         ))}
 

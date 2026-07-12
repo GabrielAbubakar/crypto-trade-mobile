@@ -9,6 +9,9 @@ import { Colors } from "@/constants";
 import {
   useGetProfileQuery,
   useRegenerate2FARecoveryCodesMutation,
+  useAppDispatch,
+  useAppSelector,
+  clearRecoveryCodes,
 } from "@/store";
 import { showErrorToast, showSuccessToast } from "@/utils";
 import { Ionicons } from "@expo/vector-icons";
@@ -29,18 +32,10 @@ export default function RecoveryCodesScreen() {
   const { data: profile, isLoading: isProfileLoading } = useGetProfileQuery();
   const { codes: codesParam } = useLocalSearchParams<{ codes?: string }>();
 
-  const initialCodes = useMemo(() => {
-    if (codesParam) {
-      try {
-        return JSON.parse(codesParam);
-      } catch (e) {
-        return codesParam.split(",");
-      }
-    }
-    return [];
-  }, [codesParam]);
+  const dispatch = useAppDispatch();
+  const reduxCodes = useAppSelector((state) => state.temp.recoveryCodes);
 
-  const [codes, setCodes] = useState<string[]>(initialCodes);
+  const [codes, setCodes] = useState<string[]>([]);
   const [step, setStep] = useState<Step>("view");
 
   // Regenerate Form Inputs
@@ -52,8 +47,17 @@ export default function RecoveryCodesScreen() {
     useRegenerate2FARecoveryCodesMutation();
 
   useEffect(() => {
-    setCodes(initialCodes);
-  }, [initialCodes]);
+    if (reduxCodes && reduxCodes.length > 0) {
+      setCodes(reduxCodes);
+      dispatch(clearRecoveryCodes());
+    } else if (codesParam) {
+      try {
+        setCodes(JSON.parse(codesParam));
+      } catch (e) {
+        setCodes(codesParam.split(","));
+      }
+    }
+  }, [reduxCodes, codesParam]);
 
   const handleRegeneratePress = () => {
     setPassword("");
