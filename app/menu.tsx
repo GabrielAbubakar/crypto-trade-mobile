@@ -54,7 +54,7 @@ export default function MenuScreen() {
               title="Settings"
               variant="primary"
               size="small"
-              onPress={() => router.push("/settings")}
+              onPress={() => router.push("/profile")}
               style={styles.editButton}
             />
           </View>

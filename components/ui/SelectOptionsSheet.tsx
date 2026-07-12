@@ -22,7 +22,7 @@ export const SelectOptionsSheet = React.forwardRef<
   BottomSheetModal,
   SelectOptionsSheetProps
 >(({ title, options, selectedValue, onSelect, onDismiss }, ref) => {
-  const snapPoints = useMemo(() => ["50%", "75%"], []);
+  const snapPoints = useMemo(() => ["45%", "70%"], []);
 
   return (
     <BottomSheetModal
@@ -32,6 +32,7 @@ export const SelectOptionsSheet = React.forwardRef<
       onDismiss={onDismiss}
       backgroundStyle={styles.sheetBackground}
       handleIndicatorStyle={styles.sheetHandle}
+      maxDynamicContentSize={400}
     >
       <BottomSheetScrollView
         style={styles.sheetContainer}

@@ -22,7 +22,11 @@ const authSlice = createSlice({
   reducers: {
     setCredentials: (
       state,
-      action: PayloadAction<{ user: IUser; accessToken: string; refreshToken: string }>,
+      action: PayloadAction<{
+        user: IUser;
+        accessToken: string;
+        refreshToken: string;
+      }>,
     ) => {
       state.user = action.payload.user;
       state.accessToken = action.payload.accessToken;
@@ -36,7 +40,20 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
     },
   },
+  extraReducers: (builder) => {
+    builder.addMatcher(
+      (action) =>
+        (action.type === "api/executeQuery/fulfilled" &&
+          action.meta?.arg?.endpointName === "getProfile") ||
+        (action.type === "api/executeMutation/fulfilled" &&
+          action.meta?.arg?.endpointName === "updateProfile"),
+      (state, action: PayloadAction<any>) => {
+        state.user = action.payload;
+      },
+    );
+  },
 });
 
 export const { setCredentials, logout } = authSlice.actions;
 export default authSlice.reducer;
+
