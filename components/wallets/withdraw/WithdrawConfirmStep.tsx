@@ -1,7 +1,7 @@
-import { BackHeader, BaseText } from "@/components";
 import { Colors } from "@/constants";
 import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { BackHeader, BaseText } from "../../ui";
 
 interface WithdrawConfirmStepProps {
   form: any;

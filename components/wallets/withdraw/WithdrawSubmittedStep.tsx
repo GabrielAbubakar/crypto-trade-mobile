@@ -1,9 +1,9 @@
-import { BackHeader, BaseText } from "@/components";
 import { Colors } from "@/constants";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { BackHeader, BaseText } from "../../ui";
 
 interface WithdrawSubmittedStepProps {
   form: any;

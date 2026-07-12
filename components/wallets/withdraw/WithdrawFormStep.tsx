@@ -1,15 +1,16 @@
+import { Colors } from "@/constants";
+import { formatCurrency } from "@/utils";
+import { Feather } from "@expo/vector-icons";
+import React from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import {
   BackHeader,
   BaseButton,
   BaseInput,
   BaseText,
   ItemBgContainer,
-} from "@/components";
-import { Colors } from "@/constants";
-import { formatCurrency } from "@/utils";
-import { Feather } from "@expo/vector-icons";
-import React from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+} from "../../ui";
+
 
 interface WithdrawFormStepProps {
   balanceData: any;
@@ -58,8 +59,8 @@ export function WithdrawFormStep({
             Withdrawal unavailable
           </BaseText>
           <BaseText size="sm" color={Colors.textSecondary}>
-            Your verification is not completed. You can not withdraw until it
-            is completed.
+            Your verification is not completed. You can not withdraw until it is
+            completed.
           </BaseText>
         </ItemBgContainer>
       )}
