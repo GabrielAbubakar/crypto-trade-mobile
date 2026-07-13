@@ -1,19 +1,20 @@
 import Background from "@/assets/images/auth-background.png";
 import SuccessCreated from "@/assets/images/success-created.svg";
-import { BaseButton, BaseText, ScreenContainer } from "@/components";
-import { Colors } from "@/constants";
-import { setCredentials, useAppDispatch, useVerifyOTPMutation } from "@/store";
-import { showInfoToast } from "@/utils";
+import { BaseButton, BaseText, ScreenContainer } from "@/components/ui";
+import { Colors } from "@/core/constants";
+import { useAppDispatch } from "@/core/store/hooks";
+import { setCredentials, useVerifyOTPMutation } from "@/core/store/store";
+import { showInfoToast } from "@/core/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Image,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View
+    Image,
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+    View
 } from "react-native";
 
 export default function OTPScreen() {

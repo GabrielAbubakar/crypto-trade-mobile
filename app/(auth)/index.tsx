@@ -1,24 +1,20 @@
 import Background from "@/assets/images/auth-background.png";
-import {
-  BaseText,
-  ScreenContainer,
-  SignInForm,
-  SignUpForm,
-} from "@/components";
 import type { AuthTab } from "@/components/auth/types";
-import { Colors } from "@/constants";
+import { BaseText, ScreenContainer } from "@/components/ui";
+import { Colors } from "@/core/constants";
+import { SignInForm, SignUpForm } from "@/features/auth/components";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
-  BackHandler,
-  Dimensions,
-  Image,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    BackHandler,
+    Dimensions,
+    Image,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 const { width } = Dimensions.get("window");

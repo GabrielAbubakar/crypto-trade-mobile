@@ -1,14 +1,14 @@
-import { Colors } from "@/constants";
+import { Colors } from "@/core/constants";
 import React from "react";
 import type {
-  StyleProp,
-  TextInputProps,
-  ViewStyle
+    StyleProp,
+    TextInputProps,
+    ViewStyle
 } from "react-native";
 import {
-  StyleSheet,
-  TextInput,
-  View
+    StyleSheet,
+    TextInput,
+    View
 } from "react-native";
 import { BaseText } from "./BaseText";
 

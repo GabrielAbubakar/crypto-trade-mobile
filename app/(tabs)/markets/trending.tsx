@@ -1,14 +1,9 @@
-import {
-  BackHeader,
-  BaseText,
-  BaseTouchableOpacity,
-  ScreenContainer,
-} from "@/components";
 import { MarketCoinRow } from "@/components/markets/MarketCoinRow";
 import { MarketCoinRowSkeleton } from "@/components/markets/MarketCoinRowSkeleton";
+import { BackHeader, BaseText, BaseTouchableOpacity, ScreenContainer } from "@/components/ui";
 import { Sparkline } from "@/components/ui/Sparkline";
-import { Colors } from "@/constants";
-import { useGetTrendingAssetsQuery } from "@/store";
+import { Colors } from "@/core/constants";
+import { useGetTrendingAssetsQuery } from "@/core/store/store";
 import { useRouter } from "expo-router";
 import React, { useCallback } from "react";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";

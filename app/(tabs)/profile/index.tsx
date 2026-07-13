@@ -1,22 +1,11 @@
 import profileImage from "@/assets/images/avatar.jpg";
-import {
-  BackHeader,
-  BaseButton,
-  ConfirmationModal,
-  ProfileOptionCard,
-  ScreenContainer,
-} from "@/components";
+import { BackHeader, BaseButton, ConfirmationModal, ProfileOptionCard, ScreenContainer } from "@/components/ui";
 import { BaseText, Title } from "@/components/ui/BaseText";
-import { Colors } from "@/constants";
-import {
-  logout,
-  useAppDispatch,
-  useGetNotificationsQuery,
-  useGetPriceAlertsQuery,
-  useGetProfileQuery,
-  useLogOutMutation,
-} from "@/store";
-import { showToast } from "@/utils";
+import { Colors } from "@/core/constants";
+import { useAppDispatch } from "@/core/store/hooks";
+import { logout, useGetNotificationsQuery, useGetPriceAlertsQuery, useLogOutMutation } from "@/core/store/store";
+import { showToast } from "@/core/utils";
+import { useGetProfileQuery } from "@/features/profile/api/profileApi";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";

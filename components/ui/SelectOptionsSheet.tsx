@@ -1,4 +1,4 @@
-import { Colors, FontFamily } from "@/constants";
+import { Colors, FontFamily } from "@/core/constants";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import React, { useMemo } from "react";

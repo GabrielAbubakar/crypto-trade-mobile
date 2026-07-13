@@ -1,29 +1,19 @@
-import {
-  BackHeader,
-  BaseButton,
-  BaseInput,
-  ScreenContainer,
-} from "@/components";
+import { BackHeader, BaseButton, BaseInput, ScreenContainer } from "@/components/ui";
 import { BaseText } from "@/components/ui/BaseText";
-import { Colors } from "@/constants";
-import {
-  useDisable2FAMutation,
-  useEnable2FAMutation,
-  useGetProfileQuery,
-  useSetup2FAMutation,
-  useAppDispatch,
-  setRecoveryCodes,
-} from "@/store";
-import { showErrorToast, showSuccessToast } from "@/utils";
+import { Colors } from "@/core/constants";
+import { useAppDispatch } from "@/core/store/hooks";
+import { setRecoveryCodes, useDisable2FAMutation, useEnable2FAMutation, useSetup2FAMutation } from "@/core/store/store";
+import { showErrorToast, showSuccessToast } from "@/core/utils";
+import { useGetProfileQuery } from "@/features/profile/api/profileApi";
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 

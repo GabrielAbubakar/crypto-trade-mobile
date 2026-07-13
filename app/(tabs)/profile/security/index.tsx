@@ -1,7 +1,8 @@
-import { BackHeader, ProfileOptionCard, ScreenContainer } from "@/components";
+import { BackHeader, ProfileOptionCard, ScreenContainer } from "@/components/ui";
 import { BaseText } from "@/components/ui/BaseText";
-import { Colors } from "@/constants";
-import { useGet2FAStatusQuery, useGetProfileQuery } from "@/store";
+import { Colors } from "@/core/constants";
+import { useGet2FAStatusQuery } from "@/core/store/store";
+import { useGetProfileQuery } from "@/features/profile/api/profileApi";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";

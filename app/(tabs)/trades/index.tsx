@@ -1,24 +1,16 @@
-import {
-  BaseButton,
-  BaseText,
-  ScreenContainer,
-  ScreenHeader,
-  Skeleton,
-} from "@/components";
-import { Colors } from "@/constants";
-import {
-  useGetAssetCandlesQuery,
-  useGetAssetDetailsQuery,
-  useGetProfileQuery,
-} from "@/store";
+import { BaseButton, BaseText, ScreenContainer, ScreenHeader, Skeleton } from "@/components/ui";
+import { Colors } from "@/core/constants";
+import { useGetAssetCandlesQuery } from "@/core/store/store";
+import { useGetProfileQuery } from "@/features/profile/api/profileApi";
+import { useGetAssetDetailsQuery } from "@/features/trading/api/marketApi";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
-  ActivityIndicator,
-  Dimensions,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Dimensions,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { CandlestickChart } from "react-native-wagmi-charts";
 

@@ -1,7 +1,7 @@
-import { BackHeader, BaseText, ScreenContainer, Skeleton } from "@/components";
-import { Colors } from "@/constants";
-import { useGetDepositAddressDetailsQuery } from "@/store";
-import { showSuccessToast } from "@/utils";
+import { BackHeader, BaseText, ScreenContainer, Skeleton } from "@/components/ui";
+import { Colors } from "@/core/constants";
+import { showSuccessToast } from "@/core/utils";
+import { useGetDepositAddressDetailsQuery } from "@/features/wallet/api/walletApi";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { Clipboard, StyleSheet, TouchableOpacity, View } from "react-native";

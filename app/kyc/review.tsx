@@ -1,17 +1,14 @@
 import { ImagePreviewModal, KycProgressSteps } from "@/components/kyc";
 import {
-  BackHeader,
-  BaseButton,
-  BaseText,
-  ScreenContainer,
+    BackHeader,
+    BaseButton,
+    BaseText,
+    ScreenContainer,
 } from "@/components/ui";
-import { Colors } from "@/constants";
-import {
-  resetKyc,
-  useAppDispatch,
-  useAppSelector,
-  useKycVerificationMutation,
-} from "@/store";
+import { Colors } from "@/core/constants";
+import { useAppDispatch, useAppSelector } from "@/core/store/hooks";
+import { useKycVerificationMutation } from "@/features/kyc/api/kycApi";
+import { resetKyc } from "@/features/kyc/slices/kycSlice";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";

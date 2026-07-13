@@ -1,7 +1,7 @@
-import { BackHeader, BaseInput, BaseText, ScreenContainer } from "@/components";
-import { Colors } from "@/constants";
-import { useSimulateDepositMutation } from "@/store";
-import { showErrorToast, showSuccessToast } from "@/utils";
+import { BackHeader, BaseInput, BaseText, ScreenContainer } from "@/components/ui";
+import { Colors } from "@/core/constants";
+import { showErrorToast, showSuccessToast } from "@/core/utils";
+import { useSimulateDepositMutation } from "@/features/wallet/api/walletApi";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";

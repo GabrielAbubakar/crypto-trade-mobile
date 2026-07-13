@@ -1,11 +1,11 @@
-import { KycProgressSteps } from "@/components/kyc/KycProgressSteps";
 import {
-  BackHeader,
-  BaseButton,
-  BaseText,
-  ScreenContainer,
+    BackHeader,
+    BaseButton,
+    BaseText,
+    ScreenContainer,
 } from "@/components/ui";
-import { Colors, FontFamily } from "@/constants";
+import { Colors, FontFamily } from "@/core/constants";
+import { KycProgressSteps } from "@/features/kyc/components/KycProgressSteps";
 import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, View } from "react-native";

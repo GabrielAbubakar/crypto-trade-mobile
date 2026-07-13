@@ -1,23 +1,10 @@
-import {
-  BackHeader,
-  BaseButton,
-  BaseInput,
-  BaseText,
-  ScreenContainer,
-  SelectOptionsSheet,
-  TradeDetailsCard,
-  TradeInputCard,
-  TradeTabs,
-} from "@/components";
-import { Colors, FontFamily } from "@/constants";
+import { Colors, FontFamily } from "@/core/constants";
 
-import {
-  useCreateQuoteMutation,
-  useGetMarketAssetsQuery,
-  useGetMarketPricesQuery,
-  useGetWalletBalancesQuery,
-} from "@/store";
-import { showErrorToast } from "@/utils";
+import { BackHeader, BaseButton, BaseInput, BaseText, ScreenContainer, SelectOptionsSheet } from "@/components/ui";
+import { useCreateQuoteMutation, useGetMarketAssetsQuery, useGetMarketPricesQuery } from "@/core/store/store";
+import { showErrorToast } from "@/core/utils";
+import { TradeDetailsCard, TradeInputCard, TradeTabs } from "@/features/trading/components";
+import { useGetWalletBalancesQuery } from "@/features/wallet/api/walletApi";
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useForm, useStore } from "@tanstack/react-form";
 import { useLocalSearchParams, useRouter } from "expo-router";

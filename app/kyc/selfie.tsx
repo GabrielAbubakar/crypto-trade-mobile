@@ -1,27 +1,24 @@
-import { KycProgressSteps } from "@/components/kyc/KycProgressSteps";
 import {
-  BackHeader,
-  BaseButton,
-  BaseText,
-  ScreenContainer,
+    BackHeader,
+    BaseButton,
+    BaseText,
+    ScreenContainer,
 } from "@/components/ui";
-import { Colors, FontFamily } from "@/constants";
-import {
-  setSelfieImageUrl,
-  useAppDispatch,
-  useAppSelector,
-  useKycUploadMutation,
-} from "@/store";
-import { showErrorToast, showSuccessToast } from "@/utils";
+import { Colors, FontFamily } from "@/core/constants";
+import { useAppDispatch, useAppSelector } from "@/core/store/hooks";
+import { showErrorToast, showSuccessToast } from "@/core/utils";
+import { useKycUploadMutation } from "@/features/kyc/api/kycApi";
+import { KycProgressSteps } from "@/features/kyc/components/KycProgressSteps";
+import { setSelfieImageUrl } from "@/features/kyc/slices/kycSlice";
 import { Ionicons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  ActivityIndicator,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 export default function KYCSelfie() {

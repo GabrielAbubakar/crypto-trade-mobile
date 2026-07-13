@@ -1,5 +1,5 @@
-import { BaseButton, BaseText, ScreenContainer } from "@/components";
-import { Colors, FontFamily } from "@/constants";
+import { BaseButton, BaseText, ScreenContainer } from "@/components/ui";
+import { Colors, FontFamily } from "@/core/constants";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";

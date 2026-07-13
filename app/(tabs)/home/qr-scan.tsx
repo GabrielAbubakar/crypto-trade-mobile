@@ -1,13 +1,8 @@
 import NotificationIcon from "@/assets/icons/main/notification.svg";
 import QrIcon from "@/assets/icons/main/scanner.svg";
 import SearchIcon from "@/assets/icons/main/search.svg";
-import {
-  BaseText,
-  ScreenContainer,
-  UserHeader,
-  ScanMode,
-  QrMode,
-} from "@/components";
+import { BaseText, ScreenContainer, UserHeader } from "@/components/ui";
+import { QrMode, ScanMode } from "@/features/home/components";
 import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
 

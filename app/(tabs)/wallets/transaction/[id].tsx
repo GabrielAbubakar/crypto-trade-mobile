@@ -1,7 +1,7 @@
-import { BackHeader, BaseText, ScreenContainer, Skeleton } from "@/components";
-import { Colors } from "@/constants";
-import { useGetTransactionDetailsQuery } from "@/store";
-import { capitalize } from "@/utils";
+import { BackHeader, BaseText, ScreenContainer, Skeleton } from "@/components/ui";
+import { Colors } from "@/core/constants";
+import { capitalize } from "@/core/utils";
+import { useGetTransactionDetailsQuery } from "@/features/wallet/api/walletApi";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";

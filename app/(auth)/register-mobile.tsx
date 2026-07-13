@@ -1,15 +1,14 @@
 import Background from "@/assets/images/auth-background.png";
-import { BaseButton, BaseInput, BaseText, ScreenContainer } from "@/components";
-import { Colors } from "@/constants";
+import { BaseButton, BaseInput, BaseText, ScreenContainer } from "@/components/ui";
+import { Colors } from "@/core/constants";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-  Image,
-  Platform,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    Image,
+    StyleSheet,
+    TouchableOpacity,
+    View
 } from "react-native";
 
 export default function RegisterMobileScreen() {

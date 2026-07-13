@@ -35,40 +35,37 @@ The application follows a modular, feature-oriented structure with a separation 
 
 ## 3. Directory Layout
 
-The codebase is organized as follows:
+The codebase follows a Domain-Driven (Feature-Based) architecture. Logic is co-located by feature rather than by technical concern.
 
 ```text
 crypto-trade-mobile/
-├── app/                  # Routing directory (Expo Router)
-│   ├── (auth)/           # Authentication screens (Sign In, Sign Up, Pin Verification)
-│   ├── (onboarding)/     # App onboarding & walkthrough flows
-│   ├── (tabs)/           # Main application shell with tab-based navigation
-│   │   ├── home/         # Portfolio summary & quick actions
-│   │   ├── markets/      # Coin markets, charts, and price alerts
-│   │   ├── trades/       # Trade execution, order books, and quotes
-│   │   ├── wallets/      # Balance list, deposit simulator, and withdrawals
-│   │   └── profile/      # User details, settings, and notification configurations
-│   ├── kyc/              # Multi-step KYC onboarding screens
+├── app/                  # Thin Routing directory (Expo Router entry points)
+│   ├── (auth)/           # Authentication routes
+│   ├── (onboarding)/     # App onboarding routes
+│   ├── (tabs)/           # Main application shell routes
+│   ├── kyc/              # KYC verification routes
 │   ├── _layout.tsx       # Root layout defining Redux and context providers
-│   ├── bootstrap.tsx     # Session checker routing to (tabs) or (auth)
-│   └── index.tsx         # Initial entry route redirect
-├── assets/               # Local images, fonts (e.g., Neue Montreal), and static files
-├── components/           # Presentation UI components grouped by feature area
-│   ├── ui/               # Reusable UI controls (BaseButton, BaseInput, ScreenContainer, etc.)
-│   ├── auth/             # Sign-in and sign-up form components
-│   ├── kyc/              # KYC verification steps (identity docs, selfie capture)
-│   ├── markets/          # Chart cards, market lists, watchlist controls
-│   └── ...               # Additional feature-specific components
-├── config/               # Application-wide configurations (e.g., Toast config)
-├── constants/            # Style constants, theme colors (Palette), and static variables
-├── hooks/                # Custom React hooks (e.g., useAssetIconUrl, Redux typed hooks)
-├── schema/               # Zod schemas for forms and validations
-├── store/                # Redux Toolkit global store configuration
-│   ├── api/              # RTK Query service definitions (Auth, Markets, Wallets, etc.)
-│   ├── slices/           # Redux state slices (Auth slice, KYC progress slice)
-│   └── store.ts          # Central store setup with middleware and persistence
-├── types/                # Shared TypeScript models and interface declarations
-└── utils/                # Helper functions (Toasts, formatters, and mathematical utilities)
+│   └── bootstrap.tsx     # Session checker routing to (tabs) or (auth)
+├── assets/               # Local images, fonts, and static files
+├── core/                 # Global, cross-feature configuration and logic
+│   ├── api/              # Base RTK Query API setup (baseApi.ts)
+│   ├── store/            # Redux store configuration and global hooks
+│   ├── hooks/            # Global custom React hooks
+│   ├── utils/            # Shared helper functions
+│   ├── config/           # App-wide configs
+│   ├── constants/        # Style constants, theme colors
+│   └── types/            # Global TypeScript models
+├── features/             # Independent feature modules containing api, components, schemas, etc.
+│   ├── auth/             # Authentication domain
+│   ├── kyc/              # KYC verification domain
+│   ├── wallet/           # Wallet balances, deposits, and withdrawals
+│   ├── trading/          # Market charts, trades, and order execution
+│   ├── profile/          # User details, settings, and security
+│   ├── home/             # Portfolio summary and dashboards
+│   ├── activity/         # Transaction and activity history
+│   └── onboarding/       # Walkthrough components
+└── components/           
+    └── ui/               # Reusable, "dumb" UI controls (BaseButton, BaseInput, etc.)
 ```
 
 ---
@@ -82,15 +79,15 @@ Navigation uses Expo's file-based router. Route groups like `(auth)`, `(onboardi
 
 ### B. State Management Architecture
 The global state is split into two primary paradigms:
-1.  **Client-Side Redux Slices (`store/slices/`):**
+1.  **Client-Side Redux Slices (`features/*/slices/`):**
     -   `authSlice`: Stores the current user profile, `accessToken`, `refreshToken`, and login status. This is persistence-enabled using `redux-persist` with `AsyncStorage` to keep users logged in across application relaunches.
     -   `kycSlice`: Houses draft KYC registration data across multiple screens so that the user's progress is preserved until they upload documents and selfies.
-2.  **Server-Side RTK Query Services (`store/api/`):**
+2.  **Server-Side RTK Query Services (`features/*/api/`):**
     -   Handles all HTTP queries and mutations.
     -   Utilizes tag-based caching (`providesTags`, `invalidatesTags`) to automatically update cached resource listings (such as refreshing the Wallet balance after executing a buy/sell trade).
 
 ### C. Automatic Re-Authentication (RTK Query Mutex Flow)
-All API endpoints inherit from a unified `baseApi` defined in `store/api/baseApi.ts`. To handle token expiration gracefully, a custom query wrapper (`baseQueryWithReAuth`) acts as an interceptor:
+All API endpoints inherit from a unified `baseApi` defined in `core/api/baseApi.ts`. To handle token expiration gracefully, a custom query wrapper (`baseQueryWithReAuth`) acts as an interceptor:
 
 1.  **Token Attachment:** Before dispatching an outgoing request, the query retrieves the `accessToken` from the Redux `auth` slice and attaches it to the request as a `Bearer` token inside the `Authorization` header.
 2.  **401 Interception:** If a query receives an HTTP `401 Unauthorized` status code, the application halts the request queue.
@@ -106,5 +103,5 @@ All API endpoints inherit from a unified `baseApi` defined in `store/api/baseApi
 
 ### D. Form Management & Validation
 Forms are controlled using `@tanstack/react-form` coupled with `@tanstack/zod-form-adapter`. 
-- Input fields are validated dynamically using **Zod schemas** defined in the `schema/` directory.
+- Input fields are validated dynamically using **Zod schemas** defined within each feature's `schemas/` directory (e.g., `features/auth/schemas/`).
 - This configuration ensures type safety from the UI input fields to the network request payloads.

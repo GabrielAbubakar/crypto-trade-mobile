@@ -1,20 +1,13 @@
-import {
-  BackHeader,
-  ConfirmationModal,
-  EditPriceAlertModal,
-  ProfileOptionCard,
-  ScreenContainer,
-  SwipeableRow,
-} from "@/components";
+import { BackHeader, ConfirmationModal, EditPriceAlertModal, ProfileOptionCard, ScreenContainer, SwipeableRow } from "@/components/ui";
 import { BaseText } from "@/components/ui/BaseText";
-import { Colors } from "@/constants";
+import { Colors } from "@/core/constants";
 import {
-  useDeletePriceAlertMutation,
-  useGetPriceAlertsQuery,
-  useUpdatePriceAlertMutation,
-} from "@/store";
-import type { IPriceAlert } from "@/types";
-import { showErrorToast, showSuccessToast } from "@/utils";
+    useDeletePriceAlertMutation,
+    useGetPriceAlertsQuery,
+    useUpdatePriceAlertMutation,
+} from "@/core/store/store";
+import type { IPriceAlert } from "@/core/types";
+import { showErrorToast, showSuccessToast } from "@/core/utils";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native";

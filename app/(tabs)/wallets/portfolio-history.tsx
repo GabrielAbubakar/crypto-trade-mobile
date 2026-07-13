@@ -1,14 +1,14 @@
-import { BackHeader, BaseText, ScreenContainer, Skeleton } from "@/components";
-import { Colors } from "@/constants";
-import { useGetPortfolioHistoryQuery } from "@/store";
+import { BackHeader, BaseText, ScreenContainer, Skeleton } from "@/components/ui";
+import { Colors } from "@/core/constants";
+import { useGetPortfolioHistoryQuery } from "@/features/wallet/api/walletApi";
 import React, { useMemo, useState } from "react";
 import {
-  Dimensions,
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    FlatList,
+    RefreshControl,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import Svg, { Defs, Line, LinearGradient, Path, Stop } from "react-native-svg";
 

@@ -1,26 +1,18 @@
-import {
-  ScreenContainer,
-  SelectOptionsSheet,
-  WithdrawConfirmStep,
-  WithdrawFormStep,
-  WithdrawSubmittedStep,
-} from "@/components";
-import { Colors } from "@/constants";
-import {
-  useGetProfileQuery,
-  useGetWalletBalancesQuery,
-  useWithdrawMutation,
-} from "@/store";
-import { showErrorToast, showSuccessToast } from "@/utils";
+import { ScreenContainer, SelectOptionsSheet } from "@/components/ui";
+import { Colors } from "@/core/constants";
+import { showErrorToast, showSuccessToast } from "@/core/utils";
+import { useGetProfileQuery } from "@/features/profile/api/profileApi";
+import { useGetWalletBalancesQuery, useWithdrawMutation } from "@/features/wallet/api/walletApi";
+import { WithdrawConfirmStep, WithdrawFormStep, WithdrawSubmittedStep } from "@/features/wallet/components";
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useForm } from "@tanstack/react-form";
 import { useRouter } from "expo-router";
 import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
 } from "react";
 import { BackHandler, StyleSheet } from "react-native";
 

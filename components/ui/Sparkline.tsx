@@ -1,4 +1,4 @@
-import type { IMarketSparklinePoint } from "@/types";
+import type { IMarketSparklinePoint } from "@/core/types";
 import React from "react";
 import Svg, { Defs, LinearGradient, Path, Stop } from "react-native-svg";
 

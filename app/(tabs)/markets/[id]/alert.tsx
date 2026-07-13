@@ -1,16 +1,17 @@
-import { BaseText, ScreenContainer } from "@/components";
-import { Colors } from "@/constants";
-import { useCreatePriceAlertMutation, useGetAssetDetailsQuery } from "@/store";
-import { showErrorToast } from "@/utils";
+import { BaseText, ScreenContainer } from "@/components/ui";
+import { Colors } from "@/core/constants";
+import { useCreatePriceAlertMutation } from "@/core/store/store";
+import { showErrorToast } from "@/core/utils";
+import { useGetAssetDetailsQuery } from "@/features/trading/api/marketApi";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  ActivityIndicator,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SvgUri } from "react-native-svg";
 

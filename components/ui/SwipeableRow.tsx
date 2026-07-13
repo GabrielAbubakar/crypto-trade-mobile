@@ -1,12 +1,12 @@
-import { Colors } from "@/constants";
+import { Colors } from "@/core/constants";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
 } from "react-native-reanimated";
 import { BaseText } from "./BaseText";
 import { BaseTouchableOpacity } from "./BaseTouchableOpacity";

@@ -1,5 +1,5 @@
-import { Colors } from "@/constants";
-import { useAppSelector } from "@/store";
+import { Colors } from "@/core/constants";
+import { useAppSelector } from "@/core/store/hooks";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";

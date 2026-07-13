@@ -1,7 +1,7 @@
-import { BaseText } from "@/components";
-import { Colors, tabs } from "@/constants";
-import { usePushNotifications } from "@/hooks/usePushNotifications";
-import { useAppSelector } from "@/store";
+import { BaseText } from "@/components/ui";
+import { Colors, tabs } from "@/core/constants";
+import { usePushNotifications } from "@/core/hooks/usePushNotifications";
+import { useAppSelector } from "@/core/store/hooks";
 import { Tabs, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";

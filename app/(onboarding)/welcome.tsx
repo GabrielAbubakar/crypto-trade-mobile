@@ -1,10 +1,11 @@
 import Background from "@/assets/images/Background.png";
-import { BaseButton, OnboardingItem, Paginator } from "@/components";
-import { Colors, onboarding } from "@/constants";
+import { BaseButton } from "@/components/ui";
+import { Colors, onboarding } from "@/core/constants";
+import { OnboardingItem, Paginator } from "@/features/onboarding/components";
 import { router } from "expo-router";
 import React, { useRef, useState } from "react";
+import { Image, StyleSheet, View } from "react-native";
 import Animated, { useAnimatedScrollHandler, useSharedValue } from "react-native-reanimated";
-import { FlatList, Image, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function WelcomeScreen() {

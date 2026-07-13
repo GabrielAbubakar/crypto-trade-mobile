@@ -1,8 +1,8 @@
-import { BackHeader, BaseText, ScreenContainer } from "@/components";
-import { Colors } from "@/constants";
-import { useAssetIconUrl } from "@/hooks";
-import { useGetWalletBalancesQuery } from "@/store";
-import type { IWalletDepositAddress } from "@/types";
+import { BackHeader, BaseText, ScreenContainer } from "@/components/ui";
+import { Colors } from "@/core/constants";
+import { useAssetIconUrl } from "@/core/hooks";
+import type { IWalletDepositAddress } from "@/core/types";
+import { useGetWalletBalancesQuery } from "@/features/wallet/api/walletApi";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";

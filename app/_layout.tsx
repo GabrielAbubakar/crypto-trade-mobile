@@ -1,6 +1,6 @@
-import { toastConfig } from "@/config";
-import { Colors } from "@/constants";
-import { persistor, store } from "@/store";
+import { toastConfig } from "@/core/config";
+import { Colors } from "@/core/constants";
+import { persistor, store } from "@/core/store/store";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";

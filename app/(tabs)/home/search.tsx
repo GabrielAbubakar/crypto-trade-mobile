@@ -1,4 +1,4 @@
-import { BaseText, ScreenContainer } from "@/components";
+import { BaseText, ScreenContainer } from "@/components/ui";
 
 export default function SearchScreen() {
   return (

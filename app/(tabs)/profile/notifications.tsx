@@ -1,18 +1,12 @@
-import {
-  BackHeader,
-  BaseButton,
-  ProfileOptionCard,
-  ScreenContainer,
-  Skeleton,
-} from "@/components";
+import { BackHeader, BaseButton, ProfileOptionCard, ScreenContainer, Skeleton } from "@/components/ui";
 import { BaseText } from "@/components/ui/BaseText";
-import { Colors } from "@/constants";
+import { Colors } from "@/core/constants";
 import {
-  useGetNotificationsQuery,
-  useMarkAllNotificationsAsReadMutation,
-  useMarkNotificationAsReadMutation,
-} from "@/store";
-import { showErrorToast, showSuccessToast } from "@/utils";
+    useGetNotificationsQuery,
+    useMarkAllNotificationsAsReadMutation,
+    useMarkNotificationAsReadMutation,
+} from "@/core/store/store";
+import { showErrorToast, showSuccessToast } from "@/core/utils";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useMemo } from "react";
 import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native";

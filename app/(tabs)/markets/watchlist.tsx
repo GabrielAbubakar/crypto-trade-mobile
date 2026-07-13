@@ -1,14 +1,8 @@
-import {
-  BackHeader,
-  BaseButton,
-  BaseText,
-  BaseTouchableOpacity,
-  ScreenContainer,
-} from "@/components";
 import { MarketCoinRow } from "@/components/markets/MarketCoinRow";
 import { MarketCoinRowSkeleton } from "@/components/markets/MarketCoinRowSkeleton";
-import { Colors } from "@/constants";
-import { useGetWatchlistQuery } from "@/store";
+import { BackHeader, BaseButton, BaseText, BaseTouchableOpacity, ScreenContainer } from "@/components/ui";
+import { Colors } from "@/core/constants";
+import { useGetWatchlistQuery } from "@/core/store/store";
 import { useRouter } from "expo-router";
 import React, { useCallback } from "react";
 import { FlatList, StyleSheet, View } from "react-native";

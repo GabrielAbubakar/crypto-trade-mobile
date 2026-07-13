@@ -1,14 +1,15 @@
-import { KycProgressSteps } from "@/components/kyc/KycProgressSteps";
 import {
-  BackHeader,
-  BaseButton,
-  BaseInput,
-  BaseText,
-  ScreenContainer,
+    BackHeader,
+    BaseButton,
+    BaseInput,
+    BaseText,
+    ScreenContainer,
 } from "@/components/ui";
-import { Colors, FontFamily } from "@/constants";
-import { kycDetailsSchema } from "@/schema";
-import { setKycDetails, useAppDispatch, useAppSelector } from "@/store";
+import { Colors, FontFamily } from "@/core/constants";
+import { useAppDispatch, useAppSelector } from "@/core/store/hooks";
+import { KycProgressSteps } from "@/features/kyc/components/KycProgressSteps";
+import { kycDetailsSchema } from "@/features/kyc/schemas/kyc.schema";
+import { setKycDetails } from "@/features/kyc/slices/kycSlice";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useForm, useStore } from "@tanstack/react-form";

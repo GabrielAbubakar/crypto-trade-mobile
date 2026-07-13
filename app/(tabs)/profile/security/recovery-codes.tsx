@@ -1,28 +1,19 @@
-import {
-  BackHeader,
-  BaseButton,
-  BaseInput,
-  ScreenContainer,
-} from "@/components";
+import { BackHeader, BaseButton, BaseInput, ScreenContainer } from "@/components/ui";
 import { BaseText } from "@/components/ui/BaseText";
-import { Colors } from "@/constants";
-import {
-  useGetProfileQuery,
-  useRegenerate2FARecoveryCodesMutation,
-  useAppDispatch,
-  useAppSelector,
-  clearRecoveryCodes,
-} from "@/store";
-import { showErrorToast, showSuccessToast } from "@/utils";
+import { Colors } from "@/core/constants";
+import { useAppDispatch, useAppSelector } from "@/core/store/hooks";
+import { clearRecoveryCodes, useRegenerate2FARecoveryCodesMutation } from "@/core/store/store";
+import { showErrorToast, showSuccessToast } from "@/core/utils";
+import { useGetProfileQuery } from "@/features/profile/api/profileApi";
 import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState, useEffect, useMemo } from "react";
 import * as Clipboard from "expo-clipboard";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  StyleSheet,
-  View,
-  TouchableOpacity,
+    ActivityIndicator,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 type Step = "view" | "regenerate";

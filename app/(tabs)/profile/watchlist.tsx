@@ -1,7 +1,7 @@
-import { BackHeader, ProfileOptionCard, ScreenContainer } from "@/components";
+import { BackHeader, ProfileOptionCard, ScreenContainer } from "@/components/ui";
 import { BaseText } from "@/components/ui/BaseText";
-import { Colors } from "@/constants";
-import { useGetProfileQuery } from "@/store";
+import { Colors } from "@/core/constants";
+import { useGetProfileQuery } from "@/features/profile/api/profileApi";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { ScrollView, StyleSheet, View } from "react-native";

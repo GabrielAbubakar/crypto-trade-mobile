@@ -1,19 +1,20 @@
 import Background from "@/assets/images/auth-background.png";
-import { BaseButton, BaseText, ScreenContainer } from "@/components";
-import { Colors } from "@/constants";
-import { setCredentials, useAppDispatch, useVerify2FAMutation } from "@/store";
-import { showToast } from "@/utils";
+import { BaseButton, BaseText, ScreenContainer } from "@/components/ui";
+import { Colors } from "@/core/constants";
+import { useAppDispatch } from "@/core/store/hooks";
+import { setCredentials, useVerify2FAMutation } from "@/core/store/store";
+import { showToast } from "@/core/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 export default function TwoFactorScreen() {

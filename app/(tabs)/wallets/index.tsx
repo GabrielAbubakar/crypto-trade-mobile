@@ -1,25 +1,17 @@
-import {
-  BaseText,
-  ScreenContainer,
-  Skeleton,
-  WalletAssetRow,
-  WalletTransactionRow,
-} from "@/components";
-import { Colors } from "@/constants";
-import {
-  useGetWalletBalancesQuery,
-  useGetWalletTransactionsQuery,
-} from "@/store";
-import type { ITransactionItem } from "@/types";
+import { BaseText, ScreenContainer, Skeleton } from "@/components/ui";
+import { Colors } from "@/core/constants";
+import type { ITransactionItem } from "@/core/types";
+import { useGetWalletBalancesQuery, useGetWalletTransactionsQuery } from "@/features/wallet/api/walletApi";
+import { WalletAssetRow, WalletTransactionRow } from "@/features/wallet/components";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    FlatList,
+    RefreshControl,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 export const AssetRowSkeleton: React.FC = () => {

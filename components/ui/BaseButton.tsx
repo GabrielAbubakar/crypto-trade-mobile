@@ -1,5 +1,5 @@
-import type { FontSize } from "@/constants";
-import { Colors } from "@/constants";
+import type { FontSize } from "@/core/constants";
+import { Colors } from "@/core/constants";
 import React from "react";
 import type { TextStyle, ViewStyle } from "react-native";
 import { ActivityIndicator, StyleSheet, View } from "react-native";

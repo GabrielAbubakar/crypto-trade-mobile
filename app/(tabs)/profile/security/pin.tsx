@@ -1,14 +1,9 @@
-import {
-  BackHeader,
-  BaseButton,
-  BaseInput,
-  ScreenContainer,
-} from "@/components";
+import { BackHeader, BaseButton, BaseInput, ScreenContainer } from "@/components/ui";
 import { BaseText } from "@/components/ui/BaseText";
-import { Colors } from "@/constants";
-import { updatePinSchema } from "@/schema";
-import { useUpdateTransactionPinMutation } from "@/store";
-import { showErrorToast, showSuccessToast } from "@/utils";
+import { Colors } from "@/core/constants";
+import { useUpdateTransactionPinMutation } from "@/core/store/store";
+import { showErrorToast, showSuccessToast } from "@/core/utils";
+import { updatePinSchema } from "@/features/profile/schemas/security.schema";
 import { Ionicons } from "@expo/vector-icons";
 import { useForm } from "@tanstack/react-form";
 import { useRouter } from "expo-router";

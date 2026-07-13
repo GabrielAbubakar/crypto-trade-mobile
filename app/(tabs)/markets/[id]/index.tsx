@@ -1,24 +1,20 @@
-import { BaseButton, BaseText, ScreenContainer } from "@/components";
-import { Colors } from "@/constants";
-import {
-  useAddToWatchlistMutation,
-  useGetAssetCandlesQuery,
-  useGetAssetDetailsQuery,
-  useGetProfileQuery,
-  useRemoveFromWatchlistMutation,
-} from "@/store";
+import { Colors } from "@/core/constants";
+import { useAddToWatchlistMutation, useGetAssetCandlesQuery, useRemoveFromWatchlistMutation } from "@/core/store/store";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useMemo } from "react";
 import {
-  ActivityIndicator,
-  Dimensions,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Dimensions,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SvgUri } from "react-native-svg";
 
-import { formatCompact, showErrorToast, showSuccessToast } from "@/utils";
+import { BaseButton, BaseText, ScreenContainer } from "@/components/ui";
+import { formatCompact, showErrorToast, showSuccessToast } from "@/core/utils";
+import { useGetProfileQuery } from "@/features/profile/api/profileApi";
+import { useGetAssetDetailsQuery } from "@/features/trading/api/marketApi";
 import { CandlestickChart } from "react-native-wagmi-charts";
 
 const { width: screenWidth } = Dimensions.get("window");

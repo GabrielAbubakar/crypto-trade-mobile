@@ -1,24 +1,17 @@
-import {
-  BackHeader,
-  BaseButton,
-  BaseText,
-  ScreenContainer,
-} from "@/components";
-import { Colors, FontFamily } from "@/constants";
-import {
-  useExecuteQuoteMutation,
-  useGetQuoteDetailsQuery,
-  useGetWalletBalancesQuery,
-} from "@/store";
-import { showErrorToast, showSuccessToast } from "@/utils";
+import { BackHeader, BaseButton, BaseText, ScreenContainer } from "@/components/ui";
+import { Colors, FontFamily } from "@/core/constants";
+import { useExecuteQuoteMutation } from "@/core/store/store";
+import { showErrorToast, showSuccessToast } from "@/core/utils";
+import { useGetQuoteDetailsQuery } from "@/features/trading/api/tradeApi";
+import { useGetWalletBalancesQuery } from "@/features/wallet/api/walletApi";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 export default function ConfirmTradeScreen() {

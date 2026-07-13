@@ -1,20 +1,11 @@
 import NotificationIcon from "@/assets/icons/main/notification.svg";
 import QrIcon from "@/assets/icons/main/scanner.svg";
 import SearchIcon from "@/assets/icons/main/search.svg";
-import type { HeaderButtonProps } from "@/components";
-import {
-  BaseText,
-  BaseTouchableOpacity,
-  CoinCard,
-  CoinCardSkeleton,
-  ScreenContainer,
-  UserHeader,
-} from "@/components";
-import {
-  useGetProfileQuery,
-  useGetTrendingAssetsQuery,
-  useGetWalletBalancesQuery,
-} from "@/store";
+import { BaseText, BaseTouchableOpacity, HeaderButtonProps, ScreenContainer, UserHeader } from "@/components/ui";
+import { useGetTrendingAssetsQuery } from "@/core/store/store";
+import { CoinCard, CoinCardSkeleton } from "@/features/home/components";
+import { useGetProfileQuery } from "@/features/profile/api/profileApi";
+import { useGetWalletBalancesQuery } from "@/features/wallet/api/walletApi";
 import { router } from "expo-router";
 import React from "react";
 import { ScrollView, StyleSheet, View } from "react-native";

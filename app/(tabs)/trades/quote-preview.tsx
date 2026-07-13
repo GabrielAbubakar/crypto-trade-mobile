@@ -1,11 +1,6 @@
-import {
-  BackHeader,
-  BaseButton,
-  BaseText,
-  ScreenContainer,
-} from "@/components";
-import { Colors, FontFamily } from "@/constants";
-import { useGetQuoteDetailsQuery } from "@/store";
+import { BackHeader, BaseButton, BaseText, ScreenContainer } from "@/components/ui";
+import { Colors, FontFamily } from "@/core/constants";
+import { useGetQuoteDetailsQuery } from "@/features/trading/api/tradeApi";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";

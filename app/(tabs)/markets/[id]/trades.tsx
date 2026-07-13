@@ -1,14 +1,14 @@
-import { BaseText, ScreenContainer } from "@/components";
-import { Colors } from "@/constants";
-import { useGetTradesQuery } from "@/store";
+import { BaseText, ScreenContainer } from "@/components/ui";
+import { Colors } from "@/core/constants";
+import { useGetTradesQuery } from "@/core/store/store";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useMemo } from "react";
 import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    FlatList,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 const TradeRow = React.memo(({ trade }: { trade: any }) => {

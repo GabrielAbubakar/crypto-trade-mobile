@@ -1,5 +1,5 @@
-import type { FontFamilyKey, FontSizeKey, TypographyPreset } from "@/constants";
-import { Colors, FontFamily, FontSize, Typography } from "@/constants";
+import type { FontFamilyKey, FontSizeKey, TypographyPreset } from "@/core/constants";
+import { Colors, FontFamily, FontSize, Typography } from "@/core/constants";
 import React from "react";
 import type { TextProps } from "react-native";
 import { StyleSheet, Text, useColorScheme } from "react-native";

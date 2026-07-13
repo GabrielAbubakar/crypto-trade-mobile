@@ -1,4 +1,4 @@
-import { useAppSelector } from "@/store";
+import { useAppSelector } from "@/core/store/hooks";
 import { Stack, useRouter } from "expo-router";
 import { useEffect } from "react";
 

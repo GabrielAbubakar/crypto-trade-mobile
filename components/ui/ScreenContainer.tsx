@@ -1,13 +1,13 @@
-import { Colors } from "@/constants";
+import { Colors } from "@/core/constants";
 import React from "react";
 import type { ViewProps } from "react-native";
 import {
-  KeyboardAvoidingView,
-  Platform,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  View,
+    KeyboardAvoidingView,
+    Platform,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 

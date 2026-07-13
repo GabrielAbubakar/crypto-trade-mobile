@@ -1,8 +1,8 @@
-import { BackHeader, ProfileOptionCard, ScreenContainer, Skeleton } from "@/components";
+import { BackHeader, ProfileOptionCard, ScreenContainer, Skeleton } from "@/components/ui";
 import { BaseText } from "@/components/ui/BaseText";
-import { Colors } from "@/constants";
-import { useGetDevicesQuery } from "@/store/api/profileApi";
-import type { IDevice } from "@/types";
+import { Colors } from "@/core/constants";
+import type { IDevice } from "@/core/types";
+import { useGetDevicesQuery } from "@/features/profile/api/profileApi";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useMemo } from "react";
 import { FlatList, StyleSheet, View } from "react-native";

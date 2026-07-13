@@ -3,17 +3,11 @@ import QrIcon from "@/assets/icons/main/scanner.svg";
 import SearchIcon from "@/assets/icons/main/search.svg";
 import FilterIcon from "@/assets/icons/notification/Filter.svg";
 import EmptyIllustration from "@/assets/icons/notification/notificationIconRain.svg";
-import {
-  BaseText,
-  BaseTouchableOpacity,
-  NotificationItem,
-  NotificationItemSkeleton,
-  ScreenContainer,
-  UserHeader,
-} from "@/components";
-import { Colors } from "@/constants";
-import { useGetNotificationsQuery } from "@/store";
-import { showToast } from "@/utils";
+import { BaseText, BaseTouchableOpacity, ScreenContainer, UserHeader } from "@/components/ui";
+import { Colors } from "@/core/constants";
+import { useGetNotificationsQuery } from "@/core/store/store";
+import { showToast } from "@/core/utils";
+import { NotificationItem, NotificationItemSkeleton } from "@/features/activity/components";
 import React from "react";
 import { Dimensions, FlatList, RefreshControl, StyleSheet, View } from "react-native";
 

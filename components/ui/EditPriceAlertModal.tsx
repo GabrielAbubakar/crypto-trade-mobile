@@ -1,5 +1,5 @@
-import { Colors } from "@/constants";
-import type { IPriceAlert } from "@/types";
+import { Colors } from "@/core/constants";
+import type { IPriceAlert } from "@/core/types";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Switch, TouchableOpacity, View } from "react-native";
 import { BaseButton } from "./BaseButton";

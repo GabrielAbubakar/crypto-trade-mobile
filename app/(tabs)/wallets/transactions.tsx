@@ -1,21 +1,16 @@
-import {
-  BackHeader,
-  BaseText,
-  ScreenContainer,
-  Skeleton,
-  WalletTransactionRow,
-} from "@/components";
-import { Colors } from "@/constants";
-import { useGetWalletTransactionsQuery } from "@/store";
-import type { ITransactionItem } from "@/types";
+import { BackHeader, BaseText, ScreenContainer, Skeleton } from "@/components/ui";
+import { Colors } from "@/core/constants";
+import type { ITransactionItem } from "@/core/types";
+import { useGetWalletTransactionsQuery } from "@/features/wallet/api/walletApi";
+import { WalletTransactionRow } from "@/features/wallet/components";
 import { Feather } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    FlatList,
+    RefreshControl,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 type TxFilter =

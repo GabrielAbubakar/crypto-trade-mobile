@@ -1,18 +1,12 @@
-import {
-  BaseInput,
-  BaseText,
-  BaseTouchableOpacity,
-  ScreenContainer,
-  ScreenHeader,
-} from "@/components";
 import { MarketCoinRowSkeleton } from "@/components/markets/MarketCoinRowSkeleton";
 import { MarketListItem } from "@/components/markets/MarketListItem";
-import { Colors, MARKET_TABS } from "@/constants";
-import { useGetMarketAssetsQuery } from "@/store";
-import type { IGetMarketAssetsRequest } from "@/types";
+import { BaseInput, BaseText, ScreenContainer, ScreenHeader } from "@/components/ui";
+import { Colors, MARKET_TABS } from "@/core/constants";
+import { useGetMarketAssetsQuery } from "@/core/store/store";
+import type { IGetMarketAssetsRequest } from "@/core/types";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
 
 function EmptyComponent({ searchQuery }: { searchQuery?: string }) {

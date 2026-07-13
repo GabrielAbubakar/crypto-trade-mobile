@@ -1,5 +1,5 @@
 import profileImage from "@/assets/images/avatar.jpg";
-import { Colors } from "@/constants";
+import { Colors } from "@/core/constants";
 import { Image } from "expo-image";
 import type { Href } from "expo-router";
 import { Link } from "expo-router";

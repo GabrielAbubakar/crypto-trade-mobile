@@ -1,4 +1,4 @@
-import { Colors } from "@/constants";
+import { Colors } from "@/core/constants";
 import React from "react";
 import type { ViewStyle } from "react-native";
 import { Modal, Pressable, StyleSheet, View } from "react-native";

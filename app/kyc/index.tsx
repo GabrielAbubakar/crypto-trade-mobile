@@ -1,13 +1,13 @@
 import {
-  KycApproved,
-  KycNotStarted,
-  KycPending,
-  KycProgressSteps,
-  KycRejected,
+    KycApproved,
+    KycNotStarted,
+    KycPending,
+    KycProgressSteps,
+    KycRejected,
 } from "@/components/kyc";
 import { BackHeader, BaseText, ScreenContainer } from "@/components/ui";
-import { Colors } from "@/constants";
-import { useGetProfileQuery } from "@/store";
+import { Colors } from "@/core/constants";
+import { useGetProfileQuery } from "@/features/profile/api/profileApi";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";

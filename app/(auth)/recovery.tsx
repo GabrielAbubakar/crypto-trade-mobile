@@ -1,18 +1,19 @@
 import Background from "@/assets/images/auth-background.png";
-import { BaseButton, BaseInput, BaseText, ScreenContainer } from "@/components";
-import { Colors } from "@/constants";
-import { setCredentials, useAppDispatch, useVerify2FAMutation } from "@/store";
-import { showToast } from "@/utils";
+import { BaseButton, BaseInput, BaseText, ScreenContainer } from "@/components/ui";
+import { Colors } from "@/core/constants";
+import { useAppDispatch } from "@/core/store/hooks";
+import { setCredentials, useVerify2FAMutation } from "@/core/store/store";
+import { showToast } from "@/core/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import {
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 export default function RecoveryScreen() {
