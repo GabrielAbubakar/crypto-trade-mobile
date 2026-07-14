@@ -4,6 +4,8 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
+  FadeOutRight,
+  LinearTransition,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -105,7 +107,10 @@ export const SwipeableRow: React.FC<SwipeableRowProps> = ({
   });
 
   return (
-    <View style={styles.container}>
+    <Animated.View
+      layout={LinearTransition}
+      exiting={FadeOutRight.duration(500)}
+      style={styles.container}>
       {/* Background/Underlay view holding edit and delete buttons */}
       <View style={styles.underlay}>
         {/* Edit Button Area (Left side) */}
@@ -145,7 +150,7 @@ export const SwipeableRow: React.FC<SwipeableRowProps> = ({
           {animatedChildren}
         </Animated.View>
       </GestureDetector>
-    </View>
+    </Animated.View>
   );
 };
 
