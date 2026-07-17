@@ -4,9 +4,11 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
+  FadeOutRight,
+  LinearTransition,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
 } from "react-native-reanimated";
 import { BaseText } from "./BaseText";
 import { BaseTouchableOpacity } from "./BaseTouchableOpacity";
@@ -63,7 +65,8 @@ export const SwipeableRow: React.FC<SwipeableRowProps> = ({
 
   const rLeftBtnStyle = useAnimatedStyle(() => {
     const opacity = translateX.value > 0 ? translateX.value / BUTTON_WIDTH : 0;
-    const scale = translateX.value > 0 ? Math.min(1, translateX.value / BUTTON_WIDTH) : 0.6;
+    const scale =
+      translateX.value > 0 ? Math.min(1, translateX.value / BUTTON_WIDTH) : 0.6;
     return {
       opacity,
       transform: [{ scale }],
@@ -72,7 +75,10 @@ export const SwipeableRow: React.FC<SwipeableRowProps> = ({
 
   const rRightBtnStyle = useAnimatedStyle(() => {
     const opacity = translateX.value < 0 ? -translateX.value / BUTTON_WIDTH : 0;
-    const scale = translateX.value < 0 ? Math.min(1, -translateX.value / BUTTON_WIDTH) : 0.6;
+    const scale =
+      translateX.value < 0
+        ? Math.min(1, -translateX.value / BUTTON_WIDTH)
+        : 0.6;
     return {
       opacity,
       transform: [{ scale }],
@@ -105,7 +111,11 @@ export const SwipeableRow: React.FC<SwipeableRowProps> = ({
   });
 
   return (
-    <View style={styles.container}>
+    <Animated.View
+      layout={LinearTransition}
+      exiting={FadeOutRight.duration(500)}
+      style={styles.container}
+    >
       {/* Background/Underlay view holding edit and delete buttons */}
       <View style={styles.underlay}>
         {/* Edit Button Area (Left side) */}
@@ -116,7 +126,12 @@ export const SwipeableRow: React.FC<SwipeableRowProps> = ({
               onPress={handleEditPress}
             >
               <Ionicons name="pencil-outline" size={20} color={Colors.white} />
-              <BaseText variant="bold" size="xs" color={Colors.white} style={styles.btnText}>
+              <BaseText
+                variant="bold"
+                size="xs"
+                color={Colors.white}
+                style={styles.btnText}
+              >
                 Edit
               </BaseText>
             </BaseTouchableOpacity>
@@ -131,7 +146,12 @@ export const SwipeableRow: React.FC<SwipeableRowProps> = ({
               onPress={handleDeletePress}
             >
               <Ionicons name="trash-outline" size={20} color={Colors.white} />
-              <BaseText variant="bold" size="xs" color={Colors.white} style={styles.btnText}>
+              <BaseText
+                variant="bold"
+                size="xs"
+                color={Colors.white}
+                style={styles.btnText}
+              >
                 Delete
               </BaseText>
             </BaseTouchableOpacity>
@@ -145,7 +165,7 @@ export const SwipeableRow: React.FC<SwipeableRowProps> = ({
           {animatedChildren}
         </Animated.View>
       </GestureDetector>
-    </View>
+    </Animated.View>
   );
 };
 
