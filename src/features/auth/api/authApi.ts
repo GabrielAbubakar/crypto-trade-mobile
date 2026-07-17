@@ -1,0 +1,183 @@
+import type {
+    I2FAStatusResponse,
+    IDisable2FARequest,
+    IDisable2FAResponse,
+    IEnable2FARequest,
+    IEnable2FAResponse,
+    IKycUploadRequest,
+    IKycUploadResponse,
+    IKycVerificationRequest,
+    ILoginRequest,
+    ILoginResponse,
+    ILoginResponseUnion,
+    IRegenerateRecoveryCodesRequest,
+    IRegenerateRecoveryCodesResponse,
+    IRegisterRequest,
+    IRegisterResponse,
+    ISetup2FAResponse,
+    IVerify2FARequest,
+} from "@/shared/types";
+import { logout, setCredentials } from "../slices/authSlice";
+import { baseApi } from '@/core/api/baseApi';
+
+export const authApi = baseApi.injectEndpoints({
+  endpoints: (builder) => ({
+    login: builder.mutation<ILoginResponseUnion["data"], ILoginRequest>({
+      query: (credentials) => ({
+        url: "/auth/login",
+        method: "POST",
+        body: credentials,
+      }),
+      transformResponse: (response: ILoginResponseUnion) => response.data,
+      async onQueryStarted(_args, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          if ("accessToken" in data) {
+            dispatch(
+              setCredentials({
+                user: data.user,
+                accessToken: data.accessToken,
+                refreshToken: data.refreshToken,
+              }),
+            );
+          }
+        } catch {
+          // Handle error if needed
+        }
+      },
+    }),
+    register: builder.mutation<IRegisterResponse["data"], IRegisterRequest>({
+      query: (credentials) => ({
+        url: "/auth/register",
+        method: "POST",
+        body: credentials,
+      }),
+      transformResponse: (response: IRegisterResponse) => response.data,
+    }),
+    requestOTP: builder.mutation({
+      query: (body: { email: string }) => ({
+        url: "/auth/otp/request",
+        method: "POST",
+        body,
+      }),
+    }),
+    verifyOTP: builder.mutation<
+      ILoginResponse["data"],
+      { email: string; code: string }
+    >({
+      query: (body) => ({
+        url: "/auth/otp/verify",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: ILoginResponse) => response.data,
+    }),
+    kycVerification: builder.mutation<
+      { success: boolean },
+      IKycVerificationRequest
+    >({
+      query: (body) => ({
+        url: "/auth/kyc",
+        method: "POST",
+        body,
+      }),
+    }),
+    kycUpload: builder.mutation<IKycUploadResponse, IKycUploadRequest>({
+      query: (body) => ({
+        url: "/auth/kyc/uploads",
+        method: "POST",
+        body,
+      }),
+    }),
+    setup2FA: builder.mutation<ISetup2FAResponse["data"], void>({
+      query: () => ({
+        url: "/auth/2fa/setup",
+        method: "POST",
+      }),
+      transformResponse: (response: ISetup2FAResponse) => response.data,
+    }),
+    enable2FA: builder.mutation<IEnable2FAResponse["data"], IEnable2FARequest>({
+      query: (body) => ({
+        url: "/auth/2fa/enable",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: IEnable2FAResponse) => response.data,
+      invalidatesTags: ["User"],
+    }),
+    verify2FA: builder.mutation<ILoginResponse["data"], IVerify2FARequest>({
+      query: (body) => ({
+        url: "/auth/2fa/verify",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: ILoginResponse) => response.data,
+    }),
+    get2FAStatus: builder.query<I2FAStatusResponse["data"], void>({
+      query: () => ({
+        url: "/auth/2fa/status",
+        method: "GET",
+      }),
+      transformResponse: (response: I2FAStatusResponse) => response.data,
+      providesTags: ["User"],
+    }),
+    regenerate2FARecoveryCodes: builder.mutation<
+      IRegenerateRecoveryCodesResponse["data"],
+      IRegenerateRecoveryCodesRequest
+    >({
+      query: (body) => ({
+        url: "/auth/2fa/recovery-codes/regenerate",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: IRegenerateRecoveryCodesResponse) =>
+        response.data,
+      invalidatesTags: ["User"],
+    }),
+    disable2FA: builder.mutation<
+      IDisable2FAResponse["data"],
+      IDisable2FARequest
+    >({
+      query: (body) => ({
+        url: "/auth/2fa/disable",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: IDisable2FAResponse) => response.data,
+      invalidatesTags: ["User"],
+    }),
+
+    logOut: builder.mutation<void, any>({
+      query: () => ({
+        url: "/auth/logout",
+        method: "POST",
+      }),
+      async onQueryStarted(_args, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(logout());
+        } catch {
+          // Even if backend logout fails, log the user out locally
+          dispatch(logout());
+        }
+      },
+    }),
+  }),
+  overrideExisting: true,
+});
+
+export const {
+  useLoginMutation,
+  useRegisterMutation,
+  useRequestOTPMutation,
+  useVerifyOTPMutation,
+  useKycVerificationMutation,
+  useKycUploadMutation,
+  useLogOutMutation,
+  useSetup2FAMutation,
+  useEnable2FAMutation,
+  useVerify2FAMutation,
+  useRegenerate2FARecoveryCodesMutation,
+  useDisable2FAMutation,
+  useGet2FAStatusQuery,
+} = authApi;
