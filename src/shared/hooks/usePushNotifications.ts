@@ -1,4 +1,4 @@
-import { useRegisterDeviceMutation } from "@/features/profile/api/profileApi";
+import { useRegisterDeviceMutation } from "@/features/profile";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";

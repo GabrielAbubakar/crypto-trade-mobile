@@ -1,4 +1,4 @@
-import { useGetAssetDetailsQuery } from "@/features/trading/api/marketApi";
+import { useGetAssetDetailsQuery } from "@/features/trading";
 
 interface UseAssetIconUrlResult {
   iconUrl: string | undefined;

@@ -3,8 +3,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { createTransform, persistReducer, persistStore } from "redux-persist";
 import { baseApi } from "@/core/api/baseApi";
-import authReducer from "@/features/auth/slices/authSlice";
-import kycReducer from "@/features/kyc/slices/kycSlice";
+import { authReducer } from "@/features/auth";
+import { kycReducer } from "@/features/kyc";
 import tempReducer from "./tempSlice";
 
 // Transform to exclude the large/non-sensitive 'user' object from SecureStore.
@@ -125,13 +125,6 @@ export const persistor = persistStore(store);
 export type RootState = ReturnType<typeof rootReducer>;
 export type AppDispatch = typeof store.dispatch;
 
-// Re-export feature slices and API query/mutation hooks
-export * from "@/features/auth/slices/authSlice";
-export * from "@/features/kyc/slices/kycSlice";
-export * from "@/features/auth/api/authApi";
-export * from "@/features/profile/api/profileApi";
-export * from "@/features/trading/api/marketApi";
-export * from "@/features/trading/api/tradeApi";
-export * from "@/features/wallet/api/walletApi";
 export * from "./tempSlice";
+
 

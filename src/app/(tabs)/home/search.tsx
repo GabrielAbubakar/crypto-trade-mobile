@@ -1,9 +1,5 @@
-import { BaseText, ScreenContainer } from "@/shared/ui";
+import { SearchScreen } from "@/features/home";
 
-export default function SearchScreen() {
-  return (
-    <ScreenContainer>
-      <BaseText>Search</BaseText>
-    </ScreenContainer>
-  );
+export default function SearchRoute() {
+  return <SearchScreen />;
 }
