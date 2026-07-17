@@ -56,17 +56,17 @@ export interface IExecuteQuoteResponse {
       id: string;
       userId: string;
       fiatCurrency: string;
-      depositAddresses: Array<{
+      depositAddresses: {
         assetSymbol: string;
         network: string;
         address: string;
         qrPayload: string;
-      }>;
-      balances: Array<{
+      }[];
+      balances: {
         assetSymbol: string;
         available: number;
         locked: number;
-      }>;
+      }[];
     };
   };
 }

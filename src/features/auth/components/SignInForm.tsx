@@ -1,9 +1,9 @@
 import Fingerprint from "@/assets/icons/auth/Fingerprint.svg";
-import { BaseButton, BaseInput, BaseText } from '@/shared/ui';
-import { Colors } from "@/shared/constants";
-import { showToast } from "@/shared/utils";
 import { useLoginMutation } from "@/features/auth/api/authApi";
 import { signInSchema } from "@/features/auth/schemas/auth.schema";
+import { Colors } from "@/shared/constants";
+import { BaseButton, BaseInput, BaseText } from "@/shared/ui";
+import { showToast } from "@/shared/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useForm } from "@tanstack/react-form";
 import { router } from "expo-router";
@@ -15,7 +15,7 @@ import type { AuthMethod } from "./types";
 export const SignInForm: React.FC = () => {
   const [method, setMethod] = useState<AuthMethod>("email");
   const [showPassword, setShowPassword] = useState(false);
-  const [signIn, { isLoading, error }] = useLoginMutation();
+  const [signIn, { isLoading }] = useLoginMutation();
 
   async function handleSignIn({
     value,
@@ -113,10 +113,10 @@ export const SignInForm: React.FC = () => {
               error={
                 field.state.meta.isTouched && field.state.meta.errors.length > 0
                   ? field.state.meta.errors
-                    .map((err: any) =>
-                      typeof err === "string" ? err : err.message,
-                    )
-                    .join(", ")
+                      .map((err: any) =>
+                        typeof err === "string" ? err : err.message,
+                      )
+                      .join(", ")
                   : undefined
               }
             />
@@ -148,10 +148,10 @@ export const SignInForm: React.FC = () => {
               error={
                 field.state.meta.isTouched && field.state.meta.errors.length > 0
                   ? field.state.meta.errors
-                    .map((err: any) =>
-                      typeof err === "string" ? err : err.message,
-                    )
-                    .join(", ")
+                      .map((err: any) =>
+                        typeof err === "string" ? err : err.message,
+                      )
+                      .join(", ")
                   : undefined
               }
             />

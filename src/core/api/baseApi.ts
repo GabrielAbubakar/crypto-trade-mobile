@@ -1,7 +1,14 @@
-import { showErrorToast, showSuccessToast } from "@/shared/utils";
-import { type BaseQueryFn, type FetchArgs, type FetchBaseQueryError, createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { Mutex } from "async-mutex";
+/* eslint-disable no-console */
 import { logout, setCredentials } from "@/features/auth";
+import { showErrorToast, showSuccessToast } from "@/shared/utils";
+import {
+  type BaseQueryFn,
+  type FetchArgs,
+  type FetchBaseQueryError,
+  createApi,
+  fetchBaseQuery,
+} from "@reduxjs/toolkit/query/react";
+import { Mutex } from "async-mutex";
 
 const mutex = new Mutex();
 
@@ -85,6 +92,7 @@ const baseQueryWithReAuth: BaseQueryFn<
           api.dispatch(logout());
         }
       } catch (error) {
+        console.error("❌ Token Refresh Failed:", error);
         // Refresh token endpoint failed (e.g., refresh token expired)
         showErrorToast("Token refresh failed");
         api.dispatch(logout());

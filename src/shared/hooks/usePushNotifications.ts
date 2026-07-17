@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { useRegisterDeviceMutation } from "@/features/profile";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
@@ -69,7 +70,7 @@ export function usePushNotifications(isAuthenticated: boolean) {
         responseListener.current.remove();
       }
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, registerDevice]);
 }
 
 async function registerForPushNotificationsAsync() {
