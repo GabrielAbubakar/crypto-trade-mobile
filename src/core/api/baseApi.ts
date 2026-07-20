@@ -16,6 +16,12 @@ const mutex = new Mutex();
 const baseQuery = fetchBaseQuery({
   baseUrl: process.env.EXPO_PUBLIC_API_URL,
   prepareHeaders: (headers, { getState }) => {
+    // Skip attaching expired access token if request opts out (e.g., refresh token request)
+    if (headers.has("x-no-auth")) {
+      headers.delete("x-no-auth");
+      return headers;
+    }
+
     // Pull token from local storage or app state if authenticated
     const token = (getState() as any).auth.accessToken;
     if (token) {
@@ -42,8 +48,14 @@ const baseQueryWithReAuth: BaseQueryFn<
     });
   }
 
-  // Check if the request failed due to an unauthorized token
-  if (result.error && result.error.status === 401) {
+  const requestUrl = typeof args === "string" ? args : args.url;
+
+  // Check if the request failed due to an unauthorized token (and not the refresh request itself)
+  if (
+    result.error &&
+    result.error.status === 401 &&
+    requestUrl !== "/auth/refresh"
+  ) {
     console.log("❌ 401 Unauthorized Error");
 
     // checking whether the mutex is locked
@@ -55,12 +67,15 @@ const baseQueryWithReAuth: BaseQueryFn<
 
         if (refreshToken) {
           console.log("🔃 Refreshing token...");
-          // Send request to get a new access token
+          // Send request to get a new access token without expired Bearer header
           const refreshResult = await baseQuery(
             {
               url: "/auth/refresh",
               method: "POST",
               body: { refreshToken },
+              headers: {
+                "x-no-auth": "true",
+              },
             },
             api,
             extraOptions,
@@ -69,7 +84,8 @@ const baseQueryWithReAuth: BaseQueryFn<
           if (refreshResult.data) {
             console.log("✅ Token Refresh Successful");
             showSuccessToast("✅ Token Refresh Successful");
-            const rawPayload = (refreshResult.data as any).data;
+            const rawPayload =
+              (refreshResult.data as any).data || refreshResult.data;
             const newTokens = {
               user: rawPayload.user || (api.getState() as any).auth.user,
               accessToken: rawPayload.accessToken || rawPayload.token,
