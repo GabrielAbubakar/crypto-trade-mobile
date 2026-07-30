@@ -76,7 +76,7 @@ export default function HomeScreen() {
         <View style={styles.main}>
           <View style={styles.headerContainer}>
             <BaseText variant="bold" size="3xl">
-              Hello, {user?.fullName}
+              Hiiiii, {user?.fullName}
             </BaseText>
 
             {/* <Button onPress={() => router.push("/kyc")} title="Complete KYC" /> */}
@@ -149,11 +149,11 @@ export default function HomeScreen() {
           >
             {trendingIsLoading
               ? Array.from({ length: 3 }).map((_, index) => (
-                  <CoinCardSkeleton key={`skeleton-${index}`} />
-                ))
+                <CoinCardSkeleton key={`skeleton-${index}`} />
+              ))
               : trendingData?.data.map((coin) => (
-                  <CoinCard key={coin.id} {...coin} />
-                ))}
+                <CoinCard key={coin.id} {...coin} />
+              ))}
           </ScrollView>
         </View>
       </ScrollView>
