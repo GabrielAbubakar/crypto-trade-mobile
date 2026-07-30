@@ -7,7 +7,7 @@ on:
 jobs:
   publish_preview_update:
     name: Publish preview update
-    type: run
+    type: custom
     steps:
       - uses: eas/checkout
       - uses: eas/setup-node
