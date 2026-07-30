@@ -4,21 +4,30 @@
     "appVersionSource": "remote"
   },
   "build": {
+    "base": {
+      "android": {
+        "buildType": "apk"
+      },
+      "channel": "base"
+    },
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "channel": "development"
     },
     "preview": {
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://crypto-api-guwm.onrender.com"
-      }
+      },
+      "channel": "preview"
     },
     "production": {
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_API_URL": "https://crypto-api-guwm.onrender.com"
-      }
+      },
+      "channel": "production"
     }
   },
   "submit": {

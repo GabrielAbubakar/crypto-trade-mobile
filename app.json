@@ -8,7 +8,11 @@
     "scheme": "cryptotrademobile",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.gabrielabubakar.cryptotrademobile",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -50,6 +54,12 @@
       "eas": {
         "projectId": "89a8f618-4158-4689-a304-8441cf7bfd7a"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/89a8f618-4158-4689-a304-8441cf7bfd7a"
     }
   }
 }
