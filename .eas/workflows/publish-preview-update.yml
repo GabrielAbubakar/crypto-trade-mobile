@@ -7,6 +7,10 @@ on:
 jobs:
   publish_preview_update:
     name: Publish preview update
-    type: update # This job type triggers an EAS Update to an existing build.
-    params:
-      branch: preview
+    type: run
+    steps:
+      - uses: eas/checkout
+      - uses: eas/setup-node
+      - name: Publish update to preview channel
+        run: npx eas-cli update --channel preview --non-interactive
+
