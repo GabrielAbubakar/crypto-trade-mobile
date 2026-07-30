@@ -9,4 +9,4 @@ jobs:
     name: Publish preview update
     type: update # This job type triggers an EAS Update to an existing build.
     params:
-      channel: preview
+      branch: preview
