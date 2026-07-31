@@ -76,7 +76,7 @@ export default function HomeScreen() {
         <View style={styles.main}>
           <View style={styles.headerContainer}>
             <BaseText variant="bold" size="3xl">
-              Hiiiii, {user?.fullName}
+              Hello, {user?.fullName}
             </BaseText>
 
             {/* <Button onPress={() => router.push("/kyc")} title="Complete KYC" /> */}
