@@ -1,0 +1,13 @@
+name: Publish preview update
+
+on:
+  push:
+    branches: ["*"]
+
+jobs:
+  publish_preview_update:
+    name: Publish preview update
+    type: update # This job type triggers an EAS Update to an existing build.
+    environment: preview
+    params:
+      channel: preview
